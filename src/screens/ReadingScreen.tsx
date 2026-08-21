@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
+import { useAuthStore } from '../store/useAuthStore'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   formatTimer, 
@@ -29,6 +30,9 @@ export const ReadingScreen: React.FC = () => {
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
+  const user = useAuthStore((state) => state.user)
+  const fontSize = user?.arabicFontSize || 28
+
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
   const currentAyahNumber = useReadingStore((state) => state.currentAyahNumber)
   const currentSurah = useReadingStore((state) => state.currentSurah)
@@ -44,6 +48,15 @@ export const ReadingScreen: React.FC = () => {
   const tickTimer = useReadingStore((state) => state.tickTimer)
   const markAyahRead = useReadingStore((state) => state.markAyahRead)
   const finishSession = useReadingStore((state) => state.finishSession)
+
+  // Sync user's preferred translation on initial load
+  useEffect(() => {
+    if (user?.preferredTranslation === 'tamil') {
+      setTranslationLanguage('ta')
+    } else {
+      setTranslationLanguage('en')
+    }
+  }, [user?.preferredTranslation, setTranslationLanguage])
 
   // Initialize Surah and query params
   useEffect(() => {
@@ -197,7 +210,7 @@ export const ReadingScreen: React.FC = () => {
         <div className="flex items-center gap-2 min-w-0">
           <button
             onClick={handleFinishSession}
-            className="p-1.5 rounded-full hover:bg-surface-container text-outline hover:text-on-surface transition shrink-0"
+            className="p-1.5 rounded-full hover:bg-surface-container text-outline hover:text-on-surface transition shrink-0 cursor-pointer"
             title="Return to Dashboard"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -267,7 +280,8 @@ export const ReadingScreen: React.FC = () => {
       </header>
 
       {/* ========================================================================= */}
-      {/* 2. CENTER CONTENT (NO SCROLL DOWN - FITTED DIRECTLY TO SINGLE PAGE VIEW)  */}
+      {/* 2. CENTER CONTENT: ARABIC HIGHLIGHTED WITH BACKGROUND CONTAINER            */}
+      {/*    & TRANSLATION TEXT BELOW WITHOUT ANY HIGHLIGHT/BOX                     */}
       {/* ========================================================================= */}
       <main className="flex-1 flex flex-col justify-center items-center w-full px-2 sm:px-4 py-2 overflow-hidden my-auto">
         {isLoadingSurah ? (
@@ -279,17 +293,18 @@ export const ReadingScreen: React.FC = () => {
           <div className="w-full flex flex-col items-center justify-center space-y-4 max-w-2xl mx-auto my-auto animate-fade-in">
             {/* Bismillah Header (Shown only on Ayah 1 if not Surah 9) */}
             {currentAyahNumber === 1 && currentSurahNumber !== 9 && (
-              <div className="text-center py-1">
+              <div className="text-center py-0.5">
                 <p className="font-noto-serif text-lg sm:text-xl text-primary-fixed-dim opacity-90" dir="rtl">
                   بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                 </p>
               </div>
             )}
 
-            {/* Main Focused Single Verse Arabic Script */}
-            <div className="w-full text-center px-2">
+            {/* 🌟 ARABIC SCRIPT HIGHLIGHTED WITH BACKGROUND CARD CONTAINER */}
+            <div className="w-full p-5 sm:p-8 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/75 shadow-2xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200">
               <p
-                className="font-noto-serif text-center text-on-surface leading-[2.1] sm:leading-[2.4] tracking-wide select-text drop-shadow-sm font-medium text-2xl sm:text-3xl md:text-4xl"
+                className="font-noto-serif text-center text-on-surface leading-[2.1] sm:leading-[2.4] tracking-wide select-text drop-shadow-sm font-medium"
+                style={{ fontSize: `${fontSize}px` }}
                 dir="rtl"
               >
                 {currentAyah.arabicText}{' '}
@@ -299,12 +314,12 @@ export const ReadingScreen: React.FC = () => {
               </p>
             </div>
 
-            {/* Translation Text Card directly below (Compact, crisp, no-scroll) */}
-            <div className="w-full p-4 sm:p-5 rounded-2xl bg-surface-container/70 border border-outline-variant/30 text-center shadow-md space-y-1 max-h-[35vh] overflow-y-auto">
-              <span className="text-[9px] uppercase font-bold text-outline font-label-caps tracking-wider block">
+            {/* 🌟 TRANSLATION TEXT BELOW WITHOUT ANY HIGHLIGHT BACKGROUND */}
+            <div className="w-full px-3 text-center space-y-1 pt-1">
+              <span className="text-[10px] uppercase font-bold text-outline font-label-caps tracking-wider block">
                 {translationLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்பு (பாகவி)' : 'Sahih International'}
               </span>
-              <p className="font-sans text-sm sm:text-base text-on-surface leading-relaxed font-normal">
+              <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed font-normal">
                 {currentAyah.translations[translationLanguage] ||
                   currentAyah.translations['en'] ||
                   'Translation loading...'}
