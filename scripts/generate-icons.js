@@ -7,99 +7,73 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 /**
- * Creates the clean Deenly App Icon (Without Green Accent):
- * - Deep midnight cosmic background (#0D0B18)
- * - Large circular badge (#1E1A38) with soft purple glow border (#7C3AED)
- * - Centered Lucide BookOpen icon in glowing lilac/lavender (#D2BBFF / #F5EEFF)
+ * Creates the Zoomed-In Regular App Icon:
+ * - Rich cosmic midnight indigo gradient canvas (#1D163F to #0A0718)
+ * - Large, bold, centered glowing lavender open book (BookOpen) filling ~70% of the canvas
+ * - Crisp thick strokes and ambient purple glow for maximum recognition on mobile home screens
  */
-function createCleanDeenlyAppIconSvg(size, isMaskable = false) {
+function createZoomedDeenlyAppIconSvg(size, isMaskable = false) {
   const cornerRadius = isMaskable ? 0 : 112
 
-  // For maskable icon, scale slightly (0.80) to fit safely inside Android's 80% safe zone
-  const transformGroup = isMaskable 
-    ? `transform="translate(51.2, 51.2) scale(0.80)" transform-origin="256 256"` 
-    : ''
+  // For maskable icon, fit within Android 80% circle safe zone (scale 12.0)
+  // For standard icon, make it large & bold (scale 14.8)
+  const scale = isMaskable ? 12.0 : 14.8
+  const iconWidth = 24 * scale
+  const iconHeight = 24 * scale
+  const posX = (512 - iconWidth) / 2
+  const posY = (512 - iconHeight) / 2
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="${size}" height="${size}">
   <defs>
-    <!-- Background Radial Gradient -->
-    <radialGradient id="appBg" cx="50%" cy="50%" r="75%">
-      <stop offset="0%" stop-color="#1C163A"/>
-      <stop offset="60%" stop-color="#0F0C22"/>
-      <stop offset="100%" stop-color="#090715"/>
+    <!-- Rich Cosmic Gradient Canvas -->
+    <radialGradient id="cosmicBg" cx="50%" cy="40%" r="80%">
+      <stop offset="0%" stop-color="#2D215E"/>
+      <stop offset="45%" stop-color="#1A133B"/>
+      <stop offset="80%" stop-color="#100B25"/>
+      <stop offset="100%" stop-color="#080514"/>
     </radialGradient>
 
-    <!-- Main Circle Badge Gradient -->
-    <linearGradient id="circleBg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#28214E"/>
-      <stop offset="50%" stop-color="#1E193C"/>
-      <stop offset="100%" stop-color="#141029"/>
-    </linearGradient>
-
-    <!-- Book Lavender/Lilac Gradient -->
-    <linearGradient id="bookLavender" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Book Lavender Glowing Gradient -->
+    <linearGradient id="bookGlow" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="35%" stop-color="#F3E8FF"/>
-      <stop offset="70%" stop-color="#E4D4FF"/>
-      <stop offset="100%" stop-color="#D2BBFF"/>
+      <stop offset="30%" stop-color="#F5EEFF"/>
+      <stop offset="65%" stop-color="#E2CCFF"/>
+      <stop offset="100%" stop-color="#C49EFF"/>
     </linearGradient>
 
-    <!-- Purple Glow Filter -->
-    <filter id="purpleGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="18" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    <!-- Ambient Purple Glow -->
+    <filter id="heroGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.5"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="28" flood-color="#8B5CF6" flood-opacity="0.6"/>
     </filter>
 
-    <!-- Badge Drop Shadow -->
-    <filter id="badgeShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
-      <feDropShadow dx="0" dy="0" stdDeviation="24" flood-color="#7C3AED" flood-opacity="0.4"/>
-    </filter>
+    <!-- Radial Soft Glow in center -->
+    <radialGradient id="centerAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.35"/>
+      <stop offset="70%" stop-color="#7C3AED" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+    </radialGradient>
   </defs>
 
-  <!-- Base App Background Canvas -->
-  <rect width="512" height="512" rx="${cornerRadius}" fill="url(#appBg)"/>
+  <!-- App Background Canvas -->
+  <rect width="512" height="512" rx="${cornerRadius}" fill="url(#cosmicBg)"/>
 
-  <!-- Soft Ambient Glow behind Circle -->
-  <circle cx="256" cy="256" r="165" fill="#7C3AED" opacity="0.22" filter="url(#purpleGlow)"/>
+  <!-- Center Ambient Light Aura -->
+  <circle cx="256" cy="256" r="220" fill="url(#centerAura)"/>
 
-  <g ${transformGroup}>
-    <!-- Center Main Circle Badge Container -->
-    <circle 
-      cx="256" 
-      cy="256" 
-      r="145" 
-      fill="url(#circleBg)" 
-      stroke="#7C3AED" 
-      stroke-width="5.5" 
-      stroke-opacity="0.7"
-      filter="url(#badgeShadow)"
-    />
-
-    <!-- Inner Subtle Highlight Ring -->
-    <circle 
-      cx="256" 
-      cy="256" 
-      r="142" 
-      fill="none" 
-      stroke="#A78BFA" 
-      stroke-width="1.5" 
-      stroke-opacity="0.3"
-    />
-
-    <!-- 📖 EXACT Lucide BookOpen SVG Path Centered -->
-    <g transform="translate(156, 156) scale(8.33)" 
-       fill="none" 
-       stroke="url(#bookLavender)" 
-       stroke-width="2.3" 
-       stroke-linecap="round" 
-       stroke-linejoin="round"
-    >
-      <!-- Left Page -->
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-      <!-- Right Page -->
-      <path d="M22 3h-6a4 4 0 0 1-4 4v14a3 3 0 0 1 3-3h7z"/>
-    </g>
+  <!-- 📖 Large Zoomed-In Hero BookOpen Symbol -->
+  <g transform="translate(${posX.toFixed(1)}, ${posY.toFixed(1)}) scale(${scale.toFixed(2)})" 
+     fill="none" 
+     stroke="url(#bookGlow)" 
+     stroke-width="2.2" 
+     stroke-linecap="round" 
+     stroke-linejoin="round"
+     filter="url(#heroGlow)"
+  >
+    <!-- Left Page -->
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+    <!-- Right Page -->
+    <path d="M22 3h-6a4 4 0 0 1-4 4v14a3 3 0 0 1 3-3h7z"/>
   </g>
 </svg>`
 }
@@ -111,43 +85,43 @@ async function run() {
     fs.mkdirSync(iconsDir, { recursive: true })
   }
 
-  console.log('Rendering clean Deenly app logo icons without green accent...')
+  console.log('Rendering zoomed-in Deenly hero app logo icons...')
 
   // 1. Standard 512x512
-  const svg512 = createCleanDeenlyAppIconSvg(512, false)
+  const svg512 = createZoomedDeenlyAppIconSvg(512, false)
   await sharp(Buffer.from(svg512))
     .resize(512, 512)
     .png()
     .toFile(path.join(iconsDir, 'icon-512x512.png'))
-  console.log('✓ Created public/icons/icon-512x512.png')
+  console.log('✓ Created public/icons/icon-512x512.png (Zoomed in)')
 
   // 2. Standard 192x192
   await sharp(Buffer.from(svg512))
     .resize(192, 192)
     .png()
     .toFile(path.join(iconsDir, 'icon-192x192.png'))
-  console.log('✓ Created public/icons/icon-192x192.png')
+  console.log('✓ Created public/icons/icon-192x192.png (Zoomed in)')
 
   // 3. Apple Touch Icon 180x180
   await sharp(Buffer.from(svg512))
     .resize(180, 180)
     .png()
     .toFile(path.join(iconsDir, 'apple-touch-icon.png'))
-  console.log('✓ Created public/icons/apple-touch-icon.png')
+  console.log('✓ Created public/icons/apple-touch-icon.png (Zoomed in)')
 
   // 4. Maskable 512x512 (with safe zone margin)
-  const svgMaskable = createCleanDeenlyAppIconSvg(512, true)
+  const svgMaskable = createZoomedDeenlyAppIconSvg(512, true)
   await sharp(Buffer.from(svgMaskable))
     .resize(512, 512)
     .png()
     .toFile(path.join(iconsDir, 'maskable-icon-512x512.png'))
-  console.log('✓ Created public/icons/maskable-icon-512x512.png')
+  console.log('✓ Created public/icons/maskable-icon-512x512.png (Zoomed in)')
 
   // 5. Favicon SVG
   fs.writeFileSync(path.join(publicDir, 'favicon.svg'), svg512)
   console.log('✓ Updated public/favicon.svg')
 
-  console.log('🎉 Clean Deenly app logo icons generated successfully!')
+  console.log('🎉 Zoomed-in Deenly app icons generated successfully!')
 }
 
 run().catch(console.error)
