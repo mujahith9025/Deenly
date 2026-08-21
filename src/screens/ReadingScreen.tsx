@@ -134,7 +134,7 @@ export const ReadingScreen: React.FC = () => {
       )
       setSearchParams({ surah: currentSurahNumber.toString(), ayah: nextAyahNum.toString() }, { replace: true })
     } 
-    // 2. 🌟 Chapter completed! Automatically advance to the next chapter!
+    // 2. Chapter completed! Automatically advance to the next chapter!
     else {
       const nextSurahNum = currentSurahNumber < 114 ? currentSurahNumber + 1 : 1
       const nextSurahMeta = SURAH_METADATA.find((s) => s.number === nextSurahNum)
@@ -236,70 +236,76 @@ export const ReadingScreen: React.FC = () => {
     : 0
 
   return (
-    <div className="h-[calc(100dvh-4rem)] md:h-[calc(100dvh-2rem)] w-full max-w-4xl mx-auto flex flex-col justify-between p-3 sm:p-4 select-none relative overflow-hidden">
+    <div className="h-[calc(100dvh-4.5rem)] md:h-[calc(100dvh-3rem)] w-full max-w-5xl mx-auto flex flex-col justify-between p-2 sm:p-4 select-none relative overflow-hidden">
       <audio ref={audioRef} src={audioUrl} preload="none" />
 
       {/* ========================================================================= */}
-      {/* 1. COMPACT TOP STRIP: SURAH TITLE & COMBINED MINI TIME + HASANAT BADGE    */}
+      {/* 1. FIXED TOP BAR: PINNED TO TOP (DOES NOT SCROLL)                         */}
+      {/*    Includes Surah Name, Responsive Scaled Timer & Hasanat, and Audio Tools */}
       {/* ========================================================================= */}
-      <header className="w-full flex items-center justify-between gap-2 pb-2 shrink-0 border-b border-outline-variant/20 z-10 bg-surface/50 backdrop-blur-sm">
+      <header className="w-full flex items-center justify-between gap-2 sm:gap-4 pb-2.5 pt-1 shrink-0 border-b border-outline-variant/20 z-20 bg-surface/80 backdrop-blur-md">
         {/* Left: Surah Name & Ayah Counter */}
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={handleFinishSession}
-            className="p-1.5 rounded-full hover:bg-surface-container text-outline hover:text-on-surface transition shrink-0 cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-full hover:bg-surface-container text-outline hover:text-on-surface transition shrink-0 cursor-pointer"
             title="Return to Dashboard"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <div className="truncate">
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm text-on-surface truncate">
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
+              <span className="font-bold text-sm sm:text-base md:text-lg text-on-surface truncate">
                 {currentSurah?.name || 'Surah'}
               </span>
-              <span className="font-noto-serif text-sm text-primary-fixed-dim shrink-0">
+              <span className="font-noto-serif text-sm sm:text-base md:text-xl text-primary-fixed-dim shrink-0">
                 {currentSurah?.arabicName}
               </span>
             </div>
-            <p className="text-[10px] text-outline">
+            <p className="text-[10px] sm:text-xs text-outline">
               Ayah {currentAyahNumber || 1} of {totalAyahs} • Juz {juzProgress.juzNumber}
             </p>
           </div>
         </div>
 
-        {/* Center: Combined Small Time & Hasanat Space Allocation */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container/80 border border-outline-variant/30 text-xs shrink-0 shadow-sm">
-          <div className="flex items-center gap-1 text-on-surface font-mono text-[11px] font-semibold">
-            <Clock className="w-3 h-3 text-primary" />
+        {/* Center: RESPONSIVELY SCALED TIME & HASANAT EARNED (LARGER ON DESKTOP) */}
+        <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2 rounded-full bg-surface-container/90 border border-outline-variant/40 shrink-0 shadow-md">
+          {/* Timer with larger font on Tablet / Desktop */}
+          <div className="flex items-center gap-1.5 text-on-surface font-mono text-xs sm:text-sm md:text-base font-bold">
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
             <span>{formatTimer(activeSession.elapsedSeconds)}</span>
           </div>
-          <span className="text-outline text-[10px]">•</span>
-          <div className="flex items-center gap-1 text-tertiary font-bold text-[11px]">
-            <Sparkles className="w-3 h-3" />
+
+          <span className="text-outline text-xs">•</span>
+
+          {/* Hasanat Badge with larger font on Tablet / Desktop */}
+          <div className="flex items-center gap-1.5 text-tertiary font-bold text-xs sm:text-sm md:text-base">
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>+{activeSession.sessionHasanat}</span>
+            <span className="hidden sm:inline text-[10px] md:text-xs opacity-75 font-normal">pts</span>
           </div>
         </div>
 
         {/* Right: Audio Reciter & Language Switcher */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Audio Button */}
           <button
             onClick={togglePlayAudio}
-            className={`p-1.5 rounded-full border transition cursor-pointer ${
+            className={`p-1.5 sm:p-2 rounded-full border transition cursor-pointer ${
               isPlayingAudio
                 ? 'bg-primary text-white border-primary shadow-sm animate-pulse'
                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/40 text-on-surface'
             }`}
             title="Play / Pause Audio"
           >
-            {isPlayingAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+            {isPlayingAudio ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
           </button>
 
           {/* Language Toggle */}
           <button
             onClick={() => setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')}
-            className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-[11px] font-semibold text-primary hover:border-primary transition cursor-pointer"
+            className="px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-surface-container border border-outline-variant/30 text-xs sm:text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm"
             title="Toggle translation language"
           >
             {translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}
@@ -308,63 +314,63 @@ export const ReadingScreen: React.FC = () => {
           {/* Share / Copy */}
           <button
             onClick={handleShareAyah}
-            className="p-1.5 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-outline hover:text-on-surface transition cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-outline hover:text-on-surface transition cursor-pointer"
             title="Copy Ayah"
           >
-            {copiedShare ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+            {copiedShare ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
           </button>
         </div>
       </header>
 
       {/* Chapter Completed Transition Toast Banner */}
       {chapterCompletedBanner && (
-        <div className="my-2 p-2.5 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-2 animate-fade-in shadow-lg shrink-0">
+        <div className="my-2 p-2.5 sm:p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 animate-fade-in shadow-lg shrink-0">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{chapterCompletedBanner}</span>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 2. CENTER CONTENT: ARABIC HIGHLIGHTED WITH BACKGROUND CONTAINER            */}
-      {/*    & TRANSLATION BELOW WITH SMOOTH SCROLL DOWN SUPPORT FOR LARGE FONTS    */}
+      {/* 2. DEDICATED SCROLLABLE CENTER: ONLY THIS SECTION SCROLLS                  */}
+      {/*    Contains Highlighted Arabic Card & Clean Translation Underneath        */}
       {/* ========================================================================= */}
-      <main className="flex-1 flex flex-col justify-start sm:justify-center items-center w-full px-2 sm:px-4 py-3 overflow-y-auto min-h-0">
+      <main className="flex-1 overflow-y-auto w-full px-2 sm:px-6 py-4 min-h-0 flex flex-col justify-start sm:justify-center items-center">
         {isLoadingSurah ? (
           <div className="p-8 text-center space-y-2 my-auto">
-            <Loader2 className="w-7 h-7 animate-spin text-primary mx-auto" />
-            <p className="text-xs text-on-surface-variant">Loading sacred verse...</p>
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+            <p className="text-xs sm:text-sm text-on-surface-variant">Loading sacred verse...</p>
           </div>
         ) : currentAyah ? (
-          <div className="w-full flex flex-col items-center justify-center space-y-4 max-w-2xl mx-auto my-auto py-2 animate-fade-in">
+          <div className="w-full flex flex-col items-center justify-center space-y-4 md:space-y-6 max-w-3xl mx-auto my-auto py-2 animate-fade-in">
             {/* Bismillah Header (Shown only on Ayah 1 if not Surah 9) */}
             {currentAyahNumber === 1 && currentSurahNumber !== 9 && (
-              <div className="text-center py-0.5">
-                <p className="font-noto-serif text-lg sm:text-xl text-primary-fixed-dim opacity-90" dir="rtl">
+              <div className="text-center py-1">
+                <p className="font-noto-serif text-lg sm:text-2xl md:text-3xl text-primary-fixed-dim opacity-90" dir="rtl">
                   بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                 </p>
               </div>
             )}
 
             {/* 🌟 ARABIC SCRIPT HIGHLIGHTED WITH BACKGROUND CARD CONTAINER */}
-            <div className="w-full p-5 sm:p-8 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/75 shadow-2xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200">
+            <div className="w-full p-5 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/80 shadow-2xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200">
               <p
-                className="font-noto-serif text-center text-on-surface leading-[2.2] sm:leading-[2.5] tracking-wide select-text drop-shadow-sm font-medium"
+                className="font-noto-serif text-center text-on-surface leading-[2.2] sm:leading-[2.5] md:leading-[2.7] tracking-wide select-text drop-shadow-sm font-medium"
                 style={{ fontSize: `${fontSize}px` }}
                 dir="rtl"
               >
                 {currentAyah.arabicText}{' '}
-                <span className="text-primary font-serif text-xl sm:text-2xl inline-block px-1 select-none">
+                <span className="text-primary font-serif text-xl sm:text-2xl md:text-3xl inline-block px-1 select-none">
                   ﴿{currentAyah.verseNumberInSurah}﴾
                 </span>
               </p>
             </div>
 
             {/* 🌟 TRANSLATION TEXT BELOW WITHOUT ANY HIGHLIGHT BACKGROUND */}
-            <div className="w-full px-3 text-center space-y-1 pt-1">
-              <span className="text-[10px] uppercase font-bold text-outline font-label-caps tracking-wider block">
+            <div className="w-full px-4 text-center space-y-1.5 pt-1">
+              <span className="text-[10px] sm:text-xs uppercase font-bold text-outline font-label-caps tracking-wider block">
                 {translationLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்பு (பாகவி)' : 'Sahih International'}
               </span>
-              <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed font-normal">
+              <p className="font-sans text-sm sm:text-base md:text-lg lg:text-xl text-on-surface-variant leading-relaxed font-normal max-w-2xl mx-auto">
                 {currentAyah.translations[translationLanguage] ||
                   currentAyah.translations['en'] ||
                   'Translation loading...'}
@@ -372,7 +378,7 @@ export const ReadingScreen: React.FC = () => {
             </div>
 
             {/* Surah Mini Progress Indicator */}
-            <div className="w-36 bg-surface-container-highest h-1 rounded-full overflow-hidden opacity-60">
+            <div className="w-36 sm:w-48 bg-surface-container-highest h-1.5 rounded-full overflow-hidden opacity-60">
               <div
                 className="bg-primary h-full rounded-full transition-all duration-300"
                 style={{ width: `${surahProgressPercent}%` }}
@@ -383,16 +389,16 @@ export const ReadingScreen: React.FC = () => {
       </main>
 
       {/* ========================================================================= */}
-      {/* 3. DEDICATED 3-PILL BOTTOM NAVIGATION BAR (FIXED AT BOTTOM OF SCREEN)     */}
+      {/* 3. FIXED BOTTOM BAR: PINNED TO BOTTOM (DOES NOT SCROLL)                   */}
       {/*    ( ← ) Left Pill, "I'm Done" Center Pill, ( → ) Large White Next Pill   */}
       {/*    + Floating Hasanat Badge Above Next Button                             */}
       {/* ========================================================================= */}
-      <footer className="w-full max-w-lg mx-auto pt-2 pb-1 shrink-0 z-40 bg-surface/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between gap-3 relative">
+      <footer className="w-full max-w-lg mx-auto pt-2 pb-1 shrink-0 z-20 bg-surface/80 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-3 sm:gap-4 relative">
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (
             <div className={`absolute -top-7 right-4 pointer-events-none transition-transform duration-300 ${floatingHasanat ? 'scale-125 animate-bounce' : ''}`}>
-              <span className="text-xs font-bold text-amber-300 bg-black/80 px-2.5 py-0.5 rounded-full border border-amber-500/40 shadow-md">
+              <span className="text-xs sm:text-sm font-bold text-amber-300 bg-black/85 px-3 py-0.5 rounded-full border border-amber-500/40 shadow-md">
                 +{floatingHasanat ? floatingHasanat.amount : currentAyah.hasanatValue}
               </span>
             </div>
@@ -403,17 +409,17 @@ export const ReadingScreen: React.FC = () => {
             type="button"
             onClick={handlePrevAyah}
             disabled={currentSurahNumber === 1 && currentAyahNumber === 1}
-            className="w-24 h-12 sm:h-13 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface flex items-center justify-center hover:border-primary transition cursor-pointer shadow-lg disabled:opacity-40"
+            className="w-20 sm:w-28 md:w-32 h-12 sm:h-14 md:h-15 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface flex items-center justify-center hover:border-primary transition cursor-pointer shadow-lg disabled:opacity-40"
             title="Previous Ayah"
           >
-            <ArrowLeft className="w-5 h-5 text-on-surface" />
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-on-surface" />
           </button>
 
           {/* Center Button: "I'm Done" (Direct return to Dashboard) */}
           <button
             type="button"
             onClick={handleFinishSession}
-            className="flex-1 h-12 sm:h-13 rounded-full bg-surface-container-high border border-outline-variant/40 hover:border-primary text-on-surface text-xs sm:text-sm font-bold flex items-center justify-center transition cursor-pointer shadow-lg active:scale-98"
+            className="flex-1 h-12 sm:h-14 md:h-15 rounded-full bg-surface-container-high border border-outline-variant/40 hover:border-primary text-on-surface text-xs sm:text-sm md:text-base font-bold flex items-center justify-center transition cursor-pointer shadow-lg active:scale-98"
           >
             I'm Done
           </button>
@@ -422,10 +428,10 @@ export const ReadingScreen: React.FC = () => {
           <button
             type="button"
             onClick={handleMarkAndNext}
-            className="w-24 h-12 sm:h-13 rounded-full bg-white text-gray-900 flex items-center justify-center transition cursor-pointer shadow-xl hover:bg-gray-100 active:scale-95"
+            className="w-20 sm:w-28 md:w-32 h-12 sm:h-14 md:h-15 rounded-full bg-white text-gray-900 flex items-center justify-center transition cursor-pointer shadow-xl hover:bg-gray-100 active:scale-95"
             title={currentAyah && currentAyah.verseNumberInSurah === totalAyahs ? 'Complete Chapter & Next Surah' : 'Mark Read & Next Ayah'}
           >
-            <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
           </button>
         </div>
       </footer>
