@@ -1,4 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+import sharp from 'sharp'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// 🌙 Deenly Cosmic Quran & Crescent Icon
+function createDeenlySvg(size, isMaskable = false) {
+  const padding = isMaskable ? size * 0.15 : 0
+  const innerSize = size - padding * 2
+  const center = size / 2
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="${size}" height="${size}">
   <defs>
     <!-- Cosmic Background Gradient -->
     <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
@@ -44,7 +58,7 @@
   </defs>
 
   <!-- Base Rounded Rectangle for App Icon -->
-  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" rx="${isMaskable ? '0' : '112'}" fill="url(#bgGrad)"/>
 
   <!-- Cosmic Stars / Sparkles in Background -->
   <circle cx="110" cy="130" r="3" fill="#6EE7B7" opacity="0.6"/>
@@ -57,7 +71,7 @@
   <!-- Radial Glow Behind Crescent -->
   <circle cx="256" cy="235" r="160" fill="url(#emeraldGlow)"/>
 
-  <g transform="">
+  <g transform="${isMaskable ? 'translate(25.6, 25.6) scale(0.9)' : ''}">
     <!-- 🌙 Elegant Golden Crescent Moon -->
     <path d="M 275 105 
              C 335 118, 385 168, 388 232 
@@ -103,4 +117,53 @@
       <path d="M 20 -8 Q 45 -18 75 -10" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8"/>
     </g>
   </g>
-</svg>
+</svg>`
+}
+
+async function run() {
+  const publicDir = path.resolve(__dirname, '../public')
+  const iconsDir = path.resolve(publicDir, 'icons')
+  if (!fs.existsSync(iconsDir)) {
+    fs.mkdirSync(iconsDir, { recursive: true })
+  }
+
+  console.log('Rendering high-res Deenly PWA icons...')
+
+  // 1. Standard 512x512
+  const svg512 = createDeenlySvg(512, false)
+  await sharp(Buffer.from(svg512))
+    .resize(512, 512)
+    .png()
+    .toFile(path.join(iconsDir, 'icon-512x512.png'))
+  console.log('✓ Created public/icons/icon-512x512.png')
+
+  // 2. Standard 192x192
+  await sharp(Buffer.from(svg512))
+    .resize(192, 192)
+    .png()
+    .toFile(path.join(iconsDir, 'icon-192x192.png'))
+  console.log('✓ Created public/icons/icon-192x192.png')
+
+  // 3. Apple Touch Icon 180x180
+  await sharp(Buffer.from(svg512))
+    .resize(180, 180)
+    .png()
+    .toFile(path.join(iconsDir, 'apple-touch-icon.png'))
+  console.log('✓ Created public/icons/apple-touch-icon.png')
+
+  // 4. Maskable 512x512 (with safe zone margin)
+  const svgMaskable = createDeenlySvg(512, true)
+  await sharp(Buffer.from(svgMaskable))
+    .resize(512, 512)
+    .png()
+    .toFile(path.join(iconsDir, 'maskable-icon-512x512.png'))
+  console.log('✓ Created public/icons/maskable-icon-512x512.png')
+
+  // 5. Favicon SVG
+  fs.writeFileSync(path.join(publicDir, 'favicon.svg'), svg512)
+  console.log('✓ Updated public/favicon.svg')
+
+  console.log('🎉 All Deenly PWA icons generated successfully!')
+}
+
+run().catch(console.error)
