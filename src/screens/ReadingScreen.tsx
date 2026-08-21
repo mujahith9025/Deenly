@@ -199,13 +199,13 @@ export const ReadingScreen: React.FC = () => {
     : 0
 
   return (
-    <div className="h-[calc(100dvh-4rem)] md:h-[calc(100dvh-2rem)] w-full max-w-4xl mx-auto overflow-hidden flex flex-col justify-between p-3 sm:p-4 select-none relative">
+    <div className="h-[calc(100dvh-4rem)] md:h-[calc(100dvh-2rem)] w-full max-w-4xl mx-auto flex flex-col justify-between p-3 sm:p-4 select-none relative overflow-hidden">
       <audio ref={audioRef} src={audioUrl} preload="none" />
 
       {/* ========================================================================= */}
       {/* 1. COMPACT TOP STRIP: SURAH TITLE & COMBINED MINI TIME + HASANAT BADGE    */}
       {/* ========================================================================= */}
-      <header className="w-full flex items-center justify-between gap-2 pb-2 shrink-0 border-b border-outline-variant/20">
+      <header className="w-full flex items-center justify-between gap-2 pb-2 shrink-0 border-b border-outline-variant/20 z-10 bg-surface/50 backdrop-blur-sm">
         {/* Left: Surah Name & Ayah Counter */}
         <div className="flex items-center gap-2 min-w-0">
           <button
@@ -281,16 +281,16 @@ export const ReadingScreen: React.FC = () => {
 
       {/* ========================================================================= */}
       {/* 2. CENTER CONTENT: ARABIC HIGHLIGHTED WITH BACKGROUND CONTAINER            */}
-      {/*    & TRANSLATION TEXT BELOW WITHOUT ANY HIGHLIGHT/BOX                     */}
+      {/*    & TRANSLATION BELOW WITH SMOOTH SCROLL DOWN SUPPORT FOR LARGE FONTS    */}
       {/* ========================================================================= */}
-      <main className="flex-1 flex flex-col justify-center items-center w-full px-2 sm:px-4 py-2 overflow-hidden my-auto">
+      <main className="flex-1 flex flex-col justify-start sm:justify-center items-center w-full px-2 sm:px-4 py-3 overflow-y-auto min-h-0">
         {isLoadingSurah ? (
-          <div className="p-8 text-center space-y-2">
+          <div className="p-8 text-center space-y-2 my-auto">
             <Loader2 className="w-7 h-7 animate-spin text-primary mx-auto" />
             <p className="text-xs text-on-surface-variant">Loading sacred verse...</p>
           </div>
         ) : currentAyah ? (
-          <div className="w-full flex flex-col items-center justify-center space-y-4 max-w-2xl mx-auto my-auto animate-fade-in">
+          <div className="w-full flex flex-col items-center justify-center space-y-4 max-w-2xl mx-auto my-auto py-2 animate-fade-in">
             {/* Bismillah Header (Shown only on Ayah 1 if not Surah 9) */}
             {currentAyahNumber === 1 && currentSurahNumber !== 9 && (
               <div className="text-center py-0.5">
@@ -303,7 +303,7 @@ export const ReadingScreen: React.FC = () => {
             {/* 🌟 ARABIC SCRIPT HIGHLIGHTED WITH BACKGROUND CARD CONTAINER */}
             <div className="w-full p-5 sm:p-8 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/75 shadow-2xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200">
               <p
-                className="font-noto-serif text-center text-on-surface leading-[2.1] sm:leading-[2.4] tracking-wide select-text drop-shadow-sm font-medium"
+                className="font-noto-serif text-center text-on-surface leading-[2.2] sm:leading-[2.5] tracking-wide select-text drop-shadow-sm font-medium"
                 style={{ fontSize: `${fontSize}px` }}
                 dir="rtl"
               >
@@ -342,7 +342,7 @@ export const ReadingScreen: React.FC = () => {
       {/*    ( ← ) Left Pill, "I'm Done" Center Pill, ( → ) Large White Next Pill   */}
       {/*    + Floating Hasanat Badge Above Next Button                             */}
       {/* ========================================================================= */}
-      <footer className="w-full max-w-lg mx-auto pt-2 pb-1 shrink-0 z-40">
+      <footer className="w-full max-w-lg mx-auto pt-2 pb-1 shrink-0 z-40 bg-surface/50 backdrop-blur-sm">
         <div className="flex items-center justify-between gap-3 relative">
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (
