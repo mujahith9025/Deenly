@@ -1,0 +1,600 @@
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { 
+  Bell, 
+  Type, 
+  User, 
+  LogOut, 
+  Target, 
+  Globe, 
+  Loader2, 
+  RefreshCw, 
+  Cloud, 
+  CheckCircle2, 
+  AlertCircle, 
+  WifiOff, 
+  Smartphone, 
+  Trash2, 
+  ShieldCheck, 
+  Sparkles, 
+  AlertTriangle 
+} from 'lucide-react'
+import { ScreenPlaceholder } from '../components/common/ScreenPlaceholder'
+import { ConnectionStatus } from '../components/common/ConnectionStatus'
+import { useAuth } from '../hooks/useAuth'
+import { useAuthStore } from '../store/useAuthStore'
+import { syncService } from '../lib/syncService'
+
+function formatLastSynced(timestamp: string | null): string {
+  if (!timestamp) return 'Never synced'
+  const diffSecs = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000)
+  if (diffSecs < 10) return 'Just now'
+  if (diffSecs < 60) return `${diffSecs} seconds ago`
+  const mins = Math.floor(diffSecs / 60)
+  if (mins < 60) return `${mins} min${mins > 1 ? 's' : ''} ago`
+  const hours = Math.floor(mins / 60)
+  return `${hours} hour${hours > 1 ? 's' : ''} ago`
+}
+
+export const SettingsScreen: React.FC = () => {
+  const [showFullView, setShowFullView] = useState(true)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
+  const [showResetStatsModal, setShowResetStatsModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+
+  const { user, signOut } = useAuth()
+  const syncStatus = useAuthStore((state) => state.syncStatus)
+  const lastSyncedAt = useAuthStore((state) => state.lastSyncedAt)
+  const pendingOfflineCount = useAuthStore((state) => state.pendingOfflineCount)
+  const syncNow = useAuthStore((state) => state.syncNow)
+  const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
+  const resetUserStatsToZero = useAuthStore((state) => state.resetUserStatsToZero)
+  const deleteAccount = useAuthStore((state) => state.deleteAccount)
+
+  const navigate = useNavigate()
+  const deviceId = syncService.getDeviceId()
+
+  const handleResetStats = async () => {
+    setIsResetting(true)
+    try {
+      await resetUserStatsToZero()
+      setShowResetStatsModal(false)
+    } finally {
+      setIsResetting(false)
+    }
+  }
+
+  const currentFontSize = user?.arabicFontSize || 28
+  const currentTranslation = user?.preferredTranslation || 'english'
+  const currentGoal = user?.dailyGoalVerses || 10
+  const prayerAlerts = user?.prayerNotifications !== false
+  const readingAlerts = user?.readingReminders !== false
+
+  const handleTranslationChange = (lang: 'english' | 'tamil') => {
+    updateUserSettings({ preferredTranslation: lang })
+  }
+
+  const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const size = parseInt(e.target.value, 10)
+    updateUserSettings({ arabicFontSize: size })
+  }
+
+  const handleGoalStep = (delta: number) => {
+    const newGoal = Math.max(1, Math.min(100, currentGoal + delta))
+    updateUserSettings({ dailyGoalVerses: newGoal })
+  }
+
+  const handleGoalPreset = (val: number) => {
+    updateUserSettings({ dailyGoalVerses: val })
+  }
+
+  /* NOTE: Push/Email notification delivery is stubbed for future Web Push API / Service Worker activation */
+  const handleTogglePrayerNotifications = () => {
+    updateUserSettings({ prayerNotifications: !prayerAlerts })
+  }
+
+  const handleToggleReadingReminders = () => {
+    updateUserSettings({ readingReminders: !readingAlerts })
+  }
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await signOut()
+      navigate('/login', { replace: true })
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true)
+    try {
+      await deleteAccount()
+      setShowDeleteModal(false)
+      navigate('/signup', { replace: true })
+    } finally {
+      setIsDeletingAccount(false)
+    }
+  }
+
+  const handleSyncNow = async () => {
+    await syncNow()
+  }
+
+  return (
+    <div className="space-y-6 max-w-4xl mx-auto pb-16">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">App Settings</h1>
+          <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
+            Customize Quran typography, translation language, daily goals, data sync, and account.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowFullView(!showFullView)}
+          className="text-xs px-3.5 py-1.5 rounded-full bg-surface-container border border-outline-variant/40 text-secondary hover:border-primary transition cursor-pointer"
+        >
+          {showFullView ? 'Show Project Scaffold View' : 'Show Stitch UI View'}
+        </button>
+      </div>
+
+      {showFullView ? (
+        <div className="space-y-6">
+          {/* Account Profile Card */}
+          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5">
+            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
+              <User className="w-4 h-4 text-primary" />
+              <span>Account & Security</span>
+            </h2>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-full bg-surface-container-high border border-primary/40 overflow-hidden flex items-center justify-center shrink-0 shadow-md">
+                  {user?.photoUrl ? (
+                    <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-on-surface-variant" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-on-surface">{user?.name || 'Muslim Seeker'}</p>
+                  <p className="text-xs text-on-surface-variant">{user?.email || 'No email associated'}</p>
+                  
+                  {/* Linked Provider Badge */}
+                  <div className="flex items-center gap-2 mt-1">
+                    {user?.authProvider === 'google' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                        <ShieldCheck className="w-3 h-3" />
+                        <span>Google Linked</span>
+                      </span>
+                    ) : user?.isGuest ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-secondary/10 text-secondary border border-secondary/20 font-medium">
+                        <span>Guest Sandbox</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
+                        <span>Email & Password</span>
+                      </span>
+                    )}
+                    <span className="text-[10px] text-outline">UID: {user?.uid?.substring(0, 10) || 'usr_demo'}...</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setShowResetStatsModal(true)}
+                  disabled={isResetting}
+                  className="px-3.5 py-2 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-60"
+                  title="Reset all reading stats and Hasanat points to 0"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Reset Stats to 0</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-highest border border-outline-variant/40 text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-60"
+                >
+                  {isLoggingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
+                  <span>Sign Out</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="px-3 py-2 rounded-full bg-error-container/20 hover:bg-error-container/40 border border-error/30 text-error text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
+                  title="Delete Account & Stats"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Translation Selection Card */}
+          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
+                <Globe className="w-4 h-4 text-secondary" />
+                <span>Default Quran Translation</span>
+              </h2>
+              <span className="text-xs text-outline">Instant reader sync</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* English Option */}
+              <div
+                onClick={() => handleTranslationChange('english')}
+                className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                  currentTranslation === 'english'
+                    ? 'bg-primary/10 border-primary shadow-sm'
+                    : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-on-surface">English</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-outline">Default</span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant">Sahih International (Umm Muhammad)</p>
+                </div>
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                  currentTranslation === 'english' ? 'border-primary bg-primary text-white' : 'border-outline'
+                }`}>
+                  {currentTranslation === 'english' && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
+              </div>
+
+              {/* Tamil Option */}
+              <div
+                onClick={() => handleTranslationChange('tamil')}
+                className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                  currentTranslation === 'tamil'
+                    ? 'bg-primary/10 border-primary shadow-sm'
+                    : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-on-surface">தமிழ் (Tamil)</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-tertiary">Tamil Nadu</span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant">Abdul Hameed Baqavi (அப்துல் ஹமீது பாகவி)</p>
+                </div>
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                  currentTranslation === 'tamil' ? 'border-primary bg-primary text-white' : 'border-outline'
+                }`}>
+                  {currentTranslation === 'tamil' && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Arabic Typography Scaling Card */}
+          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
+                <Type className="w-4 h-4 text-primary" />
+                <span>Arabic Typography Scale</span>
+              </h2>
+              <span className="font-mono text-xs font-bold text-primary">{currentFontSize}px</span>
+            </div>
+
+            {/* Slider */}
+            <div className="space-y-2">
+              <input
+                type="range"
+                min="20"
+                max="44"
+                step="2"
+                value={currentFontSize}
+                onChange={handleFontSizeChange}
+                className="w-full accent-primary h-2 bg-surface-container-highest rounded-lg cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-outline font-mono">
+                <span>Small (20px)</span>
+                <span>Standard (28px)</span>
+                <span>Large (44px)</span>
+              </div>
+            </div>
+
+            {/* Live Arabic Preview Box */}
+            <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/30 text-center space-y-1">
+              <p className="text-[10px] text-outline uppercase tracking-wider font-label-caps">Live Quranic Preview</p>
+              <p
+                className="font-noto-serif text-primary-fixed-dim select-none transition-all duration-150 py-2"
+                style={{ fontSize: `${currentFontSize}px` }}
+                dir="rtl"
+              >
+                بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+              </p>
+              <p className="text-xs text-on-surface-variant font-sans">
+                {currentTranslation === 'tamil'
+                  ? 'அளவற்ற அருளாளனும், நிகரற்ற அன்புடையோனுமாகிய அல்லாஹ்வின் திருப்பெயரால்'
+                  : 'In the name of Allah, the Entirely Merciful, the Especially Merciful.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Daily Verse-Goal Stepper Card */}
+          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
+                <Target className="w-4 h-4 text-tertiary" />
+                <span>Daily Verse Recitation Target</span>
+              </h2>
+              <span className="text-xs text-tertiary font-bold">{currentGoal} Verses / Day</span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
+              <div className="space-y-0.5 text-center sm:text-left">
+                <p className="text-xs font-semibold text-on-surface">Target verses per calendar day</p>
+                <p className="text-[11px] text-on-surface-variant">
+                  Reciting at least this many verses completes your daily streak flame.
+                </p>
+              </div>
+
+              {/* Stepper Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleGoalStep(-5)}
+                  disabled={currentGoal <= 5}
+                  className="w-9 h-9 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface font-bold text-base hover:border-primary disabled:opacity-40 transition flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+                >
+                  -
+                </button>
+                <span className="font-mono text-base font-bold text-on-surface w-12 text-center">
+                  {currentGoal}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleGoalStep(5)}
+                  disabled={currentGoal >= 100}
+                  className="w-9 h-9 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface font-bold text-base hover:border-primary disabled:opacity-40 transition flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Preset Pills */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-[10px] text-outline font-label-caps uppercase mr-1">Presets:</span>
+              {[5, 10, 15, 20, 30, 50].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => handleGoalPreset(preset)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer ${
+                    currentGoal === preset
+                      ? 'bg-tertiary-container text-on-tertiary-container shadow-sm'
+                      : 'bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant/30'
+                  }`}
+                >
+                  {preset} ayahs
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Realtime Multi-Device Sync & Cloud Section */}
+          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
+                <Cloud className="w-4 h-4 text-primary" />
+                <span>Multi-Device Realtime Sync</span>
+              </h2>
+
+              {/* Status Pill */}
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border">
+                {syncStatus === 'synced' && (
+                  <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/40 border-emerald-500/30 px-2 py-0.5 rounded-full">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Live Synced</span>
+                  </span>
+                )}
+                {syncStatus === 'syncing' && (
+                  <span className="flex items-center gap-1.5 text-secondary bg-secondary/10 border-secondary/30 px-2 py-0.5 rounded-full">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Syncing...</span>
+                  </span>
+                )}
+                {syncStatus === 'offline' && (
+                  <span className="flex items-center gap-1.5 text-amber-400 bg-amber-950/40 border-amber-500/30 px-2 py-0.5 rounded-full">
+                    <WifiOff className="w-3.5 h-3.5" />
+                    <span>Offline ({pendingOfflineCount} queued)</span>
+                  </span>
+                )}
+                {syncStatus === 'error' && (
+                  <span className="flex items-center gap-1.5 text-error bg-error-container/30 border-error/30 px-2 py-0.5 rounded-full">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    <span>Sync Error</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold text-on-surface">Automatic Additive Delta Sync</p>
+                  <p className="text-[11px] text-on-surface-variant mt-0.5">
+                    Stats merge additively across devices. Reading on phone and tablet simultaneously will never overwrite your Hasanat.
+                  </p>
+                  <p className="text-[10px] text-outline mt-1.5 flex items-center gap-1.5">
+                    <Smartphone className="w-3 h-3 text-secondary" />
+                    <span>Device ID: <span className="font-mono text-secondary">{deviceId}</span></span>
+                    <span>&bull;</span>
+                    <span>Last synced: <span className="text-on-surface">{formatLastSynced(lastSyncedAt)}</span></span>
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSyncNow}
+                  disabled={syncStatus === 'syncing'}
+                  className="px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold flex items-center justify-center gap-2 transition shrink-0 shadow-md hover:scale-105 cursor-pointer disabled:opacity-60"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+                  <span>Sync Now</span>
+                </button>
+              </div>
+
+              {pendingOfflineCount > 0 && (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-2">
+                  <WifiOff className="w-4 h-4 shrink-0" />
+                  <span>You have {pendingOfflineCount} offline reading session(s) pending. They will automatically flush to the cloud on reconnect.</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Notifications Preferences */}
+          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
+            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
+              <Bell className="w-4 h-4 text-amber-400" />
+              <span>Notifications & Reminders</span>
+            </h2>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
+                <div className="flex items-center gap-3">
+                  <Bell className="w-5 h-5 text-amber-400" />
+                  <div>
+                    <p className="text-xs font-semibold text-on-surface">Daily Prayer Athan Reminders</p>
+                    <p className="text-[11px] text-on-surface-variant">Push notifications at exact prayer entry times</p>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={prayerAlerts}
+                  onChange={handleTogglePrayerNotifications}
+                  className="w-4 h-4 accent-primary rounded cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-5 h-5 text-tertiary" />
+                  <div>
+                    <p className="text-xs font-semibold text-on-surface">Daily Quran Reading Streak Reminder</p>
+                    <p className="text-[11px] text-on-surface-variant">Encouragement reminder to protect your daily streak</p>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={readingAlerts}
+                  onChange={handleToggleReadingReminders}
+                  className="w-4 h-4 accent-primary rounded cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Backend Connection Health Card */}
+          <ConnectionStatus />
+        </div>
+      ) : (
+        <ScreenPlaceholder
+          title="Settings Screen"
+          description="Application preferences including Quran reading display tokens, audio reciters, prayer calculation method, push notifications, and Supabase backend status."
+          stitchScreenName="Deenly Settings"
+          stitchScreenId="af8550dc083d484bb0a13cd0985af5e8"
+          stitchReady={true}
+          currentRoute="/settings"
+          featuresList={[
+            'Translation language selector (English / Tamil) synced with Reading screen',
+            'Arabic typography font size slider with live scaled preview and CSS variables',
+            'Daily verse-goal stepper and presets updating Dashboard targets immediately',
+            'Notification preference toggles (Prayer athan & Quran reading alerts)',
+            'Multi-device realtime synchronization with additive delta merge and offline queue',
+            'Google OAuth connection status and secure account deletion/anonymization',
+          ]}
+        />
+      )}
+
+      {/* Reset Stats Confirmation Warning Modal */}
+      {showResetStatsModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="max-w-md w-full p-6 md:p-8 rounded-3xl glass-card border border-amber-500/40 space-y-5 shadow-2xl text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/50 text-amber-400 mx-auto flex items-center justify-center shadow-lg">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-xl font-bold font-h2 text-on-surface">Reset Reading Stats to Zero?</h3>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                This will reset all your accumulated Hasanat points, verses read, reading duration, and daily streak history back to zero. Your account will remain active, but previous progress cannot be recovered.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowResetStatsModal(false)}
+                className="flex-1 py-2.5 rounded-full bg-surface-container border border-outline-variant/40 text-xs font-semibold text-on-surface hover:border-primary transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleResetStats}
+                disabled={isResetting}
+                className="flex-1 py-2.5 rounded-full bg-amber-500 text-black font-bold text-xs shadow-lg hover:bg-amber-400 transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+              >
+                {isResetting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                <span>Yes, Reset to 0</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="max-w-md w-full p-6 md:p-8 rounded-3xl glass-card border border-error/40 space-y-5 shadow-2xl text-center">
+            <div className="w-14 h-14 rounded-2xl bg-error-container/30 border border-error text-error mx-auto flex items-center justify-center">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-xl font-bold font-h2 text-on-surface">Delete Account & Stats?</h3>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                This action is irreversible. All of your accumulated Hasanat points, verses read, daily streaks, bookmarks, and offline reading queues will be permanently deleted and anonymized.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2.5 rounded-full bg-surface-container border border-outline-variant/40 text-xs font-semibold text-on-surface hover:border-primary transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={isDeletingAccount}
+                className="flex-1 py-2.5 rounded-full bg-error text-white text-xs font-bold shadow-lg hover:bg-error/90 transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+              >
+                {isDeletingAccount ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                <span>Yes, Delete Everything</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

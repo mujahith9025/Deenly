@@ -1,0 +1,181 @@
+import { create } from 'zustand'
+import type { ReadingSessionState, ActiveReadingSession } from '../types/reading'
+import type { Ayah } from '../types/quran'
+import { quranApi } from '../lib/quranApi'
+import { calculateVerseHasanat, type SessionMetrics } from '../lib/hasanatEngine'
+import { useAuthStore } from './useAuthStore'
+
+interface ReadingStoreActions {
+  setCurrentPosition: (surah: number, ayah: number, page?: number, juz?: number) => void
+  setFontSize: (size: number) => void
+  setTranslationLanguage: (lang: 'en' | 'ta') => void
+  setIsPlayingAudio: (isPlaying: boolean) => void
+  toggleAudioMute: () => void
+  loadSurah: (surahNumber: number) => Promise<void>
+  startSession: () => void
+  tickTimer: () => void
+  markAyahRead: (ayah: Ayah) => number
+  finishSession: () => SessionMetrics | null
+  resetSession: () => void
+}
+
+export type ReadingStore = ReadingSessionState & ReadingStoreActions
+
+const initialActiveSession: ActiveReadingSession = {
+  isActive: false,
+  startTime: null,
+  elapsedSeconds: 0,
+  sessionHasanat: 0,
+  sessionVersesRead: 0,
+  readAyahsInSession: [],
+  recentHasanatGain: null,
+}
+
+const initialReadingState: ReadingSessionState = {
+  currentSurahNumber: 1, // Al-Fatihah
+  currentAyahNumber: 1,
+  currentJuzNumber: 1,
+  currentPageNumber: 1,
+  fontSize: 28,
+  translationLanguage: 'en',
+  isPlayingAudio: false,
+  isAudioMuted: false,
+  currentSurah: null,
+  isLoadingSurah: false,
+  error: null,
+  activeSession: initialActiveSession,
+}
+
+export const useReadingStore = create<ReadingStore>((set, get) => ({
+  ...initialReadingState,
+
+  setCurrentPosition: (surah, ayah, page = 1, juz = 1) =>
+    set({
+      currentSurahNumber: surah,
+      currentAyahNumber: ayah,
+      currentPageNumber: page,
+      currentJuzNumber: juz,
+    }),
+
+  setFontSize: (fontSize) => set({ fontSize }),
+  setTranslationLanguage: (translationLanguage) => set({ translationLanguage }),
+  setIsPlayingAudio: (isPlayingAudio) => set({ isPlayingAudio }),
+  toggleAudioMute: () => set((state) => ({ isAudioMuted: !state.isAudioMuted })),
+
+  loadSurah: async (surahNumber: number) => {
+    set({ isLoadingSurah: true, error: null, currentSurahNumber: surahNumber })
+    try {
+      const surahData = await quranApi.getSurah(surahNumber, ['en', 'ta'])
+      set({
+        currentSurah: surahData,
+        currentSurahNumber: surahNumber,
+        currentPageNumber: surahData.startPage,
+        currentJuzNumber: surahData.startJuz,
+        isLoadingSurah: false,
+        error: null,
+      })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load Quran chapter.'
+      set({ error: msg, isLoadingSurah: false })
+    }
+  },
+
+  startSession: () => {
+    const current = get().activeSession
+    if (!current.isActive) {
+      set({
+        activeSession: {
+          ...current,
+          isActive: true,
+          startTime: Date.now(),
+        },
+      })
+    }
+  },
+
+  tickTimer: () => {
+    const current = get().activeSession
+    if (current.isActive) {
+      set({
+        activeSession: {
+          ...current,
+          elapsedSeconds: current.elapsedSeconds + 1,
+        },
+      })
+    }
+  },
+
+  markAyahRead: (ayah: Ayah) => {
+    const state = get()
+    const session = state.activeSession
+    const ayahUniqueKey = ayah.number
+
+    // Avoid double counting the same verse within a single active reading session
+    const alreadyRead = session.readAyahsInSession.includes(ayahUniqueKey)
+    const hasanatGain = alreadyRead ? 0 : calculateVerseHasanat(ayah.arabicLetterCount)
+
+    const updatedSession: ActiveReadingSession = {
+      ...session,
+      isActive: true,
+      startTime: session.startTime || Date.now(),
+      sessionHasanat: session.sessionHasanat + hasanatGain,
+      sessionVersesRead: session.sessionVersesRead + (alreadyRead ? 0 : 1),
+      readAyahsInSession: alreadyRead
+        ? session.readAyahsInSession
+        : [...session.readAyahsInSession, ayahUniqueKey],
+      recentHasanatGain: { amount: calculateVerseHasanat(ayah.arabicLetterCount), timestamp: Date.now() },
+    }
+
+    set({
+      currentAyahNumber: ayah.verseNumberInSurah,
+      currentJuzNumber: ayah.juz,
+      currentPageNumber: ayah.page,
+      activeSession: updatedSession,
+    })
+
+    return hasanatGain
+  },
+
+  finishSession: () => {
+    const state = get()
+    const session = state.activeSession
+
+    if (session.sessionVersesRead === 0 && session.elapsedSeconds < 5) {
+      // Too short to record
+      set({ activeSession: initialActiveSession })
+      return null
+    }
+
+    const pagesRead = Math.max(
+      1,
+      Math.ceil(session.sessionVersesRead / 15) // Rough heuristic or based on distinct pages
+    )
+
+    const metrics: SessionMetrics = {
+      hasanatEarned: session.sessionHasanat,
+      versesRead: session.sessionVersesRead,
+      durationSeconds: Math.max(session.elapsedSeconds, 1),
+      pagesRead,
+      lastSurah: state.currentSurahNumber,
+      lastAyah: state.currentAyahNumber,
+      lastPage: state.currentPageNumber,
+      lastJuz: state.currentJuzNumber,
+    }
+
+    // Persist to user profile and daily history
+    useAuthStore.getState().recordSessionCompletion(metrics)
+
+    // Reset session
+    set({
+      activeSession: initialActiveSession,
+    })
+
+    return metrics
+  },
+
+  resetSession: () =>
+    set({
+      ...initialReadingState,
+      activeSession: initialActiveSession,
+    }),
+}))
