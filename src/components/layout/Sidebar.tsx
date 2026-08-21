@@ -16,7 +16,7 @@ import { useAuthStore } from '../../store/useAuthStore'
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/quran', label: 'Quran (114 Surahs)', icon: BookOpen },
+  { path: '/quran', label: 'Quran', icon: BookOpen },
   { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { path: '/profile', label: 'My Profile', icon: User },
   { path: '/settings', label: 'Settings', icon: Settings },

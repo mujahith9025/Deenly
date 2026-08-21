@@ -10,7 +10,9 @@ import {
   Share2, 
   Check, 
   Maximize2, 
-  Loader2 
+  Loader2, 
+  ArrowRight, 
+  Target 
 } from 'lucide-react'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { quranApi } from '../lib/quranApi'
@@ -28,6 +30,7 @@ export const QuranScreen: React.FC = () => {
 
   // URL State: Check if a specific Surah is selected in query string (e.g. ?surah=18)
   const surahParam = searchParams.get('surah')
+  const ayahParam = searchParams.get('ayah')
   const initialSurah = surahParam ? parseInt(surahParam, 10) : null
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number | null>(initialSurah)
 
@@ -38,8 +41,10 @@ export const QuranScreen: React.FC = () => {
   // Chapter Verses State
   const [surahData, setSurahData] = useState<SurahDetail | null>(null)
   const [isLoadingVerses, setIsLoadingVerses] = useState(false)
-  const [sliderAyah, setSliderAyah] = useState(1)
-  const [activeHighlightAyah, setActiveHighlightAyah] = useState<number | null>(null)
+  const [verseSearchInput, setVerseSearchInput] = useState('')
+  const [activeHighlightAyah, setActiveHighlightAyah] = useState<number | null>(
+    ayahParam ? parseInt(ayahParam, 10) : null
+  )
   
   // Audio & Display
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
@@ -62,7 +67,15 @@ export const QuranScreen: React.FC = () => {
     } else {
       setSelectedSurahNumber(null)
     }
-  }, [surahParam])
+
+    if (ayahParam) {
+      const aNum = parseInt(ayahParam, 10)
+      if (!isNaN(aNum)) {
+        setActiveHighlightAyah(aNum)
+        setVerseSearchInput(aNum.toString())
+      }
+    }
+  }, [surahParam, ayahParam])
 
   // Load Chapter Verses when selectedSurahNumber changes
   useEffect(() => {
@@ -73,8 +86,6 @@ export const QuranScreen: React.FC = () => {
 
     let isMounted = true
     setIsLoadingVerses(true)
-    setSliderAyah(1)
-    setActiveHighlightAyah(null)
     if (audioRef.current) {
       audioRef.current.pause()
       setIsPlayingAudio(false)
@@ -87,6 +98,16 @@ export const QuranScreen: React.FC = () => {
         if (isMounted) {
           setSurahData(data)
           setIsLoadingVerses(false)
+
+          // If there is an active ayah to highlight, scroll to it after rendering
+          if (activeHighlightAyah) {
+            setTimeout(() => {
+              const el = document.getElementById(`ayah-${activeHighlightAyah}`)
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+            }, 300)
+          }
         }
       })
       .catch((err) => {
@@ -99,7 +120,7 @@ export const QuranScreen: React.FC = () => {
     return () => {
       isMounted = false
     }
-  }, [selectedSurahNumber])
+  }, [selectedSurahNumber, activeHighlightAyah])
 
   // Filter Surahs list
   const filteredSurahs = SURAH_METADATA.filter((surah) => {
@@ -122,6 +143,8 @@ export const QuranScreen: React.FC = () => {
   const handleSelectSurah = (surahNum: number) => {
     setSelectedSurahNumber(surahNum)
     setSearchParams({ surah: surahNum.toString() })
+    setVerseSearchInput('')
+    setActiveHighlightAyah(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -129,18 +152,29 @@ export const QuranScreen: React.FC = () => {
   const handleBackToChapters = () => {
     setSelectedSurahNumber(null)
     setSearchParams({})
+    setVerseSearchInput('')
+    setActiveHighlightAyah(null)
     if (audioRef.current) {
       audioRef.current.pause()
       setIsPlayingAudio(false)
     }
   }
 
-  // Handle Verse Slider Change
-  const handleSliderChange = (newAyah: number) => {
-    setSliderAyah(newAyah)
-    setActiveHighlightAyah(newAyah)
+  // Handle Verse Search & Jump
+  const handleVerseSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!verseSearchInput.trim() || !currentSurahMeta) return
 
-    const el = document.getElementById(`ayah-${newAyah}`)
+    const parsedNum = parseInt(verseSearchInput.trim(), 10)
+    if (isNaN(parsedNum) || parsedNum < 1 || parsedNum > currentSurahMeta.numberOfAyahs) {
+      alert(`Please enter a valid verse number between 1 and ${currentSurahMeta.numberOfAyahs}`)
+      return
+    }
+
+    setActiveHighlightAyah(parsedNum)
+    setSearchParams({ surah: currentSurahMeta.number.toString(), ayah: parsedNum.toString() })
+
+    const el = document.getElementById(`ayah-${parsedNum}`)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
@@ -201,13 +235,13 @@ export const QuranScreen: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider font-label-caps">
                 <BookOpen className="w-4 h-4" />
-                <span>The Noble Quran (114 Chapters)</span>
+                <span>Quran</span>
               </div>
               <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface mt-1">
-                All Chapters & Surahs
+                Quran
               </h1>
               <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-                Browse all 114 Surahs, recite whole chapters with verse sliders, or listen to audio.
+                Browse all 114 Surahs, search verses, or recite with audio recitation.
               </p>
             </div>
 
@@ -329,7 +363,7 @@ export const QuranScreen: React.FC = () => {
               <p className="text-xs text-on-surface-variant">Try searching by Surah name or number.</p>
               <button
                 onClick={() => setSearchQuery('')}
-                className="px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold transition mt-2"
+                className="px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold transition mt-2 cursor-pointer"
               >
                 View All 114 Chapters
               </button>
@@ -338,7 +372,7 @@ export const QuranScreen: React.FC = () => {
         </div>
       ) : (
         /* ========================================================================= */
-        /* VIEW 2: WHOLE CHAPTER / ALL VERSES WITH AYAH SLIDER                       */
+        /* VIEW 2: WHOLE CHAPTER / ALL VERSES WITH VERSE SEARCH OPTION               */
         /* ========================================================================= */
         <div className="space-y-6">
           {/* Top Sticky Header with Back Button and Quick Controls */}
@@ -379,7 +413,7 @@ export const QuranScreen: React.FC = () => {
                 {/* Enter Focused 1-Verse Mode */}
                 {selectedSurahNumber && (
                   <button
-                    onClick={() => handleOpenFocusedReader(selectedSurahNumber, sliderAyah)}
+                    onClick={() => handleOpenFocusedReader(selectedSurahNumber, activeHighlightAyah || 1)}
                     className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full primary-gradient-btn text-white text-xs font-semibold shadow-md hover:scale-105 transition cursor-pointer"
                     title="Read 1 verse at a time with Hasanat points"
                   >
@@ -391,28 +425,49 @@ export const QuranScreen: React.FC = () => {
             </div>
 
             {/* ========================================================================= */}
-            {/* INTERACTIVE AYAH SLIDER & JUMP CONTROL                                    */}
+            {/* VERSE SEARCH & JUMP TO SPECIFIC VERSE OPTION                              */}
             {/* ========================================================================= */}
-            {currentSurahMeta && currentSurahMeta.numberOfAyahs > 1 && (
-              <div className="flex items-center gap-3 bg-surface-container/70 border border-outline-variant/30 rounded-2xl px-4 py-2">
-                <span className="text-[11px] font-semibold text-outline shrink-0">Ayah 1</span>
-                <input
-                  type="range"
-                  min={1}
-                  max={currentSurahMeta.numberOfAyahs}
-                  value={sliderAyah}
-                  onChange={(e) => handleSliderChange(parseInt(e.target.value, 10))}
-                  className="flex-1 accent-primary h-2 bg-surface-container-highest rounded-lg cursor-pointer transition-all"
-                  title={`Slide to jump to Ayah ${sliderAyah}`}
-                />
-                <span className="text-[11px] font-semibold text-outline shrink-0">
-                  Ayah {currentSurahMeta.numberOfAyahs}
-                </span>
-
-                <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-container/20 border border-primary/40 text-primary font-bold text-xs shrink-0">
-                  <span>Ayah {sliderAyah}</span>
+            {currentSurahMeta && (
+              <form
+                onSubmit={handleVerseSearchSubmit}
+                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-surface-container/70 border border-outline-variant/30 rounded-2xl p-2.5"
+              >
+                <div className="relative flex-1">
+                  <Target className="w-4 h-4 text-primary absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="number"
+                    min={1}
+                    max={currentSurahMeta.numberOfAyahs}
+                    value={verseSearchInput}
+                    onChange={(e) => setVerseSearchInput(e.target.value)}
+                    placeholder={`Enter verse number (1 - ${currentSurahMeta.numberOfAyahs}) to jump & highlight...`}
+                    className="w-full bg-surface-container-high/80 border border-outline-variant/40 rounded-xl py-2 pl-10 pr-4 text-xs text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition"
+                  />
                 </div>
-              </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl primary-gradient-btn text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm hover:scale-105 transition cursor-pointer"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                    <span>Go to Verse</span>
+                  </button>
+
+                  {activeHighlightAyah && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveHighlightAyah(null)
+                        setVerseSearchInput('')
+                      }}
+                      className="px-3 py-2 rounded-xl bg-surface-container border border-outline-variant/40 text-outline hover:text-on-surface text-xs transition cursor-pointer"
+                    >
+                      Clear Highlight
+                    </button>
+                  )}
+                </div>
+              </form>
             )}
           </div>
 
@@ -450,20 +505,29 @@ export const QuranScreen: React.FC = () => {
                       id={`ayah-${ayah.verseNumberInSurah}`}
                       className={`p-5 md:p-6 rounded-3xl transition-all duration-300 border ${
                         isHighlighted
-                          ? 'bg-surface-container-highest border-primary shadow-[0_0_25px_rgba(124,58,237,0.3)] ring-1 ring-primary'
+                          ? 'bg-primary-container/20 border-primary shadow-[0_0_30px_rgba(124,58,237,0.4)] ring-2 ring-primary/80 scale-[1.01]'
                           : 'glass-card border-outline-variant/30 hover:border-outline-variant/60 shadow-sm'
                       }`}
                     >
                       {/* Ayah Top Bar: Number badge, Hasanat, and Actions */}
                       <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/20">
-                        {/* Number Badge */}
+                        {/* Number Badge & Highlight Indicator */}
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant/40 flex items-center justify-center font-bold text-xs text-on-surface">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border ${
+                            isHighlighted
+                              ? 'bg-primary text-white border-primary shadow-md'
+                              : 'bg-surface-container-high border-outline-variant/40 text-on-surface'
+                          }`}>
                             {ayah.verseNumberInSurah}
                           </div>
                           <span className="text-xs text-outline font-medium">
                             {currentSurahMeta?.name} : {ayah.verseNumberInSurah}
                           </span>
+                          {isHighlighted && (
+                            <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40 text-[10px] font-bold animate-pulse">
+                              Active Verse
+                            </span>
+                          )}
                         </div>
 
                         {/* Right Tools: Hasanat badge & Audio button & Focus Reader link */}
