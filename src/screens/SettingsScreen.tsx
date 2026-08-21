@@ -17,7 +17,8 @@ import {
   Trash2, 
   ShieldCheck, 
   Sparkles, 
-  AlertTriangle 
+  AlertTriangle,
+  LogIn 
 } from 'lucide-react'
 import { ScreenPlaceholder } from '../components/common/ScreenPlaceholder'
 import { ConnectionStatus } from '../components/common/ConnectionStatus'
@@ -186,6 +187,17 @@ export const SettingsScreen: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                {user?.isGuest && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/login')}
+                    className="px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md hover:scale-105"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>Sign In with Google</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => setShowResetStatsModal(true)}

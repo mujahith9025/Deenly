@@ -5,6 +5,7 @@ import { BookOpen, Loader2 } from 'lucide-react'
 
 export const PublicRoute: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const user = useAuthStore((state) => state.user)
   const isLoading = useAuthStore((state) => state.isLoading)
 
   if (isLoading) {
@@ -21,7 +22,8 @@ export const PublicRoute: React.FC<{ children?: React.ReactNode }> = ({ children
     )
   }
 
-  if (isAuthenticated) {
+  // Only redirect authenticated non-guest users. Guest users can freely access /login and /signup to sign in with Google!
+  if (isAuthenticated && !user?.isGuest) {
     return <Navigate to="/dashboard" replace />
   }
 

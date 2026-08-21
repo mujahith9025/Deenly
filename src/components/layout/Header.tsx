@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Flame, Sparkles, User, BookOpen } from 'lucide-react'
+import { Flame, Sparkles, User, BookOpen, LogIn } from 'lucide-react'
 import { useAuthStore } from '../../store/useAuthStore'
 import { ConnectionStatus } from '../common/ConnectionStatus'
 
@@ -22,9 +22,22 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Center / Right Header Badges */}
-      <div className="flex items-center gap-2.5 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3.5">
         {/* Backend Connection Status */}
         <ConnectionStatus compact />
+
+        {/* Guest Mode: Sign in with Google / Log In Action */}
+        {user?.isGuest && (
+          <Link
+            to="/login"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full primary-gradient-btn text-white text-xs font-semibold shadow-sm hover:scale-105 transition"
+            title="Sign in with Google to sync stats"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sign In with Google</span>
+            <span className="sm:hidden">Sign In</span>
+          </Link>
+        )}
 
         {/* Streak Badge */}
         <div 
