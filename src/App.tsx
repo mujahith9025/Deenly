@@ -9,7 +9,7 @@ import { SignupScreen } from './screens/SignupScreen'
 import { DashboardScreen } from './screens/DashboardScreen'
 import { ReadingScreen } from './screens/ReadingScreen'
 import { QuranScreen } from './screens/QuranScreen'
-import { LeaderboardScreen } from './screens/LeaderboardScreen'
+import { HadithScreen } from './screens/HadithScreen'
 import { ProfileScreen } from './screens/ProfileScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { useAuthStore } from './store/useAuthStore'
@@ -43,10 +43,12 @@ export const App: React.FC = () => {
             <Route path="/dashboard" element={<DashboardScreen />} />
             {/* Dedicated 1-Verse Recitation Engine accessed from Dashboard */}
             <Route path="/reading" element={<ReadingScreen />} />
-            {/* All 114 Quran Chapters & Whole Chapter Stream with Verse Slider */}
+            {/* All 114 Quran Chapters & Whole Chapter Stream */}
             <Route path="/quran" element={<QuranScreen />} />
             <Route path="/explore" element={<QuranScreen />} />
-            <Route path="/leaderboard" element={<LeaderboardScreen />} />
+            {/* The Six Major Hadith Books (Kutub al-Sittah) in Arabic, English & Tamil */}
+            <Route path="/hadith" element={<HadithScreen />} />
+            <Route path="/leaderboard" element={<Navigate to="/hadith" replace />} />
             <Route path="/profile" element={<ProfileScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
           </Route>
