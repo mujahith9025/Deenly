@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { 
   Play, 
   Pause, 
@@ -8,7 +8,8 @@ import {
   Loader2, 
   Clock, 
   Check, 
-  Share2 
+  Share2,
+  CheckCircle2
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
@@ -20,13 +21,14 @@ import {
 } from '../lib/hasanatEngine'
 
 export const ReadingScreen: React.FC = () => {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
 
   // State
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
   const [copiedShare, setCopiedShare] = useState(false)
+  const [chapterCompletedBanner, setChapterCompletedBanner] = useState<string | null>(null)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -58,24 +60,28 @@ export const ReadingScreen: React.FC = () => {
     }
   }, [user?.preferredTranslation, setTranslationLanguage])
 
-  // Initialize Surah and query params
+  // Track initial load from URL params once on mount
+  const isInitialMount = useRef(true)
   useEffect(() => {
-    const querySurah = searchParams.get('surah')
-    const queryAyah = searchParams.get('ayah')
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      const querySurah = searchParams.get('surah')
+      const queryAyah = searchParams.get('ayah')
 
-    if (querySurah) {
-      const sNum = parseInt(querySurah, 10)
-      const aNum = queryAyah ? parseInt(queryAyah, 10) : 1
-      if (sNum >= 1 && sNum <= 114) {
-        setCurrentPosition(sNum, aNum)
-        loadSurah(sNum)
-        startSession()
-        return
+      if (querySurah) {
+        const sNum = parseInt(querySurah, 10)
+        const aNum = queryAyah ? parseInt(queryAyah, 10) : 1
+        if (sNum >= 1 && sNum <= 114) {
+          setCurrentPosition(sNum, aNum)
+          loadSurah(sNum)
+          startSession()
+          return
+        }
       }
-    }
 
-    loadSurah(currentSurahNumber || 1)
-    startSession()
+      loadSurah(currentSurahNumber || 1)
+      startSession()
+    }
   }, [searchParams, currentSurahNumber, loadSurah, startSession, setCurrentPosition])
 
   // Timer Interval
@@ -103,6 +109,70 @@ export const ReadingScreen: React.FC = () => {
     ? `https://everyayah.com/data/Alafasy_128kbps/${String(currentSurahNumber).padStart(3, '0')}${String(currentAyah.verseNumberInSurah).padStart(3, '0')}.mp3`
     : ''
 
+  // Juz Progress Calculations
+  const juzProgress = calculateJuzProgress(currentSurahNumber || 1, currentAyahNumber || 1)
+
+  // Navigation: Next Ayah & Automatic Chapter Transition
+  const handleMarkAndNext = useCallback(() => {
+    if (!currentAyah || !currentSurah) return
+
+    const earned = markAyahRead(currentAyah)
+    if (earned > 0) {
+      setFloatingHasanat({ amount: earned, id: Date.now() })
+      setTimeout(() => setFloatingHasanat(null), 1800)
+    }
+
+    // 1. If within the current chapter: advance to next Ayah
+    if (currentAyah.verseNumberInSurah < currentSurah.numberOfAyahs) {
+      const nextAyahNum = currentAyah.verseNumberInSurah + 1
+      const nextAyahObj = currentSurah.ayahs[nextAyahNum - 1]
+      setCurrentPosition(
+        currentSurahNumber,
+        nextAyahNum,
+        nextAyahObj?.page || currentAyah.page,
+        nextAyahObj?.juz || currentAyah.juz
+      )
+      setSearchParams({ surah: currentSurahNumber.toString(), ayah: nextAyahNum.toString() }, { replace: true })
+    } 
+    // 2. 🌟 Chapter completed! Automatically advance to the next chapter!
+    else {
+      const nextSurahNum = currentSurahNumber < 114 ? currentSurahNumber + 1 : 1
+      const nextSurahMeta = SURAH_METADATA.find((s) => s.number === nextSurahNum)
+
+      setChapterCompletedBanner(`Completed Surah ${currentSurah.name}! Now beginning Surah ${nextSurahMeta?.name || nextSurahNum}.`)
+      setTimeout(() => setChapterCompletedBanner(null), 4000)
+
+      loadSurah(nextSurahNum)
+      setCurrentPosition(nextSurahNum, 1)
+      setSearchParams({ surah: nextSurahNum.toString(), ayah: '1' }, { replace: true })
+    }
+  }, [currentAyah, currentSurah, currentSurahNumber, markAyahRead, setCurrentPosition, loadSurah, setSearchParams])
+
+  // Navigation: Previous Ayah & Previous Chapter
+  const handlePrevAyah = () => {
+    if (!currentAyah || !currentSurah) return
+
+    if (currentAyah.verseNumberInSurah > 1) {
+      const prevAyahNum = currentAyah.verseNumberInSurah - 1
+      const prevAyahObj = currentSurah.ayahs[prevAyahNum - 1]
+      setCurrentPosition(
+        currentSurahNumber,
+        prevAyahNum,
+        prevAyahObj?.page || currentAyah.page,
+        prevAyahObj?.juz || currentAyah.juz
+      )
+      setSearchParams({ surah: currentSurahNumber.toString(), ayah: prevAyahNum.toString() }, { replace: true })
+    } else if (currentSurahNumber > 1) {
+      const prevSurahNum = currentSurahNumber - 1
+      const prevSurahMeta = SURAH_METADATA.find((s) => s.number === prevSurahNum)
+      const lastAyahOfPrevSurah = prevSurahMeta?.numberOfAyahs || 1
+
+      loadSurah(prevSurahNum)
+      setCurrentPosition(prevSurahNum, lastAyahOfPrevSurah)
+      setSearchParams({ surah: prevSurahNum.toString(), ayah: lastAyahOfPrevSurah.toString() }, { replace: true })
+    }
+  }
+
   // Audio Play / Pause
   const togglePlayAudio = () => {
     if (!audioRef.current) return
@@ -120,65 +190,32 @@ export const ReadingScreen: React.FC = () => {
     }
   }
 
-  // When Ayah changes, pause audio
+  // Handle auto-advance on audio finish
   useEffect(() => {
-    setIsPlayingAudio(false)
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleEnded = () => {
+      handleMarkAndNext()
+    }
+
+    audio.addEventListener('ended', handleEnded)
+    return () => {
+      audio.removeEventListener('ended', handleEnded)
+    }
+  }, [handleMarkAndNext])
+
+  // When Ayah changes, update audio src
+  useEffect(() => {
     if (audioRef.current) {
+      const wasPlaying = isPlayingAudio
       audioRef.current.pause()
       audioRef.current.currentTime = 0
+      if (wasPlaying) {
+        audioRef.current.play().catch(() => setIsPlayingAudio(false))
+      }
     }
   }, [currentSurahNumber, currentAyahNumber])
-
-  // Juz Progress Calculations
-  const juzProgress = calculateJuzProgress(currentSurahNumber || 1, currentAyahNumber || 1)
-
-  // Navigation: Next & Mark Read
-  const handleMarkAndNext = () => {
-    if (!currentAyah || !currentSurah) return
-
-    const earned = markAyahRead(currentAyah)
-    if (earned > 0) {
-      setFloatingHasanat({ amount: earned, id: Date.now() })
-      setTimeout(() => setFloatingHasanat(null), 1800)
-    }
-
-    // Advance to next Ayah or next Surah
-    if (currentAyah.verseNumberInSurah < currentSurah.numberOfAyahs) {
-      const nextAyahNum = currentAyah.verseNumberInSurah + 1
-      const nextAyahObj = currentSurah.ayahs[nextAyahNum - 1]
-      setCurrentPosition(
-        currentSurahNumber,
-        nextAyahNum,
-        nextAyahObj?.page || currentAyah.page,
-        nextAyahObj?.juz || currentAyah.juz
-      )
-    } else if (currentSurahNumber < 114) {
-      const nextSurahNum = currentSurahNumber + 1
-      loadSurah(nextSurahNum)
-      setCurrentPosition(nextSurahNum, 1)
-    }
-  }
-
-  // Navigation: Previous Ayah
-  const handlePrevAyah = () => {
-    if (!currentAyah || !currentSurah) return
-
-    if (currentAyah.verseNumberInSurah > 1) {
-      const prevAyahNum = currentAyah.verseNumberInSurah - 1
-      const prevAyahObj = currentSurah.ayahs[prevAyahNum - 1]
-      setCurrentPosition(
-        currentSurahNumber,
-        prevAyahNum,
-        prevAyahObj?.page || currentAyah.page,
-        prevAyahObj?.juz || currentAyah.juz
-      )
-    } else if (currentSurahNumber > 1) {
-      const prevSurahNum = currentSurahNumber - 1
-      const prevSurahMeta = SURAH_METADATA.find((s) => s.number === prevSurahNum)
-      loadSurah(prevSurahNum)
-      setCurrentPosition(prevSurahNum, prevSurahMeta?.numberOfAyahs || 1)
-    }
-  }
 
   // Finish session and navigate back to Dashboard
   const handleFinishSession = () => {
@@ -279,6 +316,14 @@ export const ReadingScreen: React.FC = () => {
         </div>
       </header>
 
+      {/* Chapter Completed Transition Toast Banner */}
+      {chapterCompletedBanner && (
+        <div className="my-2 p-2.5 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-2 animate-fade-in shadow-lg shrink-0">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{chapterCompletedBanner}</span>
+        </div>
+      )}
+
       {/* ========================================================================= */}
       {/* 2. CENTER CONTENT: ARABIC HIGHLIGHTED WITH BACKGROUND CONTAINER            */}
       {/*    & TRANSLATION BELOW WITH SMOOTH SCROLL DOWN SUPPORT FOR LARGE FONTS    */}
@@ -378,7 +423,7 @@ export const ReadingScreen: React.FC = () => {
             type="button"
             onClick={handleMarkAndNext}
             className="w-24 h-12 sm:h-13 rounded-full bg-white text-gray-900 flex items-center justify-center transition cursor-pointer shadow-xl hover:bg-gray-100 active:scale-95"
-            title="Mark Read & Next Ayah"
+            title={currentAyah && currentAyah.verseNumberInSurah === totalAyahs ? 'Complete Chapter & Next Surah' : 'Mark Read & Next Ayah'}
           >
             <ArrowRight className="w-5 h-5 stroke-[2.5]" />
           </button>
