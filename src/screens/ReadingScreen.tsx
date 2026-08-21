@@ -236,7 +236,7 @@ export const ReadingScreen: React.FC = () => {
     : 0
 
   return (
-    <div className="h-[calc(100dvh-4.5rem)] md:h-[calc(100dvh-3rem)] w-full max-w-5xl mx-auto flex flex-col justify-between p-2 sm:p-4 select-none relative overflow-hidden">
+    <div className="h-full w-full max-w-5xl mx-auto flex flex-col justify-between p-2 sm:p-4 select-none relative overflow-hidden">
       <audio ref={audioRef} src={audioUrl} preload="none" />
 
       {/* ========================================================================= */}
