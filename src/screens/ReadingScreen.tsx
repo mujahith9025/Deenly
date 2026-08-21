@@ -8,7 +8,6 @@ import {
   ArrowLeft, 
   ArrowRight, 
   Sparkles, 
-  Award, 
   Check, 
   Loader2, 
   Clock, 
@@ -20,9 +19,7 @@ import { useReadingStore } from '../store/useReadingStore'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   formatTimer, 
-  calculateJuzProgress, 
-  formatDurationHuman, 
-  type SessionMetrics 
+  calculateJuzProgress 
 } from '../lib/hasanatEngine'
 import { ScreenPlaceholder } from '../components/common/ScreenPlaceholder'
 
@@ -34,7 +31,6 @@ export const ReadingScreen: React.FC = () => {
   const [showFullView, setShowFullView] = useState(true)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
-  const [completedSessionData, setCompletedSessionData] = useState<SessionMetrics | null>(null)
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
   const [copiedShare, setCopiedShare] = useState(false)
 
@@ -198,11 +194,10 @@ export const ReadingScreen: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [currentAyah, currentSurah, currentAyahNumber, currentSurahNumber])
 
+  // "I'm Done": finish session, record stats, and return directly to dashboard
   const handleFinishSession = () => {
-    const metrics = finishSession()
-    if (metrics) {
-      setCompletedSessionData(metrics)
-    }
+    finishSession()
+    navigate('/dashboard')
   }
 
   const handleSurahChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -563,7 +558,7 @@ export const ReadingScreen: React.FC = () => {
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (
             <div className="absolute -top-7 right-4 pointer-events-none">
-              <span className="text-xs font-bold text-amber-300 bg-black/60 px-2.5 py-0.5 rounded-full border border-amber-500/40 shadow-md">
+              <span className="text-xs font-bold text-amber-300 bg-black/70 px-2.5 py-0.5 rounded-full border border-amber-500/40 shadow-md">
                 +{currentAyah.hasanatValue}
               </span>
             </div>
@@ -580,7 +575,7 @@ export const ReadingScreen: React.FC = () => {
             <ArrowLeft className="w-5 h-5 text-on-surface" />
           </button>
 
-          {/* Center Button: "I'm Done" (Capsule shape) */}
+          {/* Center Button: "I'm Done" (Direct return to Dashboard) */}
           <button
             type="button"
             onClick={handleFinishSession}
@@ -600,73 +595,6 @@ export const ReadingScreen: React.FC = () => {
           </button>
         </div>
       </footer>
-
-      {/* ========================================================================= */}
-      {/* 5. SESSION COMPLETION CELEBRATION MODAL                                  */}
-      {/* ========================================================================= */}
-      {completedSessionData && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-md w-full p-6 md:p-8 rounded-3xl glass-card border border-primary/50 space-y-6 shadow-2xl text-center relative overflow-hidden">
-            <div className="w-16 h-16 rounded-2xl bg-tertiary-container/30 border border-tertiary text-tertiary mx-auto flex items-center justify-center shadow-xl">
-              <Award className="w-8 h-8 text-tertiary animate-bounce" />
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[10px] uppercase font-bold text-tertiary font-label-caps tracking-wider">
-                Masha'Allah! Session Complete
-              </span>
-              <h3 className="text-2xl font-bold font-h1 text-on-surface">Spiritual Rewards Earned</h3>
-              <p className="text-xs text-on-surface-variant">
-                Your recitation has been saved and synced to your cloud profile.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2.5 p-4 rounded-2xl bg-surface-container/80 border border-outline-variant/30 text-center">
-              <div className="p-2.5 rounded-xl bg-tertiary-container/20 border border-tertiary/20">
-                <span className="text-[10px] text-tertiary font-bold font-label-caps uppercase">Hasanat</span>
-                <p className="text-lg font-bold text-tertiary mt-0.5">
-                  +{completedSessionData.hasanatEarned.toLocaleString()}
-                </p>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-surface-container-highest/60 border border-outline-variant/20">
-                <span className="text-[10px] text-outline font-bold font-label-caps uppercase">Verses</span>
-                <p className="text-lg font-bold text-on-surface mt-0.5">
-                  {completedSessionData.versesRead}
-                </p>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-surface-container-highest/60 border border-outline-variant/20">
-                <span className="text-[10px] text-outline font-bold font-label-caps uppercase">Duration</span>
-                <p className="text-sm font-bold font-mono text-on-surface mt-1">
-                  {formatDurationHuman(completedSessionData.durationSeconds)}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setCompletedSessionData(null)}
-                className="flex-1 py-3 rounded-full bg-surface-container border border-outline-variant/40 text-xs font-semibold text-on-surface hover:border-primary transition cursor-pointer"
-              >
-                Continue Reading
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setCompletedSessionData(null)
-                  navigate('/dashboard')
-                }}
-                className="flex-1 py-3 rounded-full primary-gradient-btn text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Check className="w-4 h-4" />
-                <span>Go to Dashboard</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

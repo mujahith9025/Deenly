@@ -1,17 +1,20 @@
 import React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { BottomNav } from './BottomNav'
 
 export const AppLayout: React.FC = () => {
+  const location = useLocation()
+  const isReadingPage = location.pathname.startsWith('/reading')
+
   return (
     <div className="flex min-h-screen bg-background text-on-surface">
       {/* Desktop Persistent Sidebar */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 lg:pb-8">
+      <div className={`flex-1 flex flex-col min-w-0 ${isReadingPage ? 'pb-6 md:pb-6 lg:pb-8' : 'pb-20 md:pb-6 lg:pb-8'}`}>
         {/* Top Header */}
         <Header />
 
@@ -21,8 +24,8 @@ export const AppLayout: React.FC = () => {
         </main>
       </div>
 
-      {/* Mobile/Tablet Fixed Bottom Navigation */}
-      <BottomNav />
+      {/* Mobile/Tablet Fixed Bottom Navigation (Hidden on Reading Page so reader controls are fully unblocked) */}
+      {!isReadingPage && <BottomNav />}
     </div>
   )
 }
