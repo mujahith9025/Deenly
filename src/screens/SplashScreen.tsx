@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { BookOpen, ArrowRight, Sparkles } from 'lucide-react'
+import { BookOpen, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 
 export const SplashScreen: React.FC = () => {
@@ -33,11 +33,8 @@ export const SplashScreen: React.FC = () => {
       {/* Center Brand Splash Card */}
       <main className="flex flex-col items-center justify-center px-container-margin w-full max-w-md mx-auto text-center z-10 relative my-auto">
         {/* Logo Mark Asset */}
-        <div className="mb-6 w-28 h-28 md:w-36 md:h-36 animate-logo shadow-[0_0_50px_rgba(124,58,237,0.4)] rounded-full bg-surface-container flex items-center justify-center p-5 border border-primary/40 relative">
+        <div className="mb-6 w-28 h-28 md:w-36 md:h-36 animate-logo shadow-[0_0_50px_rgba(124,58,237,0.4)] rounded-full bg-surface-container flex items-center justify-center p-6 border border-primary/40 relative">
           <BookOpen className="w-full h-full text-primary drop-shadow-[0_0_12px_rgba(210,187,255,0.6)]" />
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-tertiary-container/80 border border-tertiary flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-tertiary" />
-          </div>
         </div>
 
         {/* Wordmark */}
