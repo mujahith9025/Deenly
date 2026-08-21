@@ -13,13 +13,16 @@ import { LeaderboardScreen } from './screens/LeaderboardScreen'
 import { ProfileScreen } from './screens/ProfileScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { useAuthStore } from './store/useAuthStore'
+import { useThemeStore } from './store/useThemeStore'
 
 export const App: React.FC = () => {
   const initAuth = useAuthStore((state) => state.initAuth)
+  const initTheme = useThemeStore((state) => state.initTheme)
 
   useEffect(() => {
+    initTheme()
     initAuth()
-  }, [initAuth])
+  }, [initAuth, initTheme])
 
   return (
     <BrowserRouter>

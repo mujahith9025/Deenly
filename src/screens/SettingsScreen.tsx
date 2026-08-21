@@ -21,10 +21,14 @@ import {
   LogIn,
   Info,
   BookOpen,
-  Database
+  Database,
+  Moon,
+  Sun,
+  Laptop
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthStore } from '../store/useAuthStore'
+import { useThemeStore } from '../store/useThemeStore'
 import { syncService } from '../lib/syncService'
 import { quranCache } from '../lib/quranCache'
 
@@ -49,6 +53,9 @@ export const SettingsScreen: React.FC = () => {
   const [cacheClearedSuccess, setCacheClearedSuccess] = useState(false)
 
   const { user, signOut } = useAuth()
+  const theme = useThemeStore((state) => state.theme)
+  const setTheme = useThemeStore((state) => state.setTheme)
+
   const syncStatus = useAuthStore((state) => state.syncStatus)
   const lastSyncedAt = useAuthStore((state) => state.lastSyncedAt)
   const pendingOfflineCount = useAuthStore((state) => state.pendingOfflineCount)
@@ -144,13 +151,85 @@ export const SettingsScreen: React.FC = () => {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">App Settings</h1>
         <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-          Customize your translation language, Quran typography, daily goals, sync, and account.
+          Customize your theme, translation, Quran typography, daily goals, sync, and account.
         </p>
       </div>
 
       <div className="space-y-6">
         {/* ========================================================================= */}
-        {/* 1. DEFAULT QURAN TRANSLATION                                              */}
+        {/* 1. THEME & APPEARANCE (DARK / LIGHT / SYSTEM SWITCHER)                     */}
+        {/* ========================================================================= */}
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
+              {theme === 'dark' ? <Moon className="w-4 h-4 text-primary" /> : <Sun className="w-4 h-4 text-amber-400" />}
+              <span>Theme & Appearance</span>
+            </h2>
+            <span className="text-xs text-outline capitalize">{theme} Mode</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Cosmic Dark Mode */}
+            <button
+              type="button"
+              onClick={() => setTheme('dark')}
+              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center gap-3 text-left ${
+                theme === 'dark'
+                  ? 'bg-primary/15 border-primary shadow-sm ring-1 ring-primary/40'
+                  : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
+              }`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0">
+                <Moon className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-on-surface block">Cosmic Dark</span>
+                <span className="text-[11px] text-on-surface-variant">Deep night recitation</span>
+              </div>
+            </button>
+
+            {/* Pristine Light Mode */}
+            <button
+              type="button"
+              onClick={() => setTheme('light')}
+              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center gap-3 text-left ${
+                theme === 'light'
+                  ? 'bg-primary/15 border-primary shadow-sm ring-1 ring-primary/40'
+                  : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
+              }`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-amber-500 shrink-0">
+                <Sun className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-on-surface block">Pristine Light</span>
+                <span className="text-[11px] text-on-surface-variant">Crisp daytime reading</span>
+              </div>
+            </button>
+
+            {/* Device System Mode */}
+            <button
+              type="button"
+              onClick={() => setTheme('system')}
+              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center gap-3 text-left ${
+                theme === 'system'
+                  ? 'bg-primary/15 border-primary shadow-sm ring-1 ring-primary/40'
+                  : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
+              }`}
+            >
+              <div className="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-secondary shrink-0">
+                <Laptop className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-on-surface block">Device System</span>
+                <span className="text-[11px] text-on-surface-variant">Syncs with OS mode</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 2. DEFAULT QURAN TRANSLATION                                              */}
         {/* ========================================================================= */}
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
           <div className="flex items-center justify-between">
@@ -211,7 +290,7 @@ export const SettingsScreen: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. ARABIC TYPOGRAPHY SCALE & FONT SIZE                                    */}
+        {/* 3. ARABIC TYPOGRAPHY SCALE & FONT SIZE                                    */}
         {/* ========================================================================= */}
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
           <div className="flex items-center justify-between">
@@ -259,7 +338,7 @@ export const SettingsScreen: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* 3. DAILY VERSE RECITATION TARGET                                          */}
+        {/* 4. DAILY VERSE RECITATION TARGET                                          */}
         {/* ========================================================================= */}
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
           <div className="flex items-center justify-between">
@@ -323,7 +402,7 @@ export const SettingsScreen: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* 4. NOTIFICATIONS & REMINDERS                                              */}
+        {/* 5. NOTIFICATIONS & REMINDERS                                              */}
         {/* ========================================================================= */}
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
           <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
@@ -367,7 +446,7 @@ export const SettingsScreen: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* 5. MULTI-DEVICE REALTIME SYNC & CLOUD ACCOUNT                             */}
+        {/* 6. MULTI-DEVICE REALTIME SYNC & CLOUD ACCOUNT                             */}
         {/* ========================================================================= */}
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md">
           <div className="flex items-center justify-between">
@@ -506,7 +585,7 @@ export const SettingsScreen: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* 6. ABOUT DEENLY & AUTHENTIC SOURCES                                       */}
+        {/* 7. ABOUT DEENLY & AUTHENTIC SOURCES                                       */}
         {/* ========================================================================= */}
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
           <div className="flex items-center justify-between">

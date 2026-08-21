@@ -5,24 +5,67 @@
   :root {
     color-scheme: dark;
     --arabic-font-size: 28px;
+    --bg-app: #0b1326;
+    --bg-surface: #0b1326;
+    --bg-surface-low: #131b2e;
+    --bg-surface-container: #171f33;
+    --bg-surface-high: #222a3d;
+    --bg-surface-highest: #2d3449;
+    --text-on-surface: #dae2fd;
+    --text-on-surface-variant: #ccc3d8;
+    --text-outline: #958da1;
+    --border-outline-variant: rgba(74, 68, 85, 0.4);
+    --color-primary: #d2bbff;
+    --color-primary-container: #7c3aed;
+    --color-secondary: #ccbeff;
+    --color-secondary-container: #4a3d7c;
+    --color-tertiary: #4edea3;
+    --color-tertiary-container: #007650;
+    --color-error: #ffb4ab;
+    --glass-card-bg: rgba(23, 31, 51, 0.75);
+    --glass-nav-bg: rgba(11, 19, 38, 0.88);
   }
-  
+
+  html.light {
+    color-scheme: light;
+    --bg-app: #f4f6fb;
+    --bg-surface: #f4f6fb;
+    --bg-surface-low: #ffffff;
+    --bg-surface-container: #ffffff;
+    --bg-surface-high: #e9eef8;
+    --bg-surface-highest: #dbe4f2;
+    --text-on-surface: #111827;
+    --text-on-surface-variant: #4b5563;
+    --text-outline: #6b7280;
+    --border-outline-variant: rgba(203, 213, 225, 0.8);
+    --color-primary: #6d28d9;
+    --color-primary-container: #7c3aed;
+    --color-secondary: #5b21b6;
+    --color-secondary-container: #ede9fe;
+    --color-tertiary: #059669;
+    --color-tertiary-container: #d1fae5;
+    --color-error: #dc2626;
+    --glass-card-bg: rgba(255, 255, 255, 0.88);
+    --glass-nav-bg: rgba(255, 255, 255, 0.94);
+  }
+
   body {
-    background-color: #0b1326;
-    color: #dae2fd;
+    background-color: var(--bg-app);
+    color: var(--text-on-surface);
     font-family: 'Plus Jakarta Sans', sans-serif;
     overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
 /* Custom utilities matching Stitch design spec */
 @layer utilities {
   .splash-gradient {
-    background: radial-gradient(circle at center, rgba(124, 58, 237, 0.25) 0%, rgba(11, 19, 38, 1) 75%);
+    background: radial-gradient(circle at center, rgba(124, 58, 237, 0.25) 0%, var(--bg-app) 75%);
   }
 
   .cosmic-gradient {
-    background: linear-gradient(135deg, #171f33 0%, #0b1326 100%);
+    background: linear-gradient(135deg, var(--bg-surface-container) 0%, var(--bg-app) 100%);
   }
 
   .primary-gradient-btn {
@@ -35,10 +78,10 @@
   }
 
   .glass-card {
-    background-color: rgba(23, 31, 51, 0.7);
+    background-color: var(--glass-card-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(74, 68, 85, 0.4);
+    border: 1px solid var(--border-outline-variant);
   }
 
   .glass-card-hover {
@@ -46,20 +89,20 @@
   }
 
   .glass-card-hover:hover {
-    border-color: rgba(210, 187, 255, 0.3);
+    border-color: var(--color-primary);
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(124, 58, 237, 0.12);
   }
 
   .glass-nav {
-    background-color: rgba(11, 19, 38, 0.85);
+    background-color: var(--glass-nav-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-color: rgba(74, 68, 85, 0.3);
+    border-color: var(--border-outline-variant);
   }
 }
 
-/* Keyframe animations from Stitch Splash & Transitions */
+/* Keyframe animations */
 @keyframes logo-fade-scale {
   0% {
     opacity: 0;
@@ -96,21 +139,21 @@
   animation-delay: 600ms;
 }
 
-/* Custom Scrollbar for Quran reader & dashboard */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b1326;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2d3449;
+  background: var(--border-outline-variant);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a3d7c;
+  background: var(--color-primary);
 }
