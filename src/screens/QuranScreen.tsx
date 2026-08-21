@@ -10,9 +10,7 @@ import {
   Share2, 
   Check, 
   Maximize2, 
-  Loader2, 
-  ArrowRight, 
-  Target 
+  Loader2
 } from 'lucide-react'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { quranApi } from '../lib/quranApi'
@@ -372,104 +370,98 @@ export const QuranScreen: React.FC = () => {
         </div>
       ) : (
         /* ========================================================================= */
-        /* VIEW 2: WHOLE CHAPTER / ALL VERSES WITH VERSE SEARCH OPTION               */
         /* ========================================================================= */
-        <div className="space-y-6">
+        /* VIEW 2: WHOLE CHAPTER / ALL VERSES WITH JUMP TO VERSE OPTION              */
+        /* ========================================================================= */
+        <div className="space-y-6 animate-fade-in">
           {/* Top Sticky Header with Back Button and Quick Controls */}
-          <div className="sticky top-16 z-30 glass-nav border-b border-outline-variant/30 -mx-4 md:-mx-6 px-4 md:px-6 py-3.5 space-y-3 shadow-md backdrop-blur-xl">
-            <div className="flex items-center justify-between gap-3">
-              {/* Back Button */}
+          <div className="sticky top-16 z-30 glass-nav border-b border-outline-variant/30 -mx-4 md:-mx-6 px-4 md:px-6 py-3.5 flex items-center justify-between gap-3 shadow-md backdrop-blur-xl">
+            {/* Back Button */}
+            <button
+              onClick={handleBackToChapters}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface text-xs font-bold hover:border-primary transition cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>All Chapters</span>
+            </button>
+
+            {/* Action Buttons: Language toggle & Focused Mode */}
+            <div className="flex items-center gap-2">
+              {/* Language Switcher */}
               <button
-                onClick={handleBackToChapters}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface text-xs font-semibold hover:border-primary transition cursor-pointer"
+                onClick={() => setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')}
+                className="px-3 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-xs font-semibold text-primary hover:border-primary transition cursor-pointer"
+                title="Toggle translation between English and Tamil"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>All Chapters</span>
+                {translationLanguage === 'ta' ? 'தமிழ்' : 'English'}
               </button>
 
-              {/* Title in Header */}
-              {currentSurahMeta && (
-                <div className="text-center truncate min-w-0">
-                  <h2 className="text-sm md:text-base font-bold font-h2 text-on-surface truncate">
-                    {currentSurahMeta.number}. {currentSurahMeta.name} ({currentSurahMeta.arabicName})
-                  </h2>
-                  <span className="text-[10px] text-outline">
-                    {currentSurahMeta.revelationType} • {currentSurahMeta.numberOfAyahs} Ayahs
-                  </span>
-                </div>
-              )}
-
-              {/* Action Buttons: Language toggle & Focused Mode */}
-              <div className="flex items-center gap-2">
-                {/* Language Switcher */}
+              {/* Enter Focused 1-Verse Mode */}
+              {selectedSurahNumber && (
                 <button
-                  onClick={() => setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')}
-                  className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-xs font-semibold text-primary hover:border-primary transition cursor-pointer"
-                  title="Toggle translation between English and Tamil"
+                  onClick={() => handleOpenFocusedReader(selectedSurahNumber, activeHighlightAyah || 1)}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full primary-gradient-btn text-white text-xs font-semibold shadow-md hover:scale-105 transition cursor-pointer"
+                  title="Read 1 verse at a time with Hasanat points"
                 >
-                  {translationLanguage === 'ta' ? 'தமிழ்' : 'English'}
+                  <Maximize2 className="w-3 h-3" />
+                  <span>Focus Mode</span>
                 </button>
+              )}
+            </div>
+          </div>
 
-                {/* Enter Focused 1-Verse Mode */}
-                {selectedSurahNumber && (
+          {/* Chapter Header Banner with Jump To Verse Form (Identical to Hadith Jump) */}
+          {currentSurahMeta && (
+            <div className="p-6 rounded-3xl cosmic-gradient border border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-bold uppercase font-label-caps">
+                    Surah {currentSurahMeta.number} • {currentSurahMeta.revelationType}
+                  </span>
+                  <span className="text-xs text-outline font-mono">Juz {currentSurahMeta.startJuz}</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold font-h2 text-on-surface mt-1 flex items-center gap-2.5">
+                  <span>{currentSurahMeta.name}</span>
+                  <span className="font-noto-serif text-primary-fixed-dim text-lg sm:text-xl">({currentSurahMeta.arabicName})</span>
+                </h2>
+                <p className="text-xs text-outline">
+                  {currentSurahMeta.englishNameTranslation} • Showing {currentSurahMeta.numberOfAyahs} verses in this chapter
+                </p>
+              </div>
+
+              {/* Jump To Verse Form */}
+              <form onSubmit={handleVerseSearchSubmit} className="flex items-center gap-2 shrink-0">
+                <input
+                  type="number"
+                  min={1}
+                  max={currentSurahMeta.numberOfAyahs}
+                  placeholder="Verse #..."
+                  value={verseSearchInput}
+                  onChange={(e) => setVerseSearchInput(e.target.value)}
+                  className="w-28 px-3 py-2 rounded-xl bg-surface-container-high border border-outline-variant/40 text-xs text-on-surface focus:outline-none focus:border-primary font-mono"
+                />
+                <button
+                  type="submit"
+                  className="px-3.5 py-2 rounded-xl primary-gradient-btn text-white text-xs font-semibold shadow-sm hover:scale-105 transition cursor-pointer"
+                >
+                  Jump
+                </button>
+                {activeHighlightAyah && (
                   <button
-                    onClick={() => handleOpenFocusedReader(selectedSurahNumber, activeHighlightAyah || 1)}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full primary-gradient-btn text-white text-xs font-semibold shadow-md hover:scale-105 transition cursor-pointer"
-                    title="Read 1 verse at a time with Hasanat points"
+                    type="button"
+                    onClick={() => {
+                      setActiveHighlightAyah(null)
+                      setVerseSearchInput('')
+                    }}
+                    className="px-2.5 py-2 rounded-xl bg-surface-container border border-outline-variant/40 text-outline hover:text-on-surface text-xs transition cursor-pointer"
+                    title="Clear highlight"
                   >
-                    <Maximize2 className="w-3 h-3" />
-                    <span>Focus Mode</span>
+                    ✕
                   </button>
                 )}
-              </div>
-            </div>
-
-            {/* ========================================================================= */}
-            {/* VERSE SEARCH & JUMP TO SPECIFIC VERSE OPTION                              */}
-            {/* ========================================================================= */}
-            {currentSurahMeta && (
-              <form
-                onSubmit={handleVerseSearchSubmit}
-                className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-surface-container/70 border border-outline-variant/30 rounded-2xl p-2.5"
-              >
-                <div className="relative flex-1">
-                  <Target className="w-4 h-4 text-primary absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="number"
-                    min={1}
-                    max={currentSurahMeta.numberOfAyahs}
-                    value={verseSearchInput}
-                    onChange={(e) => setVerseSearchInput(e.target.value)}
-                    placeholder={`Enter verse number (1 - ${currentSurahMeta.numberOfAyahs}) to jump & highlight...`}
-                    className="w-full bg-surface-container-high/80 border border-outline-variant/40 rounded-xl py-2 pl-10 pr-4 text-xs text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl primary-gradient-btn text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm hover:scale-105 transition cursor-pointer"
-                  >
-                    <ArrowRight className="w-3.5 h-3.5" />
-                    <span>Go to Verse</span>
-                  </button>
-
-                  {activeHighlightAyah && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveHighlightAyah(null)
-                        setVerseSearchInput('')
-                      }}
-                      className="px-3 py-2 rounded-xl bg-surface-container border border-outline-variant/40 text-outline hover:text-on-surface text-xs transition cursor-pointer"
-                    >
-                      Clear Highlight
-                    </button>
-                  )}
-                </div>
               </form>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Chapter Verses Stream */}
           {isLoadingVerses ? (
