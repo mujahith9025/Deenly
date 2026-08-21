@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { 
   Flame, 
@@ -22,7 +22,8 @@ import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   calculateJuzProgress, 
   calculateKhatmProgress, 
-  formatDurationHuman 
+  formatDurationHuman,
+  getLocalDateString 
 } from '../lib/hasanatEngine'
 import { ScreenPlaceholder } from '../components/common/ScreenPlaceholder'
 
@@ -46,6 +47,17 @@ const SUGGESTED_SURAHS: SuggestedSurah[] = [
   { number: 2, name: 'Al-Baqarah', arabicName: 'البقرة', tag: 'Household Barakah', color: 'from-indigo-900/40 to-purple-900/40 border-indigo-500/30' },
 ]
 
+const DEFAULT_HABITS = [
+  { id: 'fajr', name: 'Fajr Prayer', time: '05:12 AM', category: 'prayer' },
+  { id: 'adhkar_morning', name: 'Morning Adhkar', time: '06:00 AM', category: 'dhikr' },
+  { id: 'dhuhr', name: 'Dhuhr Prayer', time: '12:30 PM', category: 'prayer' },
+  { id: 'quran', name: 'Read Daily Quran', time: 'Daily Target', category: 'quran' },
+  { id: 'asr', name: 'Asr Prayer', time: '03:45 PM', category: 'prayer' },
+  { id: 'maghrib', name: 'Maghrib Prayer', time: '06:15 PM', category: 'prayer' },
+  { id: 'isha', name: 'Isha Prayer', time: '07:30 PM', category: 'prayer' },
+  { id: 'adhkar_evening', name: 'Evening Adhkar', time: '08:00 PM', category: 'dhikr' },
+]
+
 export const DashboardScreen: React.FC = () => {
   const [showFullView, setShowFullView] = useState(true)
   const [timeframe, setTimeframe] = useState<TimeframeFilter>('today')
@@ -56,24 +68,50 @@ export const DashboardScreen: React.FC = () => {
   const currentAyahNumber = useReadingStore((state) => state.currentAyahNumber)
   const navigate = useNavigate()
 
-  // Daily Habits State
-  const [habits, setHabits] = useState([
-    { id: '1', name: 'Fajr Prayer', time: '05:12 AM', completed: true, category: 'prayer' },
-    { id: '2', name: 'Morning Adhkar', time: '06:00 AM', completed: true, category: 'dhikr' },
-    { id: '3', name: 'Dhuhr Prayer', time: '12:30 PM', completed: true, category: 'prayer' },
-    { id: '4', name: 'Read Daily Quran', time: 'Afternoon', completed: false, category: 'quran' },
-    { id: '5', name: 'Asr Prayer', time: '03:45 PM', completed: false, category: 'prayer' },
-    { id: '6', name: 'Maghrib Prayer', time: '06:15 PM', completed: false, category: 'prayer' },
-    { id: '7', name: 'Isha Prayer', time: '07:30 PM', completed: false, category: 'prayer' },
-  ])
+  const todayStr = getLocalDateString(new Date())
+  const habitStorageKey = `deenly_habits_${user?.id || 'guest'}_${todayStr}`
+
+  // Daily Habits State - Zero checked by default
+  const [completedHabitIds, setCompletedHabitIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const stored = localStorage.getItem(habitStorageKey)
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
+
+  // Synchronize when user changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const stored = localStorage.getItem(habitStorageKey)
+      setCompletedHabitIds(stored ? JSON.parse(stored) : [])
+    } catch {
+      setCompletedHabitIds([])
+    }
+  }, [habitStorageKey])
 
   const toggleHabit = (id: string) => {
-    setHabits(habits.map(h => h.id === id ? { ...h, completed: !h.completed } : h))
+    setCompletedHabitIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      try {
+        localStorage.setItem(habitStorageKey, JSON.stringify(next))
+      } catch (err) {
+        console.warn('Failed to save habits to localStorage:', err)
+      }
+      return next
+    })
   }
+
+  const habits = DEFAULT_HABITS.map((h) => ({
+    ...h,
+    completed: completedHabitIds.includes(h.id),
+  }))
 
   // 1. Goal Calculations
   const dailyGoalVerses = user?.dailyGoalVerses || 10
-  const todayStr = new Date().toISOString().split('T')[0]
   const todayLog = dailyHistory[todayStr] || {
     hasanat: 0,
     verses: 0,

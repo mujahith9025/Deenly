@@ -448,6 +448,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     if (typeof window !== 'undefined') {
       localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
       localStorage.setItem('deenly_auth_session', JSON.stringify(cleanedUser))
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('deenly_habits_')) {
+          localStorage.removeItem(k)
+        }
+      })
     }
 
     // Reset Supabase table row
