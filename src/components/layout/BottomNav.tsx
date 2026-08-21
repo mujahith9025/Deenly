@@ -1,12 +1,12 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, Trophy, User } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Trophy, Settings } from 'lucide-react'
 
 const mobileNavItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/quran', label: 'Quran', icon: BookOpen },
   { path: '/leaderboard', label: 'Ranks', icon: Trophy },
-  { path: '/profile', label: 'Profile', icon: User },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ]
 
 export const BottomNav: React.FC = () => {

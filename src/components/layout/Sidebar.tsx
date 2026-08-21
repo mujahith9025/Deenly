@@ -6,11 +6,11 @@ import {
   Trophy, 
   User, 
   Settings, 
-  LogOut,
-  Sparkles,
-  Flame,
-  ChevronLeft,
-  ChevronRight
+  LogOut, 
+  Sparkles, 
+  Flame, 
+  ChevronLeft, 
+  ChevronRight 
 } from 'lucide-react'
 import { useAuthStore } from '../../store/useAuthStore'
 
@@ -18,7 +18,6 @@ const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/quran', label: 'Quran', icon: BookOpen },
   { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-  { path: '/profile', label: 'My Profile', icon: User },
   { path: '/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -39,27 +38,27 @@ export const Sidebar: React.FC = () => {
           <div className="w-10 h-10 rounded-2xl bg-surface-container flex items-center justify-center p-2 shadow-[0_0_20px_rgba(124,58,237,0.4)] border border-primary/30 shrink-0">
             <BookOpen className="w-6 h-6 text-primary" />
           </div>
-          <div className={`${isCollapsed ? 'hidden' : 'hidden lg:block'} truncate`}>
-            <h1 className="font-h1 font-bold text-xl text-primary-fixed-dim tracking-tight">
+          <div className={`${isCollapsed ? 'hidden' : 'hidden lg:block'} min-w-0`}>
+            <span className="font-h1 font-bold text-lg text-primary-fixed-dim tracking-tight block">
               Deenly
-            </h1>
-            <p className="text-[10px] text-on-surface-variant font-medium tracking-wide">
-              Read. Reflect. Reward.
-            </p>
+            </span>
+            <span className="text-[10px] text-outline uppercase tracking-wider font-label-caps block">
+              Islamic Companion
+            </span>
           </div>
         </div>
 
-        {/* Desktop Collapse Toggle Button */}
+        {/* Collapse Toggle */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden lg:flex p-1.5 rounded-xl hover:bg-surface-container-high text-outline hover:text-on-surface transition cursor-pointer"
           title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          className="hidden lg:flex p-1.5 rounded-xl hover:bg-surface-container text-outline hover:text-on-surface transition cursor-pointer"
         >
           {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
       </div>
 
-      {/* Navigation Links */}
+      {/* Navigation List */}
       <nav className="flex-1 space-y-1.5">
         {navItems.map((item) => {
           const Icon = item.icon
@@ -67,34 +66,34 @@ export const Sidebar: React.FC = () => {
             <NavLink
               key={item.path}
               to={item.path}
-              title={item.label}
               className={({ isActive }) =>
-                `flex items-center rounded-2xl text-sm font-medium transition-all ${
-                  isCollapsed ? 'justify-center p-3' : 'justify-center lg:justify-start px-3.5 lg:px-4 py-3 gap-3.5'
-                } ${
+                `flex items-center gap-3.5 px-3 py-3 rounded-2xl transition-all font-medium text-xs ${
                   isActive
-                    ? 'primary-gradient-btn text-white font-semibold shadow-md shadow-primary-container/30'
+                    ? 'bg-primary-container text-white shadow-md font-semibold'
                     : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container/60'
-                }`
+                } ${isCollapsed ? 'justify-center' : ''}`
               }
+              title={item.label}
             >
               <Icon className="w-5 h-5 shrink-0" />
-              <span className={isCollapsed ? 'hidden' : 'hidden lg:inline'}>
-                {item.label}
-              </span>
+              <span className={`${isCollapsed ? 'hidden' : 'hidden lg:inline'}`}>{item.label}</span>
             </NavLink>
           )
         })}
       </nav>
 
-      {/* User Mini Card in Sidebar Footer */}
+      {/* User Mini Card in Sidebar Footer (Links to Profile) */}
       <div className="pt-3 border-t border-outline-variant/30">
         <div
           className={`rounded-2xl bg-surface-container/70 border border-outline-variant/20 flex items-center ${
             isCollapsed ? 'justify-center p-2' : 'justify-between p-2 lg:p-3'
           }`}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          <NavLink
+            to="/profile"
+            className="flex items-center gap-2.5 min-w-0 hover:opacity-80 transition"
+            title="View Profile"
+          >
             <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant/50 overflow-hidden shrink-0 flex items-center justify-center">
               {user?.photoUrl ? (
                 <img src={user.photoUrl} alt={user.name || 'User'} className="w-full h-full object-cover" />
@@ -113,7 +112,7 @@ export const Sidebar: React.FC = () => {
                 </span>
               </div>
             </div>
-          </div>
+          </NavLink>
 
           <button
             onClick={() => signOut()}
