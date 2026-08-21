@@ -246,82 +246,72 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. DAILY GOAL & CONTINUE READING DUAL HERO                               */}
+      {/* 3. COMBINED HERO: DAILY GOAL & CONTINUE READING/JOURNEY                   */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Daily Goal Progress Card */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 relative overflow-hidden flex flex-col justify-between shadow-md">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps flex items-center gap-1.5">
-                <Target className="w-4 h-4 text-tertiary" />
-                <span>Daily Goal</span>
-              </span>
-              {isGoalCompleted ? (
-                <span className="px-2.5 py-0.5 rounded-full bg-tertiary-container/40 border border-tertiary/40 text-tertiary text-[11px] font-bold flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-tertiary" />
-                  <span>Goal Met!</span>
-                </span>
-              ) : (
-                <span className="text-xs font-semibold text-secondary">
-                  {Math.max(0, dailyGoalVerses - todayVerses)} verses left
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-baseline gap-2 pt-2">
-              <span className="text-3xl font-bold text-on-surface">{todayVerses}</span>
-              <span className="text-sm text-on-surface-variant font-medium">/ {dailyGoalVerses} verses today</span>
-            </div>
+      <div className="p-6 md:p-7 rounded-3xl glass-card border border-outline-variant/30 relative overflow-hidden shadow-lg space-y-5">
+        {/* Top Header Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-primary font-bold tracking-wide">
+            <Bookmark className="w-4 h-4" />
+            <span className="uppercase font-label-caps">{isNewUser ? 'Start Your Journey' : 'Continue Reading'}</span>
           </div>
 
-          {/* Goal Progress Bar */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[11px] text-outline">Today's Consistency</span>
-              <span className="font-bold text-tertiary">{goalProgressPercent}%</span>
+          {/* Goal Status Pill */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-xs">
+              <Target className="w-3.5 h-3.5 text-tertiary" />
+              <span className="font-semibold text-on-surface">{todayVerses}/{dailyGoalVerses}</span>
+              <span className="text-outline">verses</span>
             </div>
-            <div className="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-tertiary-container h-full rounded-full transition-all duration-700 shadow-sm"
-                style={{ width: `${Math.max(goalProgressPercent, todayVerses > 0 ? 5 : 0)}%` }}
-              />
-            </div>
+
+            {isGoalCompleted ? (
+              <span className="px-3 py-1 rounded-full bg-tertiary-container/40 border border-tertiary/40 text-tertiary text-xs font-bold flex items-center gap-1">
+                <Star className="w-3 h-3 fill-tertiary" />
+                <span>Goal Met!</span>
+              </span>
+            ) : (
+              <span className="text-xs font-medium text-secondary hidden sm:inline">
+                {Math.max(0, dailyGoalVerses - todayVerses)} left
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Continue Reading Card (Deep-Linked) */}
-        <div className="md:col-span-2 p-6 rounded-3xl bg-surface-container-low border border-outline-variant/40 relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-md">
-          <div className="space-y-1.5 z-10">
-            <div className="flex items-center gap-2 text-xs text-primary font-semibold">
-              <Bookmark className="w-4 h-4" />
-              <span>{isNewUser ? 'START YOUR JOURNEY' : 'CONTINUE READING'}</span>
-            </div>
-
-            <h2 className="text-xl md:text-2xl font-bold font-h2 text-on-surface">
-              {currentSurahMeta.number}. {currentSurahMeta.name} ({currentSurahMeta.arabicName})
+        {/* Center Content & Action Button */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 flex-1">
+            <h2 className="text-2xl md:text-3xl font-bold font-h2 text-on-surface">
+              {currentSurahMeta.number}. {currentSurahMeta.name}{' '}
+              <span className="font-noto-serif text-primary-fixed-dim text-xl md:text-2xl ml-1">
+                ({currentSurahMeta.arabicName})
+              </span>
             </h2>
 
-            <p className="text-xs text-on-surface-variant">
+            <p className="text-xs md:text-sm text-on-surface-variant">
               {isNewUser
                 ? 'Begin with the Opening Chapter (Al-Fatihah) • 7 Ayahs • Meccan'
                 : `Ayah ${lastAyah} of ${currentSurahMeta.numberOfAyahs} • Juz ${juzProgress.juzNumber} (${juzProgress.percent}% completed) • Page ${currentSurahMeta.startPage}`}
             </p>
 
-            {/* Juz Progress Indicator */}
-            {!isNewUser && (
-              <div className="w-56 max-w-full bg-surface-container-highest h-1.5 rounded-full mt-2 overflow-hidden">
+            {/* Combined Goal & Juz Progress Bar */}
+            <div className="pt-2 max-w-md space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[11px] text-outline">Today's Goal Progress</span>
+                <span className="font-bold text-tertiary">{goalProgressPercent}%</span>
+              </div>
+              <div className="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
                 <div
-                  className="bg-primary-container h-full rounded-full transition-all duration-500"
-                  style={{ width: `${juzProgress.percent}%` }}
+                  className="bg-gradient-to-r from-primary to-tertiary h-full rounded-full transition-all duration-700 shadow-sm"
+                  style={{ width: `${Math.max(goalProgressPercent, todayVerses > 0 ? 5 : 0)}%` }}
                 />
               </div>
-            )}
+            </div>
           </div>
 
+          {/* Action Button */}
           <Link
             to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
-            className="primary-gradient-btn text-white px-6 py-3 rounded-full text-xs font-semibold flex items-center gap-2 shrink-0 z-10 hover:scale-105 transition shadow-lg cursor-pointer"
+            className="primary-gradient-btn text-white px-7 py-3.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2.5 shrink-0 self-start md:self-center hover:scale-105 transition shadow-xl cursor-pointer"
           >
             <span>{isNewUser ? 'Start Reading' : 'Resume Reading'}</span>
             <ArrowRight className="w-4 h-4" />
