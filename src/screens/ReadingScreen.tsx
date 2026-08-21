@@ -1,36 +1,34 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
-  Bookmark, 
-  Share2, 
   Type, 
   ChevronLeft, 
   ChevronRight,
-  Globe,
-  Sparkles,
-  Loader2,
-  Clock,
-  CheckCircle2,
-  TrendingUp,
-  Award
+  Sparkles, 
+  Loader2, 
+  Clock, 
+  CheckCircle2, 
+  TrendingUp, 
+  Award,
+  ListFilter,
+  Eye,
+  Check
 } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   formatTimer, 
-  calculateJuzProgress, 
+  calculateJuzProgress,
   formatDurationHuman,
-  type SessionMetrics
+  type SessionMetrics 
 } from '../lib/hasanatEngine'
 import { ScreenPlaceholder } from '../components/common/ScreenPlaceholder'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const [showFullView, setShowFullView] = useState(true)
+  const [readingMode, setReadingMode] = useState<'single' | 'all'>('single')
   const [completedSessionData, setCompletedSessionData] = useState<SessionMetrics | null>(null)
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
 
@@ -42,11 +40,8 @@ export const ReadingScreen: React.FC = () => {
   const setFontSize = useReadingStore((state) => state.setFontSize)
   const translationLanguage = useReadingStore((state) => state.translationLanguage)
   const setTranslationLanguage = useReadingStore((state) => state.setTranslationLanguage)
-  const isPlayingAudio = useReadingStore((state) => state.isPlayingAudio)
-  const setIsPlayingAudio = useReadingStore((state) => state.setIsPlayingAudio)
-  const isAudioMuted = useReadingStore((state) => state.isAudioMuted)
-  const toggleAudioMute = useReadingStore((state) => state.toggleAudioMute)
   const loadSurah = useReadingStore((state) => state.loadSurah)
+  const setCurrentPosition = useReadingStore((state) => state.setCurrentPosition)
 
   // Active Session State & Actions
   const activeSession = useReadingStore((state) => state.activeSession)
@@ -66,7 +61,7 @@ export const ReadingScreen: React.FC = () => {
       const sNum = parseInt(querySurah, 10)
       const aNum = queryAyah ? parseInt(queryAyah, 10) : 1
       if (sNum >= 1 && sNum <= 114) {
-        useReadingStore.getState().setCurrentPosition(sNum, aNum)
+        setCurrentPosition(sNum, aNum)
         loadSurah(sNum)
         startSession()
         return
@@ -75,7 +70,7 @@ export const ReadingScreen: React.FC = () => {
 
     loadSurah(currentSurahNumber || 1)
     startSession()
-  }, [searchParams, currentSurahNumber, loadSurah, startSession])
+  }, [searchParams, currentSurahNumber, loadSurah, startSession, setCurrentPosition])
 
   // Timer interval
   useEffect(() => {
@@ -92,31 +87,100 @@ export const ReadingScreen: React.FC = () => {
     }
   }, [finishSession])
 
-  // Calculate dynamic Juz progress
+  // Active Ayah Object
+  const totalAyahs = currentSurah?.numberOfAyahs || 1
+  const activeAyahIndex = Math.max(0, Math.min(totalAyahs - 1, (currentAyahNumber || 1) - 1))
+  const currentAyah = currentSurah?.ayahs[activeAyahIndex] || currentSurah?.ayahs[0]
+  const isCurrentAyahRead = currentAyah ? activeSession.readAyahsInSession.includes(currentAyah.number) : false
+
+  // Dynamic Juz Progress
   const juzProgress = calculateJuzProgress(currentSurahNumber || 1, currentAyahNumber || 1)
 
-  const handleMarkAyahRead = (ayah: NonNullable<typeof currentSurah>['ayahs'][number]) => {
-    const earned = markAyahRead(ayah)
+  // Single-Verse Navigation: Mark Read & Advance to Next
+  const handleMarkAndNext = () => {
+    if (!currentAyah || !currentSurah) return
+
+    const earned = markAyahRead(currentAyah)
     if (earned > 0) {
       setFloatingHasanat({ amount: earned, id: Date.now() })
       setTimeout(() => setFloatingHasanat(null), 1800)
     }
 
-    // Auto-advance to next Ayah or next Surah
-    if (currentSurah) {
-      if (ayah.verseNumberInSurah < currentSurah.numberOfAyahs) {
-        useReadingStore.getState().setCurrentPosition(
-          currentSurahNumber,
-          ayah.verseNumberInSurah + 1,
-          ayah.page,
-          ayah.juz
-        )
-      } else if (currentSurahNumber < 114) {
-        // Move to next Surah
-        loadSurah(currentSurahNumber + 1)
-      }
+    // Advance to next Ayah or next Surah
+    if (currentAyah.verseNumberInSurah < currentSurah.numberOfAyahs) {
+      const nextAyahNum = currentAyah.verseNumberInSurah + 1
+      const nextAyahObj = currentSurah.ayahs[nextAyahNum - 1]
+      setCurrentPosition(
+        currentSurahNumber,
+        nextAyahNum,
+        nextAyahObj?.page || currentAyah.page,
+        nextAyahObj?.juz || currentAyah.juz
+      )
+    } else if (currentSurahNumber < 114) {
+      // Reached the end of the chapter -> advance to next Surah
+      loadSurah(currentSurahNumber + 1)
+      setCurrentPosition(currentSurahNumber + 1, 1)
     }
   }
+
+  // Single-Verse Navigation: Go to Previous Ayah
+  const handlePrevAyah = () => {
+    if (!currentSurah) return
+
+    if (currentAyahNumber > 1) {
+      const prevAyahNum = currentAyahNumber - 1
+      const prevAyahObj = currentSurah.ayahs[prevAyahNum - 1]
+      setCurrentPosition(
+        currentSurahNumber,
+        prevAyahNum,
+        prevAyahObj?.page,
+        prevAyahObj?.juz
+      )
+    } else if (currentSurahNumber > 1) {
+      // Go to previous Surah's last verse
+      const prevSurahMeta = SURAH_METADATA.find(s => s.number === currentSurahNumber - 1)
+      const lastAyahOfPrev = prevSurahMeta?.numberOfAyahs || 1
+      loadSurah(currentSurahNumber - 1)
+      setCurrentPosition(currentSurahNumber - 1, lastAyahOfPrev)
+    }
+  }
+
+  // Single-Verse Navigation: Skip to Next without marking
+  const handleNextAyahOnly = () => {
+    if (!currentSurah) return
+
+    if (currentAyahNumber < currentSurah.numberOfAyahs) {
+      const nextAyahNum = currentAyahNumber + 1
+      const nextAyahObj = currentSurah.ayahs[nextAyahNum - 1]
+      setCurrentPosition(
+        currentSurahNumber,
+        nextAyahNum,
+        nextAyahObj?.page,
+        nextAyahObj?.juz
+      )
+    } else if (currentSurahNumber < 114) {
+      loadSurah(currentSurahNumber + 1)
+      setCurrentPosition(currentSurahNumber + 1, 1)
+    }
+  }
+
+  // Keyboard navigation shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return
+
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault()
+        handleMarkAndNext()
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        handlePrevAyah()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentAyah, currentSurah, currentAyahNumber, currentSurahNumber])
 
   const handleFinishSession = () => {
     const metrics = finishSession()
@@ -129,34 +193,48 @@ export const ReadingScreen: React.FC = () => {
     const num = parseInt(e.target.value, 10)
     if (num >= 1 && num <= 114) {
       loadSurah(num)
+      setCurrentPosition(num, 1)
+    }
+  }
+
+  const handleAyahJump = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const num = parseInt(e.target.value, 10)
+    if (currentSurah && num >= 1 && num <= currentSurah.numberOfAyahs) {
+      const targetAyah = currentSurah.ayahs[num - 1]
+      setCurrentPosition(currentSurahNumber, num, targetAyah?.page, targetAyah?.juz)
     }
   }
 
   const handlePrevSurah = () => {
     if (currentSurahNumber > 1) {
       loadSurah(currentSurahNumber - 1)
+      setCurrentPosition(currentSurahNumber - 1, 1)
     }
   }
 
   const handleNextSurah = () => {
     if (currentSurahNumber < 114) {
       loadSurah(currentSurahNumber + 1)
+      setCurrentPosition(currentSurahNumber + 1, 1)
     }
   }
 
+  // Surah Progress Percentage
+  const surahProgressPercent = Math.round(((currentAyahNumber || 1) / totalAyahs) * 100)
+
   return (
     <div className="space-y-6 pb-16 relative">
-      {/* Floating Animated Hasanat Indicator */}
+      {/* Floating Animated Hasanat Popover */}
       {floatingHasanat && (
         <div className="fixed top-24 right-8 z-50 animate-bounce pointer-events-none">
-          <div className="px-4 py-2 rounded-2xl bg-tertiary-container/90 border border-tertiary text-tertiary font-bold text-sm shadow-2xl flex items-center gap-2 backdrop-blur-md">
+          <div className="px-4 py-2.5 rounded-2xl bg-tertiary-container/95 border border-tertiary text-tertiary font-bold text-sm shadow-2xl flex items-center gap-2 backdrop-blur-md">
             <Sparkles className="w-4 h-4 text-tertiary animate-spin" />
             <span>+{floatingHasanat.amount} Hasanat!</span>
           </div>
         </div>
       )}
 
-      {/* Top Header & Mobile/Tablet Controls */}
+      {/* Top Header & Navigation Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
@@ -174,12 +252,13 @@ export const ReadingScreen: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        {/* Top Actions & Dropdowns */}
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Surah Dropdown Selector */}
           <select
             value={currentSurahNumber}
             onChange={handleSurahChange}
-            className="bg-surface-container border border-outline-variant/40 rounded-full px-3 py-1.5 text-xs text-on-surface focus:outline-none focus:border-primary cursor-pointer"
+            className="bg-surface-container border border-outline-variant/40 rounded-full px-3.5 py-1.5 text-xs font-semibold text-on-surface focus:outline-none focus:border-primary cursor-pointer shadow-sm"
           >
             {SURAH_METADATA.map((s) => (
               <option key={s.number} value={s.number} className="bg-surface-container text-on-surface">
@@ -188,18 +267,52 @@ export const ReadingScreen: React.FC = () => {
             ))}
           </select>
 
+          {/* Ayah Jump Stepper */}
+          {currentSurah && (
+            <select
+              value={currentAyahNumber || 1}
+              onChange={handleAyahJump}
+              className="bg-surface-container border border-outline-variant/40 rounded-full px-3 py-1.5 text-xs font-semibold text-secondary focus:outline-none focus:border-secondary cursor-pointer shadow-sm"
+            >
+              {Array.from({ length: currentSurah.numberOfAyahs }, (_, i) => i + 1).map((aNum) => (
+                <option key={aNum} value={aNum} className="bg-surface-container text-on-surface">
+                  Ayah {aNum} of {currentSurah.numberOfAyahs}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Mode Toggle: Single Ayah vs All Ayahs */}
+          <button
+            onClick={() => setReadingMode(readingMode === 'single' ? 'all' : 'single')}
+            className="text-xs px-3.5 py-1.5 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface hover:border-primary transition flex items-center gap-1.5 cursor-pointer"
+            title="Toggle between Single-Verse Mode and Full-Chapter List"
+          >
+            {readingMode === 'single' ? (
+              <>
+                <ListFilter className="w-3.5 h-3.5 text-secondary" />
+                <span className="hidden sm:inline">List View</span>
+              </>
+            ) : (
+              <>
+                <Eye className="w-3.5 h-3.5 text-primary" />
+                <span className="hidden sm:inline">Single Verse</span>
+              </>
+            )}
+          </button>
+
           <button
             onClick={() => setShowFullView(!showFullView)}
-            className="text-xs px-3.5 py-1.5 rounded-full bg-surface-container border border-outline-variant/40 text-secondary hover:border-primary transition shrink-0 cursor-pointer"
+            className="text-xs px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/40 text-outline hover:text-on-surface hover:border-primary transition cursor-pointer"
           >
-            {showFullView ? 'Show Project Scaffold View' : 'Show Stitch UI View'}
+            {showFullView ? 'Scaffold' : 'Stitch UI'}
           </button>
         </div>
       </div>
 
       {showFullView ? (
         <div className="space-y-6">
-          {/* Mobile & Tablet Top Session Strip (Hidden on Desktop, as Desktop has Dedicated Right Rail) */}
+          {/* Mobile & Tablet Top Session Strip */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:hidden">
             {/* Session Timer */}
             <div className="p-4 rounded-2xl glass-card border border-outline-variant/30 flex items-center justify-between">
@@ -214,7 +327,7 @@ export const ReadingScreen: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 animate-pulse">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 animate-pulse font-bold">
                 Live
               </span>
             </div>
@@ -252,38 +365,18 @@ export const ReadingScreen: React.FC = () => {
                   style={{ width: `${juzProgress.percent}%` }}
                 />
               </div>
-              <p className="text-[10px] text-outline text-right">
-                {juzProgress.versesCompletedInJuz} of {juzProgress.totalVersesInJuz} verses in Juz
-              </p>
             </div>
           </div>
 
-          {/* Sticky Reader Controls Bar (Mobile & Tablet) */}
-          <div className="lg:hidden sticky top-20 z-30 p-3.5 rounded-2xl glass-nav border border-outline-variant/40 flex flex-wrap items-center justify-between gap-3 shadow-lg">
-            {/* Audio Controls */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                className="w-10 h-10 rounded-full primary-gradient-btn text-white flex items-center justify-center shadow-md hover:scale-105 transition-transform cursor-pointer"
-              >
-                {isPlayingAudio ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
-              </button>
-              <button
-                onClick={toggleAudioMute}
-                className="p-2 rounded-lg text-outline hover:text-on-surface transition cursor-pointer"
-              >
-                {isAudioMuted ? <VolumeX className="w-4 h-4 text-error" /> : <Volume2 className="w-4 h-4" />}
-              </button>
-            </div>
-
-            {/* Language Switcher */}
-            <div className="flex items-center gap-1 bg-surface-container/80 p-1 rounded-full border border-outline-variant/30 text-xs">
-              <Globe className="w-3.5 h-3.5 text-secondary ml-1.5 mr-0.5" />
+          {/* Quick Reader Controls Bar */}
+          <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/30 flex-wrap">
+            {/* Translation Picker */}
+            <div className="flex items-center gap-1.5 bg-surface-container/80 p-1 rounded-full border border-outline-variant/30">
               <button
                 onClick={() => setTranslationLanguage('en')}
-                className={`px-2.5 py-1 rounded-full font-medium transition cursor-pointer ${
+                className={`px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                   translationLanguage === 'en'
-                    ? 'bg-primary-container text-white shadow-sm'
+                    ? 'bg-primary-container text-white shadow-sm font-semibold'
                     : 'text-on-surface-variant hover:text-on-surface'
                 }`}
               >
@@ -291,9 +384,9 @@ export const ReadingScreen: React.FC = () => {
               </button>
               <button
                 onClick={() => setTranslationLanguage('ta')}
-                className={`px-2.5 py-1 rounded-full font-medium transition cursor-pointer ${
+                className={`px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                   translationLanguage === 'ta'
-                    ? 'bg-primary-container text-white shadow-sm'
+                    ? 'bg-primary-container text-white shadow-sm font-semibold'
                     : 'text-on-surface-variant hover:text-on-surface'
                 }`}
               >
@@ -302,7 +395,7 @@ export const ReadingScreen: React.FC = () => {
             </div>
 
             {/* Typography Scale */}
-            <div className="flex items-center gap-2 bg-surface-container/80 px-3 py-1.5 rounded-full border border-outline-variant/30 text-xs">
+            <div className="flex items-center gap-2 bg-surface-container/80 px-3 py-1 rounded-full border border-outline-variant/30 text-xs">
               <Type className="w-3.5 h-3.5 text-primary" />
               <button
                 onClick={() => setFontSize(Math.max(20, fontSize - 2))}
@@ -322,23 +415,164 @@ export const ReadingScreen: React.FC = () => {
             {/* Finish Session */}
             <button
               onClick={handleFinishSession}
-              className="px-4 py-2 rounded-full bg-tertiary-container text-on-tertiary-container font-semibold text-xs flex items-center gap-1.5 hover:opacity-90 transition shadow-sm cursor-pointer"
+              className="px-4 py-1.5 rounded-full bg-tertiary-container text-on-tertiary-container font-semibold text-xs flex items-center gap-1.5 hover:opacity-90 transition shadow-sm cursor-pointer"
             >
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-3.5 h-3.5" />
               <span>I'm Done</span>
             </button>
           </div>
 
-          {/* Desktop 2-Column Responsive Layout: Left Main Verses + Right Session Control Rail */}
+          {/* Desktop 2-Column Responsive Layout */}
           <div className="flex flex-col lg:flex-row gap-8 items-start">
-            {/* Left/Center Main Column: Verses Reading Feed */}
+            {/* Left/Center Main Column */}
             <div className="flex-1 w-full max-w-3xl space-y-4">
               {isLoadingSurah ? (
                 <div className="p-16 text-center space-y-3 glass-card rounded-3xl border border-outline-variant/30">
                   <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
                   <p className="text-xs text-on-surface-variant">Loading sacred verses and translations...</p>
                 </div>
+              ) : readingMode === 'single' ? (
+                /* ========================================================== */
+                /* 🎯 SINGLE-VERSE FOCUSED READING VIEW (Ayah-by-Ayah)       */
+                /* ========================================================== */
+                <div className="space-y-4">
+                  {/* Bismillah Header for Verse 1 */}
+                  {currentAyahNumber === 1 && currentSurahNumber !== 9 && (
+                    <div className="text-center p-6 glass-card rounded-3xl border border-outline-variant/30 shadow-md">
+                      <p className="font-noto-serif text-2xl md:text-3xl text-primary-fixed-dim select-none" dir="rtl">
+                        بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-2 font-sans">
+                        {translationLanguage === 'ta'
+                          ? 'அளவற்ற அருளாளனும், நிகரற்ற அன்புடையோனுமாகிய அல்லாஹ்வின் திருப்பெயரால் (துவங்குகிறேன்)'
+                          : 'In the name of Allah, the Entirely Merciful, the Especially Merciful.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {currentAyah ? (
+                    <div className="p-6 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/60 shadow-2xl space-y-6 relative ring-1 ring-primary/20">
+                      {/* Surah Progress Mini-Bar */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-outline">
+                          <span className="font-bold text-on-surface flex items-center gap-1.5">
+                            <span className="w-6 h-6 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center font-mono text-xs">
+                              {currentAyah.verseNumberInSurah}
+                            </span>
+                            <span>{currentSurah?.name} — Ayah {currentAyah.verseNumberInSurah} of {totalAyahs}</span>
+                          </span>
+                          <span className="font-mono font-semibold text-secondary">{surahProgressPercent}%</span>
+                        </div>
+                        <div className="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-secondary-container h-full rounded-full transition-all duration-300"
+                            style={{ width: `${surahProgressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Verse Meta & Hasanat Badges */}
+                      <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-outline font-medium">
+                            Juz {currentAyah.juz} • Page {currentAyah.page}
+                          </span>
+                          {isCurrentAyahRead && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary border border-tertiary/30 text-[10px] font-bold">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Recited</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-[11px] text-outline border border-outline-variant/30 font-mono">
+                            {currentAyah.arabicLetterCount} letters
+                          </span>
+                          <span 
+                            title={`Reciting this ayah earns ${currentAyah.hasanatValue} Hasanat (${currentAyah.arabicLetterCount} letters x 10)`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-container/30 border border-tertiary/40 text-tertiary text-xs font-bold shadow-sm"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-tertiary" />
+                            +{currentAyah.hasanatValue} Hasanat
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Arabic Quranic Typography */}
+                      <div className="py-4 md:py-6">
+                        <p
+                          className="font-noto-serif text-right text-on-surface tracking-wide leading-[220%] select-text drop-shadow-sm"
+                          style={{ fontSize: `${fontSize}px` }}
+                          dir="rtl"
+                        >
+                          {currentAyah.arabicText} <span className="text-primary font-serif">﴿{currentAyah.verseNumberInSurah}﴾</span>
+                        </p>
+                      </div>
+
+                      {/* Translation Text */}
+                      <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/20 space-y-1">
+                        <span className="text-[10px] uppercase font-bold text-outline font-label-caps">
+                          {translationLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்பு' : 'Translation (Sahih International)'}
+                        </span>
+                        <p className="font-sans text-base md:text-lg text-on-surface leading-relaxed pt-1">
+                          {currentAyah.translations[translationLanguage] ||
+                            currentAyah.translations['en'] ||
+                            'Translation loading...'}
+                        </p>
+                      </div>
+
+                      {/* 🔘 Single-Verse Navigation & Mark Read Controls */}
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-outline-variant/20">
+                        {/* Previous Ayah Button */}
+                        <button
+                          type="button"
+                          onClick={handlePrevAyah}
+                          disabled={currentSurahNumber === 1 && currentAyahNumber === 1}
+                          className="w-full sm:w-auto px-5 py-3 rounded-full bg-surface-container hover:bg-surface-container-highest text-on-surface text-xs font-semibold flex items-center justify-center gap-2 border border-outline-variant/40 disabled:opacity-40 transition cursor-pointer disabled:cursor-not-allowed shadow-sm"
+                        >
+                          <ChevronLeft className="w-4 h-4 text-secondary" />
+                          <span>Previous Ayah</span>
+                        </button>
+
+                        {/* Main Center Action: Mark Read & Next */}
+                        <button
+                          type="button"
+                          onClick={handleMarkAndNext}
+                          className="w-full sm:flex-1 py-3.5 px-6 rounded-full primary-gradient-btn text-white font-bold text-sm shadow-xl hover:scale-102 active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                          <span>
+                            {currentAyah.verseNumberInSurah === totalAyahs
+                              ? (currentSurahNumber === 114 ? 'Mark Read & Complete Quran' : 'Mark Read & Next Surah →')
+                              : 'Mark Read & Next (→)'}
+                          </span>
+                        </button>
+
+                        {/* Skip Forward Button */}
+                        <button
+                          type="button"
+                          onClick={handleNextAyahOnly}
+                          disabled={currentSurahNumber === 114 && currentAyahNumber === totalAyahs}
+                          className="w-full sm:w-auto px-4 py-3 rounded-full bg-surface-container hover:bg-surface-container-highest text-outline hover:text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 border border-outline-variant/30 disabled:opacity-40 transition cursor-pointer"
+                          title="Skip to next verse without marking"
+                        >
+                          <span>Skip</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Keyboard shortcut tip */}
+                      <p className="text-[10px] text-outline text-center font-mono">
+                        Tip: Press <kbd className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface border border-outline-variant/40">Space</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface border border-outline-variant/40">→</kbd> to mark read and advance.
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
               ) : (
+                /* ========================================================== */
+                /* 📜 ALL-VERSES LIST READING VIEW                            */
+                /* ========================================================== */
                 <div className="space-y-4">
                   {/* Bismillah Header */}
                   {currentSurahNumber !== 9 && (
@@ -386,35 +620,20 @@ export const ReadingScreen: React.FC = () => {
                             </span>
                           </div>
 
-                          {/* Hasanat & Letter Count Badges */}
                           <div className="flex items-center gap-2">
                             <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-[11px] text-outline border border-outline-variant/30">
                               {verse.arabicLetterCount} letters
                             </span>
                             <span 
-                              title={`Reciting this ayah earns ${verse.hasanatValue} Hasanat (${verse.arabicLetterCount} letters x 10)`}
                               className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-container/30 border border-tertiary/30 text-tertiary text-[11px] font-semibold"
                             >
                               <Sparkles className="w-3 h-3" />
                               +{verse.hasanatValue} Hasanat
                             </span>
-
-                            <button 
-                              title="Bookmark Ayah"
-                              className="p-1.5 rounded-lg hover:bg-surface-container text-outline hover:text-primary cursor-pointer"
-                            >
-                              <Bookmark className="w-4 h-4" />
-                            </button>
-                            <button 
-                              title="Share Ayah"
-                              className="p-1.5 rounded-lg hover:bg-surface-container text-outline hover:text-primary cursor-pointer"
-                            >
-                              <Share2 className="w-4 h-4" />
-                            </button>
                           </div>
                         </div>
 
-                        {/* Arabic Script (Noto Serif with CSS font size) */}
+                        {/* Arabic Script */}
                         <p
                           className="font-noto-serif text-right text-on-surface tracking-wide leading-[180%] select-text"
                           style={{ fontSize: `${fontSize}px` }}
@@ -437,7 +656,10 @@ export const ReadingScreen: React.FC = () => {
                           </span>
 
                           <button
-                            onClick={() => handleMarkAyahRead(verse)}
+                            onClick={() => {
+                              setCurrentPosition(currentSurahNumber, verse.verseNumberInSurah, verse.page, verse.juz)
+                              handleMarkAndNext()
+                            }}
                             className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                               isReadInSession
                                 ? 'bg-surface-container text-tertiary border border-tertiary/40'
@@ -451,37 +673,37 @@ export const ReadingScreen: React.FC = () => {
                       </div>
                     )
                   })}
-
-                  {/* Next/Prev Chapter Navigation Footer */}
-                  <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 flex items-center justify-between">
-                    <button
-                      onClick={handlePrevSurah}
-                      disabled={currentSurahNumber <= 1}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container text-xs text-on-surface hover:border-primary border border-outline-variant/30 disabled:opacity-40 cursor-pointer"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                      <span>Previous Surah</span>
-                    </button>
-
-                    <button
-                      onClick={handleFinishSession}
-                      className="px-6 py-2.5 rounded-full bg-tertiary-container text-on-tertiary-container font-bold text-xs flex items-center gap-2 shadow-lg hover:scale-105 transition cursor-pointer"
-                    >
-                      <Award className="w-4 h-4" />
-                      <span>Complete Session</span>
-                    </button>
-
-                    <button
-                      onClick={handleNextSurah}
-                      disabled={currentSurahNumber >= 114}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container text-xs text-on-surface hover:border-primary border border-outline-variant/30 disabled:opacity-40 cursor-pointer"
-                    >
-                      <span>Next Surah</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
                 </div>
               )}
+
+              {/* Next/Prev Chapter Navigation Footer */}
+              <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 flex items-center justify-between flex-wrap gap-3">
+                <button
+                  onClick={handlePrevSurah}
+                  disabled={currentSurahNumber <= 1}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container text-xs text-on-surface hover:border-primary border border-outline-variant/30 disabled:opacity-40 cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Previous Surah</span>
+                </button>
+
+                <button
+                  onClick={handleFinishSession}
+                  className="px-6 py-2.5 rounded-full bg-tertiary-container text-on-tertiary-container font-bold text-xs flex items-center gap-2 shadow-lg hover:scale-105 transition cursor-pointer"
+                >
+                  <Award className="w-4 h-4" />
+                  <span>Complete Session</span>
+                </button>
+
+                <button
+                  onClick={handleNextSurah}
+                  disabled={currentSurahNumber >= 114}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container text-xs text-on-surface hover:border-primary border border-outline-variant/30 disabled:opacity-40 cursor-pointer"
+                >
+                  <span>Next Surah</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Right Rail: Desktop Dedicated Session & Progress Control Panel */}
@@ -518,7 +740,7 @@ export const ReadingScreen: React.FC = () => {
                   <span className="font-bold text-on-surface">{activeSession.sessionVersesRead} verses</span>
                 </div>
 
-                {/* Desktop "I'm Done" Action */}
+                {/* Desktop Complete Session Action */}
                 <button
                   onClick={handleFinishSession}
                   className="w-full py-3 rounded-full bg-tertiary-container hover:bg-tertiary-container/90 text-on-tertiary-container font-bold text-xs flex items-center justify-center gap-2 transition shadow-md cursor-pointer"
@@ -604,99 +826,89 @@ export const ReadingScreen: React.FC = () => {
                     </button>
                   </div>
                 </div>
-
-                {/* Audio Recitation Bar */}
-                <div className="pt-2 border-t border-outline-variant/20 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                      className="w-9 h-9 rounded-full primary-gradient-btn text-white flex items-center justify-center shadow-md hover:scale-105 transition cursor-pointer"
-                    >
-                      {isPlayingAudio ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-                    </button>
-                    <div className="text-left">
-                      <p className="text-xs font-semibold text-on-surface">Mishary Alafasy</p>
-                      <p className="text-[10px] text-tertiary">Reciter</p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={toggleAudioMute}
-                    className="p-2 rounded-lg text-outline hover:text-on-surface transition cursor-pointer"
-                  >
-                    {isAudioMuted ? <VolumeX className="w-4 h-4 text-error" /> : <Volume2 className="w-4 h-4" />}
-                  </button>
-                </div>
               </div>
             </div>
           </div>
         </div>
       ) : (
         <ScreenPlaceholder
-          title="Quran Reading Screen"
-          description="Immersive Quran reader featuring Arabic typography with diacritics, live session timer, precomputed Arabic letter counts for Hasanat rewards, multi-language translations (English & Tamil), and offline IndexedDB caching."
-          stitchScreenName="Deenly Reading Interface / Deenly Reading - Desktop / Deenly Reading - Tablet"
-          stitchScreenId="138d0a978cca40c5b98c1997cea27d6d / 4b77f69b61df40108504081e6b39348f"
+          title="Reading Screen"
+          description="Sacred Quran recitation interface with single-verse focused navigation, Hadith-accurate Hasanat accumulation, multi-language translations, and Juz milestones."
+          stitchScreenName="Deenly Reading Experience"
+          stitchScreenId="0d8bf1fe21134a66a111a4574971c261"
           stitchReady={true}
           currentRoute="/reading"
           featuresList={[
-            'Desktop two-column layout with centered verses and sticky session control rail',
-            'Active session timer recording reading duration to daily and lifetime stats',
-            'Live +N Hasanat animated badge calculation on marking Ayahs read',
-            'Dynamic Juz-level progress bar and percentage tracker',
-            'Multi-language translation storage with instant English / Tamil toggle',
+            'Single-Verse focused recitation mode with next and previous navigation arrows',
+            'Precomputed Arabic letter counts yielding 10 Hasanat points per letter',
+            'Floating real-time Hasanat badges popping up on verse completion',
+            'Instant translation switching between Sahih International (English) and Abdul Hameed Baqavi (Tamil)',
+            'Dynamic typography scale with custom CSS font size sliders',
+            'Juz completion bar and Khatm page progress tracker',
           ]}
         />
       )}
 
       {/* Session Completion Celebration Modal */}
       {completedSessionData && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-md w-full p-6 md:p-8 rounded-3xl glass-card border border-tertiary/40 space-y-6 shadow-2xl text-center">
-            <div className="w-16 h-16 rounded-2xl bg-tertiary-container/40 border border-tertiary text-tertiary mx-auto flex items-center justify-center">
-              <Sparkles className="w-8 h-8" />
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-md w-full p-6 md:p-8 rounded-3xl glass-card border border-primary/50 space-y-6 shadow-2xl text-center relative overflow-hidden">
+            <div className="w-16 h-16 rounded-2xl bg-tertiary-container/30 border border-tertiary text-tertiary mx-auto flex items-center justify-center shadow-xl">
+              <Award className="w-8 h-8 text-tertiary animate-bounce" />
             </div>
 
-            <div className="space-y-1">
-              <h3 className="text-xl font-bold font-h2 text-on-surface">Masha'Allah! Session Complete</h3>
+            <div className="space-y-1.5">
+              <span className="text-[10px] uppercase font-bold text-outline font-label-caps tracking-wider">
+                Masha'Allah! Session Complete
+              </span>
+              <h3 className="text-2xl font-bold font-h1 text-on-surface">Spiritual Rewards Earned</h3>
               <p className="text-xs text-on-surface-variant">
-                May Allah accept your recitation and elevate your ranks.
+                Your recitation has been saved and synced to your cloud profile.
               </p>
             </div>
 
-            {/* Session Stats Grid */}
-            <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-              <div>
-                <p className="text-xs text-outline font-medium">Hasanat</p>
-                <p className="text-lg font-bold text-tertiary">+{completedSessionData.hasanatEarned.toLocaleString()}</p>
+            <div className="grid grid-cols-3 gap-2.5 p-4 rounded-2xl bg-surface-container/80 border border-outline-variant/30 text-center">
+              <div className="p-2.5 rounded-xl bg-tertiary-container/20 border border-tertiary/20">
+                <span className="text-[10px] text-tertiary font-bold font-label-caps uppercase">Hasanat</span>
+                <p className="text-lg font-bold text-tertiary mt-0.5">
+                  +{completedSessionData.hasanatEarned.toLocaleString()}
+                </p>
               </div>
-              <div>
-                <p className="text-xs text-outline font-medium">Verses</p>
-                <p className="text-lg font-bold text-on-surface">{completedSessionData.versesRead}</p>
+
+              <div className="p-2.5 rounded-xl bg-surface-container-highest/60 border border-outline-variant/20">
+                <span className="text-[10px] text-outline font-bold font-label-caps uppercase">Verses</span>
+                <p className="text-lg font-bold text-on-surface mt-0.5">
+                  {completedSessionData.versesRead}
+                </p>
               </div>
-              <div>
-                <p className="text-xs text-outline font-medium">Duration</p>
-                <p className="text-lg font-bold text-on-surface">{formatDurationHuman(completedSessionData.durationSeconds)}</p>
+
+              <div className="p-2.5 rounded-xl bg-surface-container-highest/60 border border-outline-variant/20">
+                <span className="text-[10px] text-outline font-bold font-label-caps uppercase">Duration</span>
+                <p className="text-sm font-bold font-mono text-on-surface mt-1">
+                  {formatDurationHuman(completedSessionData.durationSeconds)}
+                </p>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <button
-                onClick={() => {
-                  setCompletedSessionData(null)
-                  startSession()
-                }}
+                type="button"
+                onClick={() => setCompletedSessionData(null)}
                 className="flex-1 py-3 rounded-full bg-surface-container border border-outline-variant/40 text-xs font-semibold text-on-surface hover:border-primary transition cursor-pointer"
               >
-                Keep Reading
+                Continue Reading
               </button>
-              <Link
-                to="/dashboard"
-                onClick={() => setCompletedSessionData(null)}
-                className="flex-1 py-3 rounded-full primary-gradient-btn text-xs font-semibold text-white shadow-lg flex items-center justify-center cursor-pointer"
+              <button
+                type="button"
+                onClick={() => {
+                  setCompletedSessionData(null)
+                  navigate('/dashboard')
+                }}
+                className="flex-1 py-3 rounded-full primary-gradient-btn text-white font-bold text-xs shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                Go to Dashboard
-              </Link>
+                <Check className="w-4 h-4" />
+                <span>Go to Dashboard</span>
+              </button>
             </div>
           </div>
         </div>
