@@ -1,11 +1,10 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, Compass, Trophy, User } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Trophy, User } from 'lucide-react'
 
 const mobileNavItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/reading', label: 'Read', icon: BookOpen },
-  { path: '/explore', label: 'Explore', icon: Compass },
+  { path: '/quran', label: 'Quran', icon: BookOpen },
   { path: '/leaderboard', label: 'Ranks', icon: Trophy },
   { path: '/profile', label: 'Profile', icon: User },
 ]

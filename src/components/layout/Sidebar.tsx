@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   BookOpen, 
-  Compass, 
   Trophy, 
   User, 
   Settings, 
@@ -17,8 +16,7 @@ import { useAuthStore } from '../../store/useAuthStore'
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/reading', label: 'Quran Reader', icon: BookOpen },
-  { path: '/explore', label: 'Explore & Surahs', icon: Compass },
+  { path: '/quran', label: 'Quran (114 Surahs)', icon: BookOpen },
   { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { path: '/profile', label: 'My Profile', icon: User },
   { path: '/settings', label: 'Settings', icon: Settings },

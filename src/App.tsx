@@ -8,7 +8,7 @@ import { LoginScreen } from './screens/LoginScreen'
 import { SignupScreen } from './screens/SignupScreen'
 import { DashboardScreen } from './screens/DashboardScreen'
 import { ReadingScreen } from './screens/ReadingScreen'
-import { ExploreScreen } from './screens/ExploreScreen'
+import { QuranScreen } from './screens/QuranScreen'
 import { LeaderboardScreen } from './screens/LeaderboardScreen'
 import { ProfileScreen } from './screens/ProfileScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
@@ -38,8 +38,11 @@ export const App: React.FC = () => {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardScreen />} />
+            {/* Dedicated 1-Verse Recitation Engine accessed from Dashboard */}
             <Route path="/reading" element={<ReadingScreen />} />
-            <Route path="/explore" element={<ExploreScreen />} />
+            {/* All 114 Quran Chapters & Whole Chapter Stream with Verse Slider */}
+            <Route path="/quran" element={<QuranScreen />} />
+            <Route path="/explore" element={<QuranScreen />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
             <Route path="/profile" element={<ProfileScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
