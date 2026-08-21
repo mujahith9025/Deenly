@@ -21,14 +21,12 @@ import {
   formatTimer, 
   calculateJuzProgress 
 } from '../lib/hasanatEngine'
-import { ScreenPlaceholder } from '../components/common/ScreenPlaceholder'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
   // State
-  const [showFullView, setShowFullView] = useState(true)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
@@ -299,18 +297,10 @@ export const ReadingScreen: React.FC = () => {
               ))}
             </select>
           )}
-
-          <button
-            onClick={() => setShowFullView(!showFullView)}
-            className="text-xs px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/40 text-outline hover:text-on-surface hover:border-primary transition cursor-pointer"
-          >
-            {showFullView ? 'Scaffold' : 'Stitch UI'}
-          </button>
         </div>
       </div>
 
-      {showFullView ? (
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* ========================================================================= */}
           {/* 2. TOP METRICS STRIP (Timer, Hasanat, Juz Progress)                       */}
           {/* ========================================================================= */}
@@ -530,24 +520,6 @@ export const ReadingScreen: React.FC = () => {
             </div>
           ) : null}
         </div>
-      ) : (
-        <ScreenPlaceholder
-          title="Reading Screen"
-          description="Sacred Quran recitation interface with single-verse focused navigation, Hadith-accurate Hasanat accumulation, multi-language translations, and Juz milestones."
-          stitchScreenName="Deenly Reading Experience"
-          stitchScreenId="0d8bf1fe21134a66a111a4574971c261"
-          stitchReady={true}
-          currentRoute="/reading"
-          featuresList={[
-            'Single-Verse focused recitation mode with next and previous navigation arrows',
-            'Precomputed Arabic letter counts yielding 10 Hasanat points per letter',
-            'Floating real-time Hasanat badges popping up on verse completion',
-            'Instant translation switching between Sahih International (English) and Abdul Hameed Baqavi (Tamil)',
-            'Dynamic typography scale with custom CSS font size sliders',
-            'Juz completion bar and Khatm page progress tracker',
-          ]}
-        />
-      )}
 
       {/* ========================================================================= */}
       {/* 4. EXACT REQUESTED BOTTOM NAVIGATION BAR (Left Pill, Center I'm Done,     */}

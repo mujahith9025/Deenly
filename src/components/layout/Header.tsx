@@ -2,7 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Flame, Sparkles, User, BookOpen, LogIn } from 'lucide-react'
 import { useAuthStore } from '../../store/useAuthStore'
-import { ConnectionStatus } from '../common/ConnectionStatus'
 
 export const Header: React.FC = () => {
   const user = useAuthStore((state) => state.user)
@@ -23,9 +22,6 @@ export const Header: React.FC = () => {
 
       {/* Center / Right Header Badges */}
       <div className="flex items-center gap-2 sm:gap-3.5">
-        {/* Backend Connection Status */}
-        <ConnectionStatus compact />
-
         {/* Guest Mode: Sign in with Google / Log In Action */}
         {user?.isGuest && (
           <Link

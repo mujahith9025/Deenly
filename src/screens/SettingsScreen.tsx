@@ -20,8 +20,6 @@ import {
   AlertTriangle,
   LogIn 
 } from 'lucide-react'
-import { ScreenPlaceholder } from '../components/common/ScreenPlaceholder'
-import { ConnectionStatus } from '../components/common/ConnectionStatus'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthStore } from '../store/useAuthStore'
 import { syncService } from '../lib/syncService'
@@ -38,7 +36,6 @@ function formatLastSynced(timestamp: string | null): string {
 }
 
 export const SettingsScreen: React.FC = () => {
-  const [showFullView, setShowFullView] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   const [showResetStatsModal, setShowResetStatsModal] = useState(false)
@@ -134,17 +131,9 @@ export const SettingsScreen: React.FC = () => {
             Customize Quran typography, translation language, daily goals, data sync, and account.
           </p>
         </div>
-
-        <button
-          onClick={() => setShowFullView(!showFullView)}
-          className="text-xs px-3.5 py-1.5 rounded-full bg-surface-container border border-outline-variant/40 text-secondary hover:border-primary transition cursor-pointer"
-        >
-          {showFullView ? 'Show Project Scaffold View' : 'Show Stitch UI View'}
-        </button>
       </div>
 
-      {showFullView ? (
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Account Profile Card */}
           <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5">
             <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
@@ -511,28 +500,7 @@ export const SettingsScreen: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Backend Connection Health Card */}
-          <ConnectionStatus />
         </div>
-      ) : (
-        <ScreenPlaceholder
-          title="Settings Screen"
-          description="Application preferences including Quran reading display tokens, audio reciters, prayer calculation method, push notifications, and Supabase backend status."
-          stitchScreenName="Deenly Settings"
-          stitchScreenId="af8550dc083d484bb0a13cd0985af5e8"
-          stitchReady={true}
-          currentRoute="/settings"
-          featuresList={[
-            'Translation language selector (English / Tamil) synced with Reading screen',
-            'Arabic typography font size slider with live scaled preview and CSS variables',
-            'Daily verse-goal stepper and presets updating Dashboard targets immediately',
-            'Notification preference toggles (Prayer athan & Quran reading alerts)',
-            'Multi-device realtime synchronization with additive delta merge and offline queue',
-            'Google OAuth connection status and secure account deletion/anonymization',
-          ]}
-        />
-      )}
 
       {/* Reset Stats Confirmation Warning Modal */}
       {showResetStatsModal && (
