@@ -13,8 +13,7 @@ import {
   Compass, 
   Star, 
   ChevronRight, 
-  Award, 
-  Calendar 
+  Award 
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { useReadingStore } from '../store/useReadingStore'
@@ -222,25 +221,10 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. WEEKLY CONSISTENCY (MOVED DIRECTLY BELOW GREETING)                     */}
+      {/* 2. WEEKLY CONSISTENCY CIRCLE DAYS ONLY                                    */}
       {/* ========================================================================= */}
-      <div className="p-5 md:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-md">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-primary" />
-            <h2 className="text-base md:text-lg font-bold font-h2 text-on-surface">Weekly Consistency</h2>
-          </div>
-          <span className="text-xs text-secondary font-medium px-2.5 py-0.5 rounded-full bg-surface-container border border-outline-variant/30">
-            {dailyGoalVerses} verses/day goal
-          </span>
-        </div>
-
-        <p className="text-xs text-on-surface-variant">
-          Reciting your daily goal protects your streak flame from extinguishing.
-        </p>
-
-        {/* 7-Day Week Indicator Bar */}
-        <div className="grid grid-cols-7 gap-2 pt-1">
+      <div className="p-4 md:p-5 rounded-3xl glass-card border border-outline-variant/30 shadow-md">
+        <div className="grid grid-cols-7 gap-2">
           {weekDays.map((wd, i) => (
             <div key={i} className="flex flex-col items-center gap-1.5">
               <span className="text-[11px] text-outline font-medium">{wd.day}</span>
