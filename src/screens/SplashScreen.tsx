@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { BookOpen, ArrowRight, Loader2 } from 'lucide-react'
+import { BookOpen, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 
 export const SplashScreen: React.FC = () => {
@@ -10,14 +10,14 @@ export const SplashScreen: React.FC = () => {
   const signInAsGuest = useAuthStore((state) => state.signInAsGuest)
 
   useEffect(() => {
-    // If user is already authenticated (or guest session exists), auto-navigate to Dashboard after brief splash
-    if (isAuthenticated && !isLoading) {
+    // If user is already authenticated, show the opening splash screen and directly navigate to dashboard
+    if (isAuthenticated) {
       const timer = setTimeout(() => {
         navigate('/dashboard', { replace: true })
-      }, 1000)
+      }, 800)
       return () => clearTimeout(timer)
     }
-  }, [isAuthenticated, isLoading, navigate])
+  }, [isAuthenticated, navigate])
 
   const handleGuestEntry = () => {
     signInAsGuest()
@@ -29,7 +29,7 @@ export const SplashScreen: React.FC = () => {
       {/* Ambient background glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-primary-container/25 blur-[120px] pointer-events-none" />
 
-      {/* Top Bar Spacer */}
+      {/* Top Spacer */}
       <div className="w-full max-w-md h-8" />
 
       {/* Center Brand Splash Card */}
@@ -54,15 +54,10 @@ export const SplashScreen: React.FC = () => {
         </p>
       </main>
 
-      {/* Bottom Area: If authenticated, show subtle spinner and transition; otherwise show action buttons */}
-      <div className="w-full max-w-sm mx-auto space-y-3 z-10 pb-6 min-h-[120px] flex flex-col justify-end">
-        {isAuthenticated ? (
-          <div className="flex flex-col items-center gap-2 py-4 animate-fade-in">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <span className="text-xs text-primary-fixed-dim font-medium">Entering your sanctuary...</span>
-          </div>
-        ) : (
-          <>
+      {/* Bottom Area: Only show action buttons for unauthenticated visitors when auth loading is finished */}
+      <div className="w-full max-w-sm mx-auto space-y-3 z-10 pb-6 min-h-[110px] flex flex-col justify-end">
+        {!isAuthenticated && !isLoading && (
+          <div className="space-y-3 animate-fade-in">
             <Link
               to="/dashboard"
               onClick={handleGuestEntry}
@@ -87,7 +82,7 @@ export const SplashScreen: React.FC = () => {
                 Guest Demo
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

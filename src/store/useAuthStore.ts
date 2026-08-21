@@ -74,15 +74,17 @@ function loadStoredDailyHistory(): Record<string, DailyReadingRecord> {
   return {}
 }
 
+const initialStoredUser = typeof window !== 'undefined' ? authService.getStoredProfile() : null
+
 export const useAuthStore = create<AuthStore>((set, get) => ({
-  user: null,
+  user: initialStoredUser,
   session: null,
   dailyHistory: loadStoredDailyHistory(),
   syncStatus: 'synced',
   lastSyncedAt: typeof window !== 'undefined' ? localStorage.getItem(LAST_SYNCED_KEY) || new Date().toISOString() : null,
   pendingOfflineCount: syncService.getPendingCount(),
-  isLoading: true,
-  isAuthenticated: false,
+  isLoading: initialStoredUser ? false : true,
+  isAuthenticated: Boolean(initialStoredUser),
   error: null,
 
   setUser: (user) => set({ user, isAuthenticated: Boolean(user), error: null }),
