@@ -7,21 +7,21 @@ import {
   CheckCircle2, 
   Circle, 
   Clock, 
-  Award,
-  Compass,
-  ChevronRight,
-  Play,
-  Bookmark,
-  Calendar,
-  Check
+  Award, 
+  ChevronRight, 
+  Play, 
+  Bookmark, 
+  Calendar, 
+  Check,
+  BookMarked
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { useReadingStore } from '../store/useReadingStore'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   calculateJuzProgress, 
-  calculateKhatmProgress,
-  calculateOverallQuranProgress,
+  calculateKhatmProgress, 
+  calculateOverallQuranProgress, 
   formatDurationHuman, 
   getLocalDateString 
 } from '../lib/hasanatEngine'
@@ -29,22 +29,182 @@ import {
 type TimeframeFilter = 'today' | 'week' | 'all'
 
 const DEFAULT_HABITS = [
-  { id: 'fajr', name: 'Fajr Prayer', time: '05:12 AM', category: 'prayer' },
-  { id: 'adhkar_morning', name: 'Morning Adhkar', time: '06:00 AM', category: 'dhikr' },
-  { id: 'dhuhr', name: 'Dhuhr Prayer', time: '12:30 PM', category: 'prayer' },
-  { id: 'quran', name: 'Read Daily Quran', time: 'Daily Target', category: 'quran' },
-  { id: 'asr', name: 'Asr Prayer', time: '03:45 PM', category: 'prayer' },
-  { id: 'maghrib', name: 'Maghrib Prayer', time: '06:15 PM', category: 'prayer' },
-  { id: 'isha', name: 'Isha Prayer', time: '07:30 PM', category: 'prayer' },
-  { id: 'adhkar_evening', name: 'Evening Adhkar', time: '08:00 PM', category: 'dhikr' },
+  { id: 'fajr', name: 'Fajr Prayer', nameTa: 'ஃபஜ்ர் தொழுகை', time: '05:12 AM', category: 'prayer' },
+  { id: 'adhkar_morning', name: 'Morning Adhkar', nameTa: 'காலை திக்ருகள்', time: '06:00 AM', category: 'dhikr' },
+  { id: 'dhuhr', name: 'Dhuhr Prayer', nameTa: 'ளுஹர் தொழுகை', time: '12:30 PM', category: 'prayer' },
+  { id: 'quran', name: 'Read Daily Quran', nameTa: 'தினசரி குர்ஆன் ஓதுதல்', time: 'Daily Target', category: 'quran' },
+  { id: 'asr', name: 'Asr Prayer', nameTa: 'அஸர் தொழுகை', time: '03:45 PM', category: 'prayer' },
+  { id: 'maghrib', name: 'Maghrib Prayer', nameTa: 'மஃரிப் தொழுகை', time: '06:15 PM', category: 'prayer' },
+  { id: 'isha', name: 'Isha Prayer', nameTa: 'இஷா தொழுகை', time: '07:30 PM', category: 'prayer' },
+  { id: 'adhkar_evening', name: 'Evening Adhkar', nameTa: 'மாலை திக்ருகள்', time: '08:00 PM', category: 'dhikr' },
 ]
 
-// Daily Rotating Reflection Verse
+// 🌟 Daily Rotating Quran Verses (with Arabic, English, and Authentic Tamil Translations)
 const DAILY_VERSES = [
-  { surahNum: 94, ayahNum: 5, surahName: 'Ash-Sharh', arabic: 'فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا', translation: 'For indeed, with hardship [will be] ease.' },
-  { surahNum: 2, ayahNum: 152, surahName: 'Al-Baqarah', arabic: 'فَٱذْكُرُونِىٓ أَذْكُرْكُمْ وَٱشْكُرُوا۟ لِى وَلَا تَكْفُرُونِ', translation: 'So remember Me; I will remember you. And be grateful to Me and do not deny Me.' },
-  { surahNum: 13, ayahNum: 28, surahName: 'Ar-Ra\'d', arabic: 'أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ', translation: 'Unquestionably, by the remembrance of Allah hearts are assured.' },
-  { surahNum: 65, ayahNum: 3, surahName: 'At-Talaq', arabic: 'وَمَن يَتَوَكَّلْ عَلَى ٱللَّهِ فَهُوَ حَسْبُهُۥٓ', translation: 'And whoever relies upon Allah - then He is sufficient for him.' },
+  {
+    surahNum: 94,
+    ayahNum: 5,
+    surahName: 'Ash-Sharh',
+    surahNameTa: 'அஷ்-ஷர்ஹ்',
+    arabic: 'فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا • إِنَّ مَعَ ٱلْعُسْرِ يُسْرًا',
+    translationEn: 'For indeed, with hardship [will be] ease. Indeed, with hardship [will be] ease.',
+    translationTa: 'நிச்சயமாக சிரமத்துடன் எளிமை இருக்கிறது. நிச்சயமாக சிரமத்துடன் எளிமை இருக்கிறது.',
+  },
+  {
+    surahNum: 2,
+    ayahNum: 152,
+    surahName: 'Al-Baqarah',
+    surahNameTa: 'அல்-பகரா',
+    arabic: 'فَٱذْكُرُونِىٓ أَذْكُرْكُمْ وَٱشْكُرُوا۟ لِى وَلَا تَكْفُرُونِ',
+    translationEn: 'So remember Me; I will remember you. And be grateful to Me and do not deny Me.',
+    translationTa: 'ஆகவே, என்னை நீங்கள் நினையுங்கள்; நானும் உங்களை நினைப்பேன். எனக்கு நன்றி செலுத்துங்கள்; எனக்கு மாறு செய்யாதீர்கள்.',
+  },
+  {
+    surahNum: 13,
+    ayahNum: 28,
+    surahName: 'Ar-Ra\'d',
+    surahNameTa: 'அர்-ரஃது',
+    arabic: 'أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ',
+    translationEn: 'Unquestionably, by the remembrance of Allah hearts are assured.',
+    translationTa: 'அறிந்து கொள்க! அல்லாஹ்வின் நினைவால் தான் இதயங்கள் அமைதி பெறுகின்றன.',
+  },
+  {
+    surahNum: 65,
+    ayahNum: 3,
+    surahName: 'At-Talaq',
+    surahNameTa: 'அத்-தலாக்',
+    arabic: 'وَمَن يَتَوَكَّلْ عَلَى ٱللَّهِ فَهُوَ حَسْبُهُۥٓ',
+    translationEn: 'And whoever relies upon Allah - then He is sufficient for him.',
+    translationTa: 'எவர் அல்லாஹ்வின் மீது நம்பிக்கை வைக்கிறாரோ அவருக்கு அவன் போதுமானவன்.',
+  },
+  {
+    surahNum: 3,
+    ayahNum: 139,
+    surahName: 'Ali \'Imran',
+    surahNameTa: 'ஆல இம்ரான்',
+    arabic: 'وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ',
+    translationEn: 'So do not weaken and do not grieve, and you will be superior if you are [true] believers.',
+    translationTa: 'நீங்கள் மனம் தளர வேண்டாம்; கவலையும் படாதீர்கள்; நீங்கள் உண்மையான நம்பிக்கையாளர்களாக இருந்தால் நீங்களே மேலோங்குவீர்கள்.',
+  },
+  {
+    surahNum: 6,
+    ayahNum: 54,
+    surahName: 'Al-An\'am',
+    surahNameTa: 'அல்-அன்ஆம்',
+    arabic: 'كَتَبَ رَبُّكُمْ عَلَىٰ نَفْسِهِ ٱلرَّحْمَةَ',
+    translationEn: 'Your Lord has decreed upon Himself mercy.',
+    translationTa: 'உங்கள் இறைவன் தன் மீது கிருபையைக் கடமையாக்கிக் கொண்டான்.',
+  },
+  {
+    surahNum: 2,
+    ayahNum: 186,
+    surahName: 'Al-Baqarah',
+    surahNameTa: 'அல்-பகரா',
+    arabic: 'وَإِذَا سَأَلَكَ عِبَادِى عَنِّى فَإِنِّى قَرِيبٌ ۖ أُجِيبُ دَعْوَةَ ٱلدَّاعِ إِذَا دَعَانِ',
+    translationEn: 'And when My servants ask you concerning Me, indeed I am near. I respond to the invocation of the supplicant when he calls upon Me.',
+    translationTa: 'என்னுடைய அடியார்கள் என்னைப்பற்றி உங்களிடம் கேட்டால், நிச்சயமாக நான் மிக சமீபமாகவே இருக்கின்றேன். என்னை அழைத்தால் நான் அவர்களுக்குப் பதிலளிக்கிறேன்.',
+  },
+  {
+    surahNum: 2,
+    ayahNum: 286,
+    surahName: 'Al-Baqarah',
+    surahNameTa: 'அல்-பகரா',
+    arabic: 'لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا',
+    translationEn: 'Allah does not burden a soul beyond that it can bear.',
+    translationTa: 'அல்லாஹ் எந்த ஓர் ஆத்மாவையும் அதன் சக்திக்கு மீறிச் சிரமப்படுத்துவதில்லை.',
+  },
+  {
+    surahNum: 39,
+    ayahNum: 53,
+    surahName: 'Az-Zumar',
+    surahNameTa: 'அஸ்-ஸுமர்',
+    arabic: 'قُلْ يَـٰعِبَادِىَ ٱلَّذِينَ أَسْرَفُوا۟ عَلَىٰٓ أَنفُسِهِمْ لَا تَقْنَطُوا۟ مِن رَّحْمَةِ ٱللَّهِ ۚ إِنَّ ٱللَّهَ يَغْفِرُ ٱلذُّنُوبَ جَمِيعًا',
+    translationEn: 'Say, "O My servants who have transgressed against themselves, do not despair of the mercy of Allah. Indeed, Allah forgives all sins."',
+    translationTa: 'தங்களுக்குத் தாமே அநீதி இழைத்துக் கொண்ட என் அடியார்களே! அல்லாஹ்வின் அருளில் நீங்கள் நம்பிக்கை இழக்காதீர்கள்; நிச்சயமாக அல்லாஹ் பாவங்கள் அனைத்தையும் மன்னிக்கிறான்.',
+  },
+  {
+    surahNum: 15,
+    ayahNum: 98,
+    surahName: 'Al-Hijr',
+    surahNameTa: 'அல்-ஹிஜ்ர்',
+    arabic: 'فَسَبِّحْ بِحَمْدِ رَبِّكَ وَكُن مِّنَ ٱلسَّـٰجِدِينَ • وَٱعْبُدْ رَبَّكَ حَتَّىٰ يَأْتِيَكَ ٱلْيَقِينُ',
+    translationEn: 'So exalt [Allah] with praise of your Lord and be of those who prostrate. And worship your Lord until there comes to you the certainty.',
+    translationTa: 'ஆகவே, உமது இறைவனைப் புகழ்ந்து துதிப்பீராக! சிரம் பணிவோரில் ஒருவராக இருப்பீராக! உறுதியான மரணம் வரும் வரை உங்கள் இறைவனை வணங்குங்கள்.',
+  }
+]
+
+// 🌟 Daily Rotating Hadiths (with Arabic, English, and Authentic Tamil Translations)
+const DAILY_HADITHS = [
+  {
+    reference: 'Sahih al-Bukhari 1',
+    referenceTa: 'ஸஹீஹ் புகாரி 1',
+    arabic: 'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى',
+    translationEn: 'Actions are judged by intentions, and every person will get the reward according to what he intended.',
+    translationTa: 'செயல்கள் அனைத்தும் எண்ணங்களைப் பொருத்தே அமைகின்றன. ஒவ்வொரு மனிதருக்கும் அவர் எண்ணியதே கிடைக்கிறது.',
+  },
+  {
+    reference: 'Sahih al-Bukhari 5027',
+    referenceTa: 'ஸஹீஹ் புகாரி 5027',
+    arabic: 'خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ',
+    translationEn: 'The best among you are those who learn the Quran and teach it to others.',
+    translationTa: 'உங்களில் சிறந்தவர் குர்ஆனைக் கற்று, பிறருக்கும் கற்றுக் கொடுப்பவரே ஆவார்.',
+  },
+  {
+    reference: 'Sunan at-Tirmidhi 2910',
+    referenceTa: 'திர்மிதி 2910',
+    arabic: 'مَنْ قَرَأَ حَرْفًا مِنْ كِتَابِ اللَّهِ فَلَهُ بِهِ حَسَنَةٌ وَالْحَسَنَةُ بِعَشْرِ أَمْثَالِهَا',
+    translationEn: 'Whoever recites a single letter from the Book of Allah will receive ten rewards for it.',
+    translationTa: 'அல்லாஹ்வின் வேதத்திலிருந்து ஓர் எழுத்தை ஓதுகிறவருக்கு ஒரு நன்மை உண்டு; அந்த ஒரு நன்மை பத்து நன்மைகளாகப் பெருகும்.',
+  },
+  {
+    reference: 'Sahih Muslim 223',
+    referenceTa: 'ஸஹீஹ் முஸ்லிம் 223',
+    arabic: 'الطُّهُورُ شَطْرُ الإِيمَانِ، وَالْحَمْدُ لِلَّهِ تَمْلأُ الْمِيزَانَ',
+    translationEn: 'Cleanliness is half of faith, and "Al-hamdulillah" (praise be to Allah) fills the Scale of good deeds.',
+    translationTa: 'சுத்தம் ஈமானின் பாதியாகும்; "அல்ஹம்துலில்லாஹ்" நன்மைகளின் தராசை நிரப்பும்.',
+  },
+  {
+    reference: 'Jami` at-Tirmidhi 1956',
+    referenceTa: 'திர்மிதி 1956',
+    arabic: 'تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ لَكَ صَدَقَةٌ',
+    translationEn: 'Smiling in the face of your brother is charity for you.',
+    translationTa: 'உன் சகோதரனின் முகத்தைப் பார்த்து நீ புன்னகைப்பதும் உனக்கு ஒரு தர்மமாகும்.',
+  },
+  {
+    reference: 'Sahih al-Bukhari 6407',
+    referenceTa: 'ஸஹீஹ் புகாரி 6407',
+    arabic: 'كَلِمَتَانِ حَبِيبَتَانِ إِلَى الرَّحْمَنِ، خَفِيفَتَانِ عَلَى اللِّسَانِ، ثَقِيلَتَانِ فِي الْمِيزَانِ: سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ',
+    translationEn: 'Two phrases are beloved to the Most Merciful, light on the tongue, heavy on the Scale: "Subhan Allahi wa bihamdihi, Subhan Allahil Azeem".',
+    translationTa: 'இரண்டு வாக்கியங்கள் நாவிற்கு எளிதானவை, தராசில் கனமானவை, கருணையாளன் அல்லாஹ்விற்குப் பிரியமானவை: "ஸுப்ஹானல்லாஹி வபிஹம்திஹி, ஸுப்ஹானல்லாஹில் அழீம்".',
+  },
+  {
+    reference: 'Sahih Muslim 2699',
+    referenceTa: 'ஸஹீஹ் முஸ்லிம் 2699',
+    arabic: 'مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ',
+    translationEn: 'Whoever travels on a path in search of knowledge, Allah will make easy for him the path to Paradise.',
+    translationTa: 'எவர் கல்வியைத் தேடி ஒரு வழியில் செல்கிறாரோ, அவருக்கு அல்லாஹ் சொர்க்கத்தின் பாதையை எளிதாக்குகிறான்.',
+  },
+  {
+    reference: 'Sahih al-Bukhari 13',
+    referenceTa: 'ஸஹீஹ் புகாரி 13',
+    arabic: 'لاَ يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ',
+    translationEn: 'None of you has complete faith until he loves for his brother what he loves for himself.',
+    translationTa: 'தமக்கு விரும்புவதையே தம் சகோதரனுக்கும் விரும்பாத வரை உங்களில் எவரும் முழுமையான இறைநம்பிக்கையாளராக முடியாது.',
+  },
+  {
+    reference: 'Sahih Muslim 782',
+    referenceTa: 'ஸஹீஹ் முஸ்லிம் 782',
+    arabic: 'أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ',
+    translationEn: 'The most beloved deeds to Allah are those done consistently, even if they are small.',
+    translationTa: 'நற்செயல்களில் அல்லாஹ்விற்கு மிகவும் விருப்பமானது, குறைவாக இருந்தாலும் தொடர்ந்து செய்யப்படுவதேயாகும்.',
+  },
+  {
+    reference: 'Jami` at-Tirmidhi 1987',
+    referenceTa: 'திர்மிதி 1987',
+    arabic: 'اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا، وَخَالِقِ النَّاسَ بِخُلُقٍ حَسَنٍ',
+    translationEn: 'Fear Allah wherever you are, follow up a bad deed with a good one to wipe it out, and behave with good character towards people.',
+    translationTa: 'நீங்கள் எங்கிருந்தாலும் அல்லாஹ்வை அஞ்சுங்கள்; ஒரு தவறு நேர்ந்துவிட்டால் தொடர்ந்து ஒரு நன்மை செய்யுங்கள்; மனிதர்களிடம் நற்குணத்துடன் பழகுங்கள்.',
+  }
 ]
 
 export const DashboardScreen: React.FC = () => {
@@ -54,6 +214,9 @@ export const DashboardScreen: React.FC = () => {
   const dailyHistory = useAuthStore((state) => state.dailyHistory)
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
   const currentAyahNumber = useReadingStore((state) => state.currentAyahNumber)
+
+  // Language translation preference (English / Tamil)
+  const isTamil = user?.preferredTranslation === 'tamil'
 
   const todayStr = getLocalDateString(new Date())
   const habitStorageKey = `deenly_habits_${user?.id || 'guest'}_${todayStr}`
@@ -69,7 +232,6 @@ export const DashboardScreen: React.FC = () => {
     }
   })
 
-  // Synchronize when user changes
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
@@ -186,7 +348,7 @@ export const DashboardScreen: React.FC = () => {
     }
   })
 
-  // 5. Position Calculations (Always sequential from 1:1)
+  // 5. Sequential Position Calculations
   const lastSurah = user?.lastReadSurah || currentSurahNumber || 1
   const lastAyah = user?.lastReadAyah || currentAyahNumber || 1
   const currentSurahMeta = SURAH_METADATA.find((s) => s.number === lastSurah) || SURAH_METADATA[0]
@@ -194,13 +356,18 @@ export const DashboardScreen: React.FC = () => {
   const khatmPercent = calculateKhatmProgress(user?.pages || 0)
   const overallQuranProgress = calculateOverallQuranProgress(lastSurah, lastAyah)
 
-  // Rotating Verse index by day of month
-  const dailyVerseIndex = new Date().getDate() % DAILY_VERSES.length
-  const dailyVerse = DAILY_VERSES[dailyVerseIndex]
+  // 🌟 AUTOMATIC DAILY ROTATION AT MIDNIGHT (DAY OF YEAR DETERMINISTIC INDEX)
+  const todayDate = new Date()
+  const startOfYear = new Date(todayDate.getFullYear(), 0, 0)
+  const diffTime = todayDate.getTime() - startOfYear.getTime()
+  const dayOfYear = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+  const dailyVerse = DAILY_VERSES[dayOfYear % DAILY_VERSES.length]
+  const dailyHadith = DAILY_HADITHS[dayOfYear % DAILY_HADITHS.length]
 
   const isStartingFresh = lastSurah === 1 && lastAyah === 1
 
-  // Helper to render circle
+  // Helper to render consistency circle
   const renderCircle = (wd: typeof weekDays[0], i: number) => {
     let circleClass = 'bg-surface-container-highest text-outline'
     let text = wd.dayNum.toString()
@@ -249,11 +416,14 @@ export const DashboardScreen: React.FC = () => {
             Assalamu Alaikum, {user?.name?.split(' ')[0] || 'Guest'}
           </h1>
           <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
-            "The most beloved deeds to Allah are those done regularly, even if small."
+            {isTamil 
+              ? '"நற்செயல்களில் அல்லாஹ்விற்கு மிகவும் விருப்பமானது, குறைவாக இருந்தாலும் தொடர்ந்து செய்யப்படுவதேயாகும்."'
+              : '"The most beloved deeds to Allah are those done regularly, even if small."'
+            }
           </p>
         </div>
 
-        {/* Status Pill on Desktop */}
+        {/* Date Pill on Desktop */}
         <div className="hidden sm:flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full glass-card border border-outline-variant/30 text-on-surface-variant self-start">
           <Calendar className="w-3.5 h-3.5 text-primary" />
           <span>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
@@ -264,14 +434,14 @@ export const DashboardScreen: React.FC = () => {
       {/* 2. 📱 MOBILE HERO: WEEKLY CONSISTENCY CIRCLES (TOP) + COMBINED GOAL/JOURNEY */}
       {/* ========================================================================= */}
       <div className="block lg:hidden space-y-4">
-        {/* Mobile: Only the 7-day circular indication with missed red outline */}
+        {/* Mobile 7-Day Circular Indicator with Missed Red Outline */}
         <div className="p-4 rounded-3xl glass-card border border-outline-variant/30 shadow-md">
           <div className="grid grid-cols-7 gap-1">
             {weekDays.map((wd, i) => renderCircle(wd, i))}
           </div>
         </div>
 
-        {/* Mobile: Combined Goal + Start/Continue Journey Purple Card */}
+        {/* Mobile Combined Goal + Journey Card */}
         <div className="rounded-3xl bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#6d28d9] p-6 text-white shadow-xl relative overflow-hidden border border-white/20 space-y-4">
           <div className="absolute top-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
 
@@ -279,13 +449,13 @@ export const DashboardScreen: React.FC = () => {
           <div className="flex items-start justify-between gap-3 relative z-10">
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-white/80 font-label-caps block">
-                Goal • Per Day Verses
+                {isTamil ? 'இலக்கு • தினசரி வசனங்கள்' : 'Goal • Per Day Verses'}
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-extrabold text-white">
                   {todayVerses} <span className="text-sm font-normal text-white/80">/ {dailyGoalVerses}</span>
                 </span>
-                <span className="text-xs font-semibold text-white/90">Ayahs</span>
+                <span className="text-xs font-semibold text-white/90">{isTamil ? 'வசனங்கள்' : 'Ayahs'}</span>
               </div>
             </div>
 
@@ -329,20 +499,24 @@ export const DashboardScreen: React.FC = () => {
               className="w-full py-3.5 px-4 rounded-2xl bg-white text-[#6d28d9] hover:bg-white/95 active:scale-[0.99] font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
             >
               <Play className="w-4 h-4 fill-[#6d28d9]" />
-              <span>{isStartingFresh ? 'Start Quran Journey' : 'Continue Reading'}</span>
+              <span>
+                {isStartingFresh 
+                  ? (isTamil ? 'அத்தியாயம் 1 இலிருந்து தொடங்கவும்' : 'Start Reading from Chapter 1')
+                  : (isTamil ? 'தொடர்ந்து ஓதுக' : 'Continue Reading')
+                }
+              </span>
             </Link>
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. 🖥️ DESKTOP HERO: EXACT 2-COLUMN SPLIT (PRESERVED & PERFECTED)           */}
+      {/* 2. 🖥️ DESKTOP HERO: EXACT 2-COLUMN SPLIT (100% PRESERVED)                  */}
       {/* ========================================================================= */}
       <div className="hidden lg:grid lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* LEFT HERO CARD: CONTINUE RECITATION (COMPACT & BALANCED) */}
+        {/* LEFT HERO CARD: CONTINUE RECITATION */}
         <div className="lg:col-span-7 xl:col-span-7 rounded-3xl bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#6d28d9] p-6 sm:p-7 text-white shadow-xl relative overflow-hidden border border-white/20 flex flex-col justify-between space-y-5">
-          {/* Ambient Glow */}
           <div className="absolute top-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
 
           {/* Top Row: Session Tag & Surah Arabic Calligraphy */}
@@ -427,7 +601,7 @@ export const DashboardScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* 7-Day Consistency Weekdays Row with Missed Red Outline */}
+          {/* 7-Day Consistency Weekdays Row */}
           <div className="space-y-2">
             <span className="text-xs font-bold text-outline uppercase tracking-wider block font-label-caps">
               Weekly Consistency
@@ -457,7 +631,7 @@ export const DashboardScreen: React.FC = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xs sm:text-sm font-bold text-outline uppercase tracking-wider font-label-caps">
-            Spiritual Metrics
+            {isTamil ? 'ஆன்மீக அளவீடுகள்' : 'Spiritual Metrics'}
           </h2>
 
           {/* Timeframe Toggle Buttons */}
@@ -472,7 +646,7 @@ export const DashboardScreen: React.FC = () => {
                     : 'text-on-surface-variant hover:text-on-surface'
                 }`}
               >
-                {tf === 'all' ? 'Lifetime' : tf}
+                {tf === 'all' ? (isTamil ? 'முழுவதும்' : 'Lifetime') : tf === 'week' ? (isTamil ? 'வாரம்' : 'Week') : (isTamil ? 'இன்று' : 'Today')}
               </button>
             ))}
           </div>
@@ -483,53 +657,61 @@ export const DashboardScreen: React.FC = () => {
           {/* 1. Streak Card */}
           <div className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 shadow-sm relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps">Streak</span>
+              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps">
+                {isTamil ? 'தொடர் நாட்கள்' : 'Streak'}
+              </span>
               <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
                 <Flame className="w-4 h-4 fill-amber-400" />
               </div>
             </div>
             <p className="text-2xl sm:text-3xl font-bold text-on-surface">
-              {user?.currentStreak || 0} <span className="text-xs font-normal text-on-surface-variant">days</span>
+              {user?.currentStreak || 0} <span className="text-xs font-normal text-on-surface-variant">{isTamil ? 'நாட்கள்' : 'days'}</span>
             </p>
             <p className="text-[11px] text-tertiary mt-1 truncate">
-              {user?.currentStreak ? `Best: ${user?.bestStreak || 0} days` : 'Read daily to build streak'}
+              {user?.currentStreak ? `${isTamil ? 'சிறந்த சாதனை' : 'Best'}: ${user?.bestStreak || 0} ${isTamil ? 'நாட்கள்' : 'days'}` : (isTamil ? 'தொடர்ந்து ஓதுங்கள்' : 'Read daily to build streak')}
             </p>
           </div>
 
           {/* 2. Verses Recited Card */}
           <div className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps">Verses Recited</span>
+              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps">
+                {isTamil ? 'ஓதிய வசனங்கள்' : 'Verses Recited'}
+              </span>
               <div className="w-8 h-8 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary">
                 <BookOpen className="w-4 h-4" />
               </div>
             </div>
             <p className="text-2xl sm:text-3xl font-bold text-on-surface">
-              {displayStats.verses.toLocaleString()} <span className="text-xs font-normal text-on-surface-variant">ayahs</span>
+              {displayStats.verses.toLocaleString()} <span className="text-xs font-normal text-on-surface-variant">{isTamil ? 'வசனம்' : 'ayahs'}</span>
             </p>
             <p className="text-[11px] text-primary-fixed-dim mt-1 truncate">
-              {displayStats.pages} pages read ({timeframe})
+              {displayStats.pages} {isTamil ? 'பக்கங்கள்' : 'pages'} ({timeframe})
             </p>
           </div>
 
           {/* 3. Hasanat Points Card */}
           <div className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps">Hasanat Earned</span>
+              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps">
+                {isTamil ? 'ஈட்டிய நன்மைகள்' : 'Hasanat Earned'}
+              </span>
               <div className="w-8 h-8 rounded-xl bg-tertiary/15 border border-tertiary/30 flex items-center justify-center text-tertiary">
                 <Sparkles className="w-4 h-4" />
               </div>
             </div>
             <p className="text-2xl sm:text-3xl font-bold text-tertiary">
-              {displayStats.hasanat.toLocaleString()} <span className="text-xs font-normal text-tertiary/70">pts</span>
+              {displayStats.hasanat.toLocaleString()} <span className="text-xs font-normal text-tertiary/70">{isTamil ? 'புள்ளிகள்' : 'pts'}</span>
             </p>
-            <p className="text-[11px] text-outline mt-1 truncate">10 rewards per Arabic letter</p>
+            <p className="text-[11px] text-outline mt-1 truncate">{isTamil ? 'ஓர் எழுத்திற்கு 10 நன்மைகள்' : '10 rewards per Arabic letter'}</p>
           </div>
 
           {/* 4. Reading Duration Card */}
           <div className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps">Reading Time</span>
+              <span className="text-xs font-semibold text-outline uppercase tracking-wider font-label-caps">
+                {isTamil ? 'ஓதிய நேரம்' : 'Reading Time'}
+              </span>
               <div className="w-8 h-8 rounded-xl bg-secondary/15 border border-secondary/30 flex items-center justify-center text-secondary">
                 <Clock className="w-4 h-4" />
               </div>
@@ -545,25 +727,106 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 4. 🌟 3-COLUMN BENTO GRID (HABITS, JUZ MILESTONES, KHATM & VERSE)           */}
+      {/* 4. 🌟 INSPIRATIONS: VERSE OF THE DAY & HADITH OF THE DAY (BELOW METRICS)   */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         
-        {/* COLUMN 1: TODAY'S ISLAMIC HABITS & PRAYER CHECKLIST */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
+        {/* 📖 VERSE OF THE DAY */}
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden">
+          <div className="space-y-3">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider font-label-caps">
+                <Bookmark className="w-4 h-4" />
+                <span>{isTamil ? 'தினசரி திருவசனம்' : 'Verse of the Day'}</span>
+              </div>
+              <span className="text-[11px] font-semibold text-outline">
+                {isTamil ? dailyVerse.surahNameTa : dailyVerse.surahName} {dailyVerse.surahNum}:{dailyVerse.ayahNum}
+              </span>
+            </div>
+
+            {/* Arabic Script */}
+            <p className="font-noto-serif text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1" dir="rtl">
+              {dailyVerse.arabic}
+            </p>
+
+            {/* Dynamic Translation (Tamil / English) */}
+            <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed">
+              "{isTamil ? dailyVerse.translationTa : dailyVerse.translationEn}"
+            </p>
+          </div>
+
+          {/* Action Link to Reader */}
+          <div className="pt-2">
+            <Link
+              to={`/reading?surah=${dailyVerse.surahNum}&ayah=${dailyVerse.ayahNum}`}
+              className="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-primary text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
+            >
+              <span>{isTamil ? 'முழு அத்தியாயத்தில் ஓதுக' : 'Read in Context'}</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+
+        {/* 📜 HADITH OF THE DAY */}
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden">
+          <div className="space-y-3">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-secondary font-bold text-xs uppercase tracking-wider font-label-caps">
+                <BookMarked className="w-4 h-4" />
+                <span>{isTamil ? 'தினசரி நபிமொழி' : 'Hadith of the Day'}</span>
+              </div>
+              <span className="text-[11px] font-semibold text-outline">
+                {isTamil ? dailyHadith.referenceTa : dailyHadith.reference}
+              </span>
+            </div>
+
+            {/* Arabic Script */}
+            <p className="font-noto-serif text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1" dir="rtl">
+              {dailyHadith.arabic}
+            </p>
+
+            {/* Dynamic Translation (Tamil / English) */}
+            <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed">
+              "{isTamil ? dailyHadith.translationTa : dailyHadith.translationEn}"
+            </p>
+          </div>
+
+          {/* Action Link to Hadiths */}
+          <div className="pt-2">
+            <Link
+              to="/hadith"
+              className="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-secondary text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
+            >
+              <span>{isTamil ? 'நபிமொழி நூல்களை ஆராய்க' : 'Explore Hadith Collection'}</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 5. LOWER SECTION: DAILY ISLAMIC HABITS & KHATM PROGRESS TRACKER           */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* DAILY ISLAMIC HABITS CHECKLIST (8 COLUMNS ON DESKTOP) */}
+        <div className="lg:col-span-8 p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-tertiary" />
               <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps">
-                Daily Islamic Habits
+                {isTamil ? 'தினசரி நற்செயல்கள்' : 'Daily Islamic Habits'}
               </h3>
             </div>
-            <span className="text-xs text-tertiary font-bold px-2 py-0.5 rounded-full bg-tertiary/15">
-              {habits.filter((h) => h.completed).length}/{habits.length} Done
+            <span className="text-xs text-tertiary font-bold px-2.5 py-0.5 rounded-full bg-tertiary/15">
+              {habits.filter((h) => h.completed).length}/{habits.length} {isTamil ? 'நிறைவு' : 'Done'}
             </span>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {habits.map((habit) => (
               <div
                 key={habit.id}
@@ -582,7 +845,7 @@ export const DashboardScreen: React.FC = () => {
                   )}
                   <div className="truncate">
                     <p className={`text-xs font-semibold truncate ${habit.completed ? 'line-through opacity-70' : 'text-on-surface'}`}>
-                      {habit.name}
+                      {isTamil ? habit.nameTa : habit.name}
                     </p>
                     <p className="text-[10px] text-outline truncate">{habit.time}</p>
                   </div>
@@ -596,115 +859,36 @@ export const DashboardScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* COLUMN 2: SEQUENTIAL QURAN JOURNEY & JUZ MILESTONES */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
+        {/* KHATM JOURNEY (4 COLUMNS ON DESKTOP) */}
+        <div className="lg:col-span-4 p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-1.5">
-              <Compass className="w-4 h-4 text-primary" />
-              <span>Quran Journey Milestones</span>
-            </h3>
-            <span className="text-[11px] text-primary font-bold">Sequential</span>
+            <div className="flex items-center gap-2">
+              <Award className="w-4.5 h-4.5 text-secondary" />
+              <h3 className="text-xs font-bold text-on-surface uppercase tracking-wider font-label-caps">
+                {isTamil ? 'குர்ஆன் கத்ம் பயணம்' : 'Khatm Journey'}
+              </h3>
+            </div>
+            <span className="text-xs font-bold text-secondary">{khatmPercent}%</span>
           </div>
 
-          <div className="space-y-2.5">
-            {[
-              { juz: 1, title: 'Juz 1 • Al-Fatihah & Al-Baqarah', range: '1:1 - 2:141', active: juzProgress.juzNumber === 1, passed: juzProgress.juzNumber > 1 },
-              { juz: 2, title: 'Juz 2 • Al-Baqarah Continued', range: '2:142 - 2:252', active: juzProgress.juzNumber === 2, passed: juzProgress.juzNumber > 2 },
-              { juz: 3, title: 'Juz 3 • Al-Baqarah & Ali \'Imran', range: '2:253 - 3:92', active: juzProgress.juzNumber === 3, passed: juzProgress.juzNumber > 3 },
-              { juz: 4, title: 'Juz 4 • Ali \'Imran & An-Nisa', range: '3:93 - 4:23', active: juzProgress.juzNumber === 4, passed: juzProgress.juzNumber > 4 },
-              { juz: 5, title: 'Juz 5 • An-Nisa Continued', range: '4:24 - 4:147', active: juzProgress.juzNumber === 5, passed: juzProgress.juzNumber > 5 },
-            ].map((m) => (
-              <div
-                key={m.juz}
-                className={`p-3 rounded-2xl border flex items-center justify-between transition ${
-                  m.active
-                    ? 'bg-primary/15 border-primary shadow-sm'
-                    : m.passed
-                    ? 'bg-surface-container/80 border-outline-variant/30 opacity-75'
-                    : 'bg-surface-container/40 border-outline-variant/15 opacity-50'
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className={`w-6 h-6 rounded-lg text-[10px] font-bold flex items-center justify-center shrink-0 ${
-                    m.active
-                      ? 'bg-primary text-white'
-                      : m.passed
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-surface-container-high text-outline'
-                  }`}>
-                    {m.passed ? '✓' : m.juz}
-                  </span>
-                  <div className="truncate">
-                    <p className={`text-xs font-bold truncate ${m.active ? 'text-primary' : 'text-on-surface'}`}>
-                      {m.title}
-                    </p>
-                    <p className="text-[10px] text-outline truncate">{m.range}</p>
-                  </div>
-                </div>
-
-                <span className="text-[10px] font-semibold text-outline shrink-0 ml-2">
-                  {m.active ? 'Active Juz' : m.passed ? 'Completed' : 'Upcoming'}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* COLUMN 3: KHATM MILESTONE & AYAH OF REFLECTION */}
-        <div className="space-y-6">
-          {/* Khatm Milestone Tracker */}
-          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-3.5 shadow-md">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Award className="w-4.5 h-4.5 text-secondary" />
-                <h3 className="text-xs font-bold text-on-surface uppercase tracking-wider font-label-caps">
-                  Khatm Journey
-                </h3>
-              </div>
-              <span className="text-xs font-bold text-secondary">{khatmPercent}%</span>
-            </div>
-
-            <div className="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-secondary h-full rounded-full transition-all duration-700"
-                style={{ width: `${Math.max(khatmPercent, (user?.pages || 0) > 0 ? 2 : 0)}%` }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-on-surface-variant">
-              <span>{user?.pages || 0} of 604 pages</span>
-              <span className="text-outline">604 pages total</span>
-            </div>
+          <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+            <div
+              className="bg-secondary h-full rounded-full transition-all duration-700"
+              style={{ width: `${Math.max(khatmPercent, (user?.pages || 0) > 0 ? 2 : 0)}%` }}
+            />
           </div>
 
-          {/* Daily Ayah of Reflection */}
-          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-md relative overflow-hidden">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-primary">
-                <Bookmark className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider font-label-caps">Verse of the Day</span>
-              </div>
-              <span className="text-[11px] text-outline">{dailyVerse.surahName} {dailyVerse.surahNum}:{dailyVerse.ayahNum}</span>
-            </div>
-
-            <p className="font-noto-serif text-base text-on-surface text-right leading-relaxed pt-1" dir="rtl">
-              {dailyVerse.arabic}
-            </p>
-
-            <p className="text-xs text-on-surface-variant italic leading-relaxed">
-              "{dailyVerse.translation}"
-            </p>
-
-            <div className="pt-1">
-              <Link
-                to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
-                className="w-full py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
-              >
-                <span>Continue Your Reading ({currentSurahMeta.name})</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+          <div className="flex items-center justify-between text-xs text-on-surface-variant">
+            <span>{user?.pages || 0} {isTamil ? '/ 604 பக்கங்கள்' : 'of 604 pages'}</span>
+            <span className="text-outline">{isTamil ? 'முழு குர்ஆன்' : '604 total'}</span>
           </div>
+
+          <p className="text-[11px] text-on-surface-variant leading-relaxed pt-1">
+            {isTamil 
+              ? 'தினமும் தொடர்ந்து ஓதி புனித குர்ஆனை முழுமையாக நிறைவு செய்யும் ஆன்மீகப் பயணம்.'
+              : 'Recite consistently each day to accomplish the sacred milestone of completing the Holy Quran.'
+            }
+          </p>
         </div>
 
       </div>
