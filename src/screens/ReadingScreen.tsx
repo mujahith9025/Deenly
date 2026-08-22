@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { 
-  Play, 
-  Pause, 
   ArrowLeft, 
   ArrowRight, 
   Sparkles, 
@@ -29,12 +27,10 @@ export const ReadingScreen: React.FC = () => {
   const navigate = useNavigate()
 
   // State
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false)
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
   const [chapterCompletedBanner, setChapterCompletedBanner] = useState<string | null>(null)
   const [zoomFeedback, setZoomFeedback] = useState<number | null>(null)
 
-  const audioRef = useRef<HTMLAudioElement | null>(null)
   const mainCanvasRef = useRef<HTMLElement | null>(null)
   const zoomFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pinchStartDistanceRef = useRef<number | null>(null)
@@ -196,36 +192,6 @@ export const ReadingScreen: React.FC = () => {
 
   const totalAyahs = currentSurah?.numberOfAyahs || currentSurah?.ayahs?.length || 7
   const juzProgress = calculateJuzProgress(currentSurahNumber, currentAyahNumber)
-  const audioUrl = currentAyah ? `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${currentAyah.number}.mp3` : ''
-
-  // Audio Playback
-  const togglePlayAudio = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation()
-    if (!audioRef.current || !audioUrl) return
-
-    if (isPlayingAudio) {
-      audioRef.current.pause()
-      setIsPlayingAudio(false)
-    } else {
-      audioRef.current.play()
-        .then(() => setIsPlayingAudio(true))
-        .catch((err) => console.warn('Audio playback error:', err))
-    }
-  }
-
-  // Handle Audio Ended
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    const handleEnded = () => {
-      setIsPlayingAudio(false)
-      handleMarkAndNext()
-    }
-
-    audio.addEventListener('ended', handleEnded)
-    return () => audio.removeEventListener('ended', handleEnded)
-  }, [currentAyahNumber, totalAyahs, currentSurahNumber])
 
   // Mark Read & Advance to Next Ayah
   const handleMarkAndNext = useCallback(() => {
@@ -290,9 +256,6 @@ export const ReadingScreen: React.FC = () => {
   // Finish Reading Session -> Go to Dashboard
   const handleFinishSession = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
-    if (isPlayingAudio && audioRef.current) {
-      audioRef.current.pause()
-    }
     finishSession()
     navigate('/dashboard')
   }
@@ -350,8 +313,6 @@ export const ReadingScreen: React.FC = () => {
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-full max-w-4xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-3 sm:px-6 py-2.5 sm:py-3.5 gap-2 sm:gap-3">
-      <audio ref={audioRef} src={audioUrl} preload="none" />
-
       {/* Floating Zoom Size Indicator Pill */}
       {zoomFeedback && (
         <div className="fixed top-18 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full glass-card border border-primary/50 text-primary font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-fade-in backdrop-blur-md">
@@ -362,7 +323,7 @@ export const ReadingScreen: React.FC = () => {
 
       {/* ========================================================================= */}
       {/* 1. FIXED TOP BAR: PINNED TO TOP (MATCHED DIMENSIONS WITH FOOTER)          */}
-      {/*    Includes Surah Name, Responsive Scaled Timer & Hasanat, and Audio Tools */}
+      {/*    Includes Surah Name, Responsive Scaled Timer & Hasanat, Language Switch */}
       {/* ========================================================================= */}
       <header className="w-full flex items-center justify-between gap-2.5 sm:gap-4 px-3.5 sm:px-5 py-3 sm:py-3.5 shrink-0 rounded-2xl sm:rounded-3xl glass-card border border-outline-variant/30 shadow-md z-30 bg-surface/95 backdrop-blur-lg">
         {/* Left: Surah Name & Ayah Counter */}
@@ -408,21 +369,8 @@ export const ReadingScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Audio Reciter, Language Switcher, Bookmark & Copy */}
+        {/* Right: Language Switcher, Bookmark & Favorite */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Audio Button */}
-          <button
-            onClick={(e) => togglePlayAudio(e)}
-            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition cursor-pointer flex items-center justify-center shadow-sm ${
-              isPlayingAudio
-                ? 'bg-primary text-white border-primary animate-pulse'
-                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/40 text-on-surface'
-            }`}
-            title="Play / Pause Audio"
-          >
-            {isPlayingAudio ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
-          </button>
-
           {/* Language Toggle */}
           <button
             onClick={(e) => {
