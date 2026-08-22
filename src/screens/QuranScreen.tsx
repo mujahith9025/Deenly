@@ -10,12 +10,14 @@ import {
   Share2, 
   Check, 
   Maximize2, 
-  Loader2
+  Loader2,
+  Bookmark
 } from 'lucide-react'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { quranApi } from '../lib/quranApi'
 import { useAuthStore } from '../store/useAuthStore'
 import { useReadingStore } from '../store/useReadingStore'
+import { useBookmarkStore } from '../store/useBookmarkStore'
 import type { SurahDetail, Ayah } from '../types/quran'
 
 type FilterType = 'all' | 'meccan' | 'medinan'
@@ -25,6 +27,8 @@ export const QuranScreen: React.FC = () => {
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const setCurrentPosition = useReadingStore((state) => state.setCurrentPosition)
+  const isQuranBookmarked = useBookmarkStore((state) => state.isQuranBookmarked)
+  const toggleQuranBookmark = useBookmarkStore((state) => state.toggleQuranBookmark)
 
   // URL State: Check if a specific Surah is selected in query string (e.g. ?surah=18)
   const surahParam = searchParams.get('surah')
@@ -544,6 +548,29 @@ export const QuranScreen: React.FC = () => {
                             ) : (
                               <Play className="w-3.5 h-3.5" />
                             )}
+                          </button>
+
+                          {/* Bookmark Ayah */}
+                          <button
+                            onClick={() => {
+                              if (!selectedSurahNumber || !currentSurahMeta) return
+                              toggleQuranBookmark({
+                                surahNumber: selectedSurahNumber,
+                                surahName: currentSurahMeta.name,
+                                arabicName: currentSurahMeta.arabicName,
+                                ayahNumber: ayah.verseNumberInSurah,
+                                arabicText: ayah.arabicText,
+                                translationText: ayah.translations[translationLanguage] || ayah.translations.en || '',
+                              })
+                            }}
+                            className={`p-2 rounded-full border transition cursor-pointer ${
+                              selectedSurahNumber && isQuranBookmarked(selectedSurahNumber, ayah.verseNumberInSurah)
+                                ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 shadow-sm'
+                                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/40 text-outline hover:text-on-surface'
+                            }`}
+                            title={selectedSurahNumber && isQuranBookmarked(selectedSurahNumber, ayah.verseNumberInSurah) ? 'Remove Bookmark' : 'Bookmark Ayah'}
+                          >
+                            <Bookmark className={`w-3.5 h-3.5 ${selectedSurahNumber && isQuranBookmarked(selectedSurahNumber, ayah.verseNumberInSurah) ? 'fill-amber-400' : ''}`} />
                           </button>
 
                           {/* Copy Ayah */}

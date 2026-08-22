@@ -9,11 +9,13 @@ import {
   Clock, 
   Check, 
   Share2,
-  CheckCircle2
+  CheckCircle2,
+  Bookmark
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
 import { useAuthStore } from '../store/useAuthStore'
+import { useBookmarkStore } from '../store/useBookmarkStore'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   formatTimer, 
@@ -43,6 +45,9 @@ export const ReadingScreen: React.FC = () => {
   const setTranslationLanguage = useReadingStore((state) => state.setTranslationLanguage)
   const loadSurah = useReadingStore((state) => state.loadSurah)
   const setCurrentPosition = useReadingStore((state) => state.setCurrentPosition)
+
+  const isQuranBookmarked = useBookmarkStore((state) => state.isQuranBookmarked)
+  const toggleQuranBookmark = useBookmarkStore((state) => state.toggleQuranBookmark)
 
   // Auth & Session
   const activeSession = useReadingStore((state) => state.activeSession)
@@ -235,6 +240,23 @@ export const ReadingScreen: React.FC = () => {
     setTimeout(() => setCopiedShare(false), 2000)
   }
 
+  const isCurrentAyahBookmarked = currentSurahNumber && currentAyah 
+    ? isQuranBookmarked(currentSurahNumber, currentAyah.verseNumberInSurah)
+    : false
+
+  const handleToggleBookmark = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    if (!currentAyah || !currentSurah) return
+    toggleQuranBookmark({
+      surahNumber: currentSurahNumber,
+      surahName: currentSurah.name,
+      arabicName: currentSurah.arabicName,
+      ayahNumber: currentAyah.verseNumberInSurah,
+      arabicText: currentAyah.arabicText,
+      translationText: currentAyah.translations[translationLanguage] || currentAyah.translations.en || '',
+    })
+  }
+
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-full max-w-5xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-3 sm:px-6 py-2 sm:py-3">
       <audio ref={audioRef} src={audioUrl} preload="none" />
@@ -287,7 +309,7 @@ export const ReadingScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Audio Reciter & Language Switcher */}
+        {/* Right: Audio Reciter, Language Switcher, Bookmark & Copy */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Audio Button */}
           <button
@@ -312,6 +334,19 @@ export const ReadingScreen: React.FC = () => {
             title="Toggle translation language"
           >
             {translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}
+          </button>
+
+          {/* Bookmark Button */}
+          <button
+            onClick={(e) => handleToggleBookmark(e)}
+            className={`p-1.5 sm:p-2 rounded-full border transition cursor-pointer ${
+              isCurrentAyahBookmarked
+                ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 shadow-sm'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-on-surface'
+            }`}
+            title={isCurrentAyahBookmarked ? 'Remove Bookmark' : 'Bookmark Ayah'}
+          >
+            <Bookmark className={`w-4 h-4 ${isCurrentAyahBookmarked ? 'fill-amber-400' : ''}`} />
           </button>
 
           {/* Share / Copy */}

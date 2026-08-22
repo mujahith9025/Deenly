@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { 
   BookOpen, 
   Search, 
@@ -13,13 +14,19 @@ import {
 import { hadithApi, type HadithChapter, type HadithItem } from '../lib/hadithApi'
 import { HADITH_BOOKS, type HadithBook } from '../lib/hadithData'
 import { useAuthStore } from '../store/useAuthStore'
+import { useBookmarkStore } from '../store/useBookmarkStore'
 
 type ViewMode = 'books' | 'chapters' | 'hadiths'
 type LanguageMode = 'english' | 'tamil' | 'dual'
 
 export const HadithScreen: React.FC = () => {
+  const [searchParams] = useSearchParams()
   const user = useAuthStore((state) => state.user)
   const defaultLang: LanguageMode = user?.preferredTranslation === 'tamil' ? 'tamil' : 'english'
+
+  // Unified Bookmark Store
+  const isHadithBookmarked = useBookmarkStore((state) => state.isHadithBookmarked)
+  const toggleHadithBookmark = useBookmarkStore((state) => state.toggleHadithBookmark)
 
   // Navigation state
   const [viewMode, setViewMode] = useState<ViewMode>('books')
@@ -41,36 +48,54 @@ export const HadithScreen: React.FC = () => {
   // Display options
   const [languageMode, setLanguageMode] = useState<LanguageMode>(defaultLang)
   const [copiedHadithId, setCopiedHadithId] = useState<number | null>(null)
-  const [bookmarkedHadiths, setBookmarkedHadiths] = useState<number[]>([])
 
   const arabicFontSize = user?.arabicFontSize || 28
   const hadithRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
-  // Load saved bookmarks from localStorage
+  // Deep linking from bookmarks or search params
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('deenly_hadith_bookmarks')
-      if (saved) {
-        setBookmarkedHadiths(JSON.parse(saved))
-      }
-    } catch {
-      // ignore
-    }
-  }, [])
+    const bookParam = searchParams.get('book')
+    const chapterParam = searchParams.get('chapter')
+    const hadithParam = searchParams.get('hadith')
 
-  const toggleBookmark = (hadithNumber: number) => {
-    setBookmarkedHadiths((prev) => {
-      const updated = prev.includes(hadithNumber)
-        ? prev.filter((id) => id !== hadithNumber)
-        : [...prev, hadithNumber]
-      try {
-        localStorage.setItem('deenly_hadith_bookmarks', JSON.stringify(updated))
-      } catch {
-        // ignore
-      }
-      return updated
-    })
-  }
+    if (bookParam) {
+      const foundBook = HADITH_BOOKS.find((b) => b.id === bookParam) || HADITH_BOOKS[0]
+      setSelectedBook(foundBook)
+
+      hadithApi.getChapters(foundBook.id).then((chapterList) => {
+        setChapters(chapterList)
+
+        if (chapterParam) {
+          const chapNum = parseInt(chapterParam, 10)
+          const foundChap = chapterList.find((c) => c.chapterNumber === chapNum) || chapterList[0]
+          if (foundChap) {
+            setSelectedChapter(foundChap)
+            setViewMode('hadiths')
+            setIsLoadingHadiths(true)
+
+            hadithApi.getChapterHadiths(foundBook.id, foundChap.chapterNumber).then((hList) => {
+              setHadiths(hList)
+              setIsLoadingHadiths(false)
+
+              if (hadithParam) {
+                const hNum = parseInt(hadithParam, 10)
+                setHighlightedHadithNumber(hNum)
+                setHadithJumpQuery(hNum.toString())
+                setTimeout(() => {
+                  const targetEl = hadithRefs.current.get(hNum)
+                  if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  }
+                }, 400)
+              }
+            })
+            return
+          }
+        }
+        setViewMode('chapters')
+      })
+    }
+  }, [searchParams])
 
   // Handle Book Selection
   const handleSelectBook = async (book: HadithBook) => {
@@ -459,7 +484,6 @@ export const HadithScreen: React.FC = () => {
             <div className="space-y-6">
               {hadiths.map((h, idx) => {
                 const isHighlighted = highlightedHadithNumber === h.hadithNumber
-                const isBookmarked = bookmarkedHadiths.includes(h.hadithNumber)
 
                 return (
                   <div
@@ -491,20 +515,30 @@ export const HadithScreen: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Action Tools: Bookmark & Copy */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => toggleBookmark(h.hadithNumber)}
-                          className={`p-2 rounded-full border transition cursor-pointer ${
-                            isBookmarked
-                              ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
-                              : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-on-surface'
-                          }`}
-                          title="Bookmark Hadith"
-                        >
-                          <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-amber-400' : ''}`} />
-                        </button>
+                        {/* Action Tools: Bookmark & Copy */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              toggleHadithBookmark({
+                                bookId: selectedBook.id,
+                                bookName: selectedBook.name,
+                                chapterNumber: selectedChapter?.chapterNumber || 1,
+                                chapterTitle: selectedChapter?.title || 'General',
+                                hadithNumber: h.hadithNumber,
+                                arabicText: h.arabicText,
+                                translationText: languageMode === 'tamil' ? (h.tamilText || h.englishText || '') : (h.englishText || h.tamilText || ''),
+                              })
+                            }}
+                            className={`p-2 rounded-full border transition cursor-pointer ${
+                              isHadithBookmarked(selectedBook.id, h.hadithNumber)
+                                ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
+                                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-on-surface'
+                            }`}
+                            title="Bookmark Hadith"
+                          >
+                            <Bookmark className={`w-4 h-4 ${isHadithBookmarked(selectedBook.id, h.hadithNumber) ? 'fill-amber-400' : ''}`} />
+                          </button>
 
                         <button
                           type="button"

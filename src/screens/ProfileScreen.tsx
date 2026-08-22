@@ -15,11 +15,15 @@ import {
   LogIn,
   AlertTriangle,
   Loader2,
-  ShieldCheck
+  ShieldCheck,
+  ScrollText
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
 import { useAuth } from '../hooks/useAuth'
+import { useBookmarkStore, type BookmarkItem } from '../store/useBookmarkStore'
+
+type BookmarkFilter = 'all' | 'quran' | 'hadith'
 
 export const ProfileScreen: React.FC = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -27,10 +31,13 @@ export const ProfileScreen: React.FC = () => {
   const [isResetting, setIsResetting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [bookmarkFilter, setBookmarkFilter] = useState<BookmarkFilter>('all')
 
   const { user, signOut } = useAuth()
   const resetUserStatsToZero = useAuthStore((state) => state.resetUserStatsToZero)
   const deleteAccount = useAuthStore((state) => state.deleteAccount)
+  const bookmarks = useBookmarkStore((state) => state.bookmarks)
+  const removeBookmarkById = useBookmarkStore((state) => state.removeBookmarkById)
   const navigate = useNavigate()
 
   const handleResetStats = async () => {
@@ -70,11 +77,23 @@ export const ProfileScreen: React.FC = () => {
     { title: 'Milestone Goal', desc: 'Read first 100 Ayahs', date: 'Earned 3d ago', icon: BookOpen, color: 'text-primary' },
   ]
 
-  const savedBookmarks = [
-    { surah: 'Surah Al-Baqarah', ayah: 255, title: 'Ayat al-Kursi', timestamp: 'Saved 2 days ago' },
-    { surah: 'Surah Ali \'Imran', ayah: 190, title: 'Creation of Heavens & Earth', timestamp: 'Saved 5 days ago' },
-    { surah: 'Surah Ad-Duhaa', ayah: 5, title: 'Promise of Allah\'s Favor', timestamp: 'Saved 1 week ago' },
-  ]
+  // Filtered bookmarks
+  const filteredBookmarks = bookmarks.filter((bm) => {
+    if (bookmarkFilter === 'quran') return bm.type === 'quran'
+    if (bookmarkFilter === 'hadith') return bm.type === 'hadith'
+    return true
+  })
+
+  const quranCount = bookmarks.filter((b) => b.type === 'quran').length
+  const hadithCount = bookmarks.filter((b) => b.type === 'hadith').length
+
+  const handleBookmarkClick = (bm: BookmarkItem) => {
+    if (bm.type === 'quran') {
+      navigate(`/reading?surah=${bm.surahNumber}&ayah=${bm.ayahNumber}`)
+    } else {
+      navigate(`/hadith?book=${bm.bookId}&chapter=${bm.chapterNumber}&hadith=${bm.hadithNumber}`)
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-24 animate-fade-in">
@@ -83,7 +102,7 @@ export const ProfileScreen: React.FC = () => {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">My Spiritual Profile</h1>
           <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-            Your personal Quran reading journey, milestones, and account management.
+            Your personal Quran reading journey, saved bookmarks, milestones, and account.
           </p>
         </div>
       </div>
@@ -143,56 +162,179 @@ export const ProfileScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Badges and Bookmarks Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Badges */}
-          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-            <h3 className="text-lg font-bold font-h2 text-on-surface">Spiritual Milestones</h3>
-            <div className="space-y-3">
-              {badges.map((b, i) => {
-                const Icon = b.icon
-                return (
-                  <div key={i} className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/20 flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center ${b.color}`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-on-surface">{b.title}</p>
-                      <p className="text-[11px] text-on-surface-variant truncate">{b.desc}</p>
-                    </div>
-                    <span className="text-[10px] text-outline shrink-0">{b.date}</span>
-                  </div>
-                )
-              })}
+        {/* ========================================================================= */}
+        {/* SAVED BOOKMARKS & AYAH/HADITH REPOSITORY                                  */}
+        {/* ========================================================================= */}
+        <div className="p-6 md:p-7 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Bookmark className="w-5 h-5 fill-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold font-h2 text-on-surface">Saved Bookmarks</h3>
+                <p className="text-xs text-on-surface-variant">Your personally bookmarked Quran verses and Hadiths</p>
+              </div>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex items-center bg-surface-container p-1 rounded-full border border-outline-variant/30 text-xs self-start sm:self-auto">
+              <button
+                onClick={() => setBookmarkFilter('all')}
+                className={`px-3 py-1 rounded-full font-semibold transition cursor-pointer ${
+                  bookmarkFilter === 'all'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                All ({bookmarks.length})
+              </button>
+              <button
+                onClick={() => setBookmarkFilter('quran')}
+                className={`px-3 py-1 rounded-full font-semibold transition cursor-pointer ${
+                  bookmarkFilter === 'quran'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                Quran ({quranCount})
+              </button>
+              <button
+                onClick={() => setBookmarkFilter('hadith')}
+                className={`px-3 py-1 rounded-full font-semibold transition cursor-pointer ${
+                  bookmarkFilter === 'hadith'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                Hadiths ({hadithCount})
+              </button>
             </div>
           </div>
 
-          {/* Saved Bookmarks */}
-          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-            <h3 className="text-lg font-bold font-h2 text-on-surface">Saved Ayahs & Notes</h3>
-            <div className="space-y-3">
-              {savedBookmarks.map((bm, i) => (
+          {/* Bookmarks List */}
+          {filteredBookmarks.length === 0 ? (
+            <div className="py-10 text-center space-y-3 rounded-2xl bg-surface-container/40 border border-outline-variant/20">
+              <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-outline mx-auto">
+                <Bookmark className="w-6 h-6" />
+              </div>
+              <div className="space-y-1 max-w-sm mx-auto px-4">
+                <p className="text-sm font-bold text-on-surface">No Bookmarks Saved Yet</p>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  Tap the bookmark symbol on any Quran verse or Hadith while reading to save and review it here anytime.
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-3 pt-2">
                 <Link
-                  key={i}
-                  to="/reading"
-                  className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/20 flex items-center justify-between hover:border-primary/40 transition group"
+                  to="/quran"
+                  className="px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold shadow-md"
                 >
-                  <div className="flex items-center gap-3">
-                    <Bookmark className="w-4 h-4 text-primary shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-on-surface">{bm.surah}:{bm.ayah}</p>
-                      <p className="text-[11px] text-on-surface-variant">{bm.title}</p>
+                  Browse Quran
+                </Link>
+                <Link
+                  to="/hadith"
+                  className="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 text-on-surface text-xs font-semibold hover:border-primary transition"
+                >
+                  Explore Hadith
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredBookmarks.map((bm) => (
+                <div
+                  key={bm.id}
+                  onClick={() => handleBookmarkClick(bm)}
+                  className="p-4 sm:p-5 rounded-2xl bg-surface-container/60 hover:bg-surface-container-high border border-outline-variant/20 hover:border-primary/50 transition cursor-pointer space-y-2 group shadow-sm"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      {bm.type === 'quran' ? (
+                        <span className="px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
+                          <BookOpen className="w-3 h-3" />
+                          <span>Quran</span>
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
+                          <ScrollText className="w-3 h-3" />
+                          <span>Hadith</span>
+                        </span>
+                      )}
+
+                      <span className="text-xs font-bold text-on-surface">
+                        {bm.type === 'quran' 
+                          ? `${bm.surahNumber}. ${bm.surahName} [${bm.ayahNumber}]`
+                          : `${bm.bookName} • Hadith #${bm.hadithNumber}`
+                        }
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-outline">
+                        {new Date(bm.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeBookmarkById(bm.id)
+                        }}
+                        className="p-1 rounded-full text-outline hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                        title="Remove bookmark"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-outline group-hover:text-primary transition" />
-                </Link>
+
+                  {/* Arabic Snippet */}
+                  {bm.arabicText && (
+                    <p className="font-noto-serif text-sm sm:text-base text-primary-fixed-dim line-clamp-2 text-right" dir="rtl">
+                      {bm.arabicText}
+                    </p>
+                  )}
+
+                  {/* Translation Snippet */}
+                  {bm.translationText && (
+                    <p className="text-xs text-on-surface-variant line-clamp-2 italic">
+                      "{bm.translationText}"
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-end text-[11px] text-primary font-semibold group-hover:translate-x-0.5 transition-transform pt-1">
+                    <span>Tap to view full text</span>
+                    <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                  </div>
+                </div>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* Milestones / Badges Grid */}
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
+          <h3 className="text-lg font-bold font-h2 text-on-surface">Spiritual Milestones</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {badges.map((b, i) => {
+              const Icon = b.icon
+              return (
+                <div key={i} className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/20 flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center ${b.color} shrink-0`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-on-surface">{b.title}</p>
+                    <p className="text-[10px] text-on-surface-variant truncate">{b.desc}</p>
+                    <span className="text-[9px] text-outline mt-0.5 block">{b.date}</span>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
 
         {/* ========================================================================= */}
-        {/* ACCOUNT & DANGER ZONE MANAGEMENT                                          */}
+        {/* ACCOUNT & DATA MANAGEMENT                                                 */}
         {/* ========================================================================= */}
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md">
           <h3 className="text-base font-bold font-h2 text-on-surface flex items-center gap-2">
