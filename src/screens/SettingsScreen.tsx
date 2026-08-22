@@ -18,7 +18,8 @@ import {
   Check,
   User as UserIcon,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Languages
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthStore } from '../store/useAuthStore'
@@ -34,8 +35,10 @@ import {
   DEFAULT_ENGLISH_TRANSLATION,
   DEFAULT_TAMIL_TRANSLATION
 } from '../lib/quranTranslations'
+import { useI18nStore, type AppLanguage } from '../lib/i18n'
 
 type SettingCategory = 
+  | 'language'
   | 'theme' 
   | 'translation' 
   | 'font' 
@@ -56,8 +59,12 @@ function formatLastSynced(timestamp: string | null): string {
 }
 
 export const SettingsScreen: React.FC = () => {
+  const t = useI18nStore((state) => state.t)
+  const appLanguage = useI18nStore((state) => state.appLanguage)
+  const setAppLanguage = useI18nStore((state) => state.setAppLanguage)
+
   // Active selected tab (shared between desktop & mobile)
-  const [selectedTab, setSelectedTab] = useState<SettingCategory>('theme')
+  const [selectedTab, setSelectedTab] = useState<SettingCategory>('language')
   // Mobile drilldown open state
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false)
 
@@ -82,6 +89,7 @@ export const SettingsScreen: React.FC = () => {
   const setFontStyle = useReadingStore((state) => state.setFontStyle)
   const setEnglishTranslation = useReadingStore((state) => state.setEnglishTranslation)
   const setTamilTranslation = useReadingStore((state) => state.setTamilTranslation)
+  const setTranslationLanguage = useReadingStore((state) => state.setTranslationLanguage)
 
   const deviceId = syncService.getDeviceId()
 
@@ -93,6 +101,16 @@ export const SettingsScreen: React.FC = () => {
   const currentGoal = user?.dailyGoalVerses || 10
   const prayerAlerts = user?.prayerNotifications !== false
   const readingAlerts = user?.readingReminders !== false
+
+  const handleAppLanguageChange = (lang: AppLanguage) => {
+    setAppLanguage(lang)
+    if (lang === 'ta') {
+      setTranslationLanguage('ta')
+      updateUserSettings({ appLanguage: lang, preferredTranslation: 'tamil' })
+    } else {
+      updateUserSettings({ appLanguage: lang })
+    }
+  }
 
   const handleTranslationChange = (lang: 'english' | 'tamil') => {
     updateUserSettings({ preferredTranslation: lang })
@@ -155,13 +173,83 @@ export const SettingsScreen: React.FC = () => {
   // MODULAR SECTION RENDERERS
   // =========================================================================
 
+  // 0. App Language Section
+  const renderLanguageSection = () => (
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+          {t('appLanguage')}
+        </h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          {t('appLanguageDesc')}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* English */}
+        <div
+          onClick={() => handleAppLanguageChange('en')}
+          className={`p-5 sm:p-6 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-4 ${
+            appLanguage === 'en'
+              ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
+              : 'glass-card border-outline-variant/30 hover:border-primary/40'
+          }`}
+        >
+          <div className="flex items-start justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-base shrink-0">
+              EN
+            </div>
+            {appLanguage === 'en' && (
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shadow-sm">
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+              </div>
+            )}
+          </div>
+          <div>
+            <span className="text-base font-bold text-on-surface block">English (ஆங்கிலம்)</span>
+            <span className="text-xs text-on-surface-variant block leading-relaxed mt-0.5">
+              {t('languageEnglishSub')}
+            </span>
+          </div>
+        </div>
+
+        {/* Tamil */}
+        <div
+          onClick={() => handleAppLanguageChange('ta')}
+          className={`p-5 sm:p-6 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-4 ${
+            appLanguage === 'ta'
+              ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
+              : 'glass-card border-outline-variant/30 hover:border-primary/40'
+          }`}
+        >
+          <div className="flex items-start justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+              தமிழ்
+            </div>
+            {appLanguage === 'ta' && (
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shadow-sm">
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+              </div>
+            )}
+          </div>
+          <div>
+            <span className="text-base font-bold text-on-surface block">தமிழ் (Tamil)</span>
+            <span className="text-xs text-on-surface-variant block leading-relaxed mt-0.5">
+              {t('languageTamilSub')}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   // 1. Theme Section
   const renderThemeSection = () => (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Theme & Appearance</h2>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">{t('themeAppearance')}</h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-          Choose your preferred visual mode for sacred recitation and day/night reading comfort.
+          {t('themeAppearanceDesc')}
         </p>
       </div>
 
@@ -182,8 +270,8 @@ export const SettingsScreen: React.FC = () => {
             {theme === 'dark' && <Check className="w-5 h-5 text-primary" />}
           </div>
           <div>
-            <span className="text-base font-bold text-on-surface block">Cosmic Dark</span>
-            <span className="text-xs text-on-surface-variant">Deep OLED night recitation mode</span>
+            <span className="text-base font-bold text-on-surface block">{t('darkTheme')}</span>
+            <span className="text-xs text-on-surface-variant">{t('darkThemeSub')}</span>
           </div>
         </div>
 
@@ -203,8 +291,8 @@ export const SettingsScreen: React.FC = () => {
             {theme === 'light' && <Check className="w-5 h-5 text-primary" />}
           </div>
           <div>
-            <span className="text-base font-bold text-on-surface block">Pristine Light</span>
-            <span className="text-xs text-on-surface-variant">Clean and crisp daylight reading</span>
+            <span className="text-base font-bold text-on-surface block">{t('lightTheme')}</span>
+            <span className="text-xs text-on-surface-variant">{t('lightThemeSub')}</span>
           </div>
         </div>
 
@@ -224,8 +312,8 @@ export const SettingsScreen: React.FC = () => {
             {theme === 'system' && <Check className="w-5 h-5 text-primary" />}
           </div>
           <div>
-            <span className="text-base font-bold text-on-surface block">System Default</span>
-            <span className="text-xs text-on-surface-variant">Syncs automatically with your OS</span>
+            <span className="text-base font-bold text-on-surface block">{t('systemTheme')}</span>
+            <span className="text-xs text-on-surface-variant">{t('systemThemeSub')}</span>
           </div>
         </div>
       </div>
@@ -240,122 +328,128 @@ export const SettingsScreen: React.FC = () => {
     return (
       <div className="space-y-8 animate-fade-in">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Quran Translations</h2>
+          <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">{t('quranTranslations')}</h2>
           <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-            Choose your preferred authentic scholarly translations for English and Tamil. Changes save automatically across all screens.
+            {appLanguage === 'ta' 
+              ? 'அங்கீகரிக்கப்பட்ட தமிழ் மொழிபெயர்ப்புப் பதிப்பை தேர்வு செய்யவும்.'
+              : 'Choose your preferred authentic scholarly translations for English and Tamil. Changes save automatically.'}
           </p>
         </div>
 
-        {/* 🌟 Primary Active Language Switcher */}
-        <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-md space-y-3">
-          <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
-            Active Display Language
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* English */}
-            <div
-              onClick={() => handleTranslationChange('english')}
-              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
-                currentTranslation === 'english'
-                  ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
-                  : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-bold text-primary text-sm shrink-0">
-                  EN
-                </div>
-                <div>
-                  <span className="text-sm font-bold text-on-surface block">English Translations</span>
-                  <span className="text-[11px] text-on-surface-variant">Default view in English</span>
-                </div>
-              </div>
-              {currentTranslation === 'english' && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
-            </div>
-
-            {/* Tamil */}
-            <div
-              onClick={() => handleTranslationChange('tamil')}
-              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
-                currentTranslation === 'tamil'
-                  ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
-                  : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-bold text-primary text-sm shrink-0">
-                  தமிழ்
-                </div>
-                <div>
-                  <span className="text-sm font-bold text-on-surface block">தமிழ் மொழிபெயர்ப்புகள்</span>
-                  <span className="text-[11px] text-on-surface-variant">Default view in Tamil</span>
-                </div>
-              </div>
-              {currentTranslation === 'tamil' && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
-            </div>
-          </div>
-        </div>
-
-        {/* 🌟 English Translations List */}
-        <div className="space-y-3.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs sm:text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span>Official English Translations</span>
+        {/* 🌟 Primary Active Language Switcher (Only visible when App Language is English) */}
+        {appLanguage === 'en' && (
+          <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-md space-y-3">
+            <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+              Active Display Language
             </span>
-            <span className="text-[11px] text-outline font-semibold">4 Recognized Editions</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* English */}
+              <div
+                onClick={() => handleTranslationChange('english')}
+                className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                  currentTranslation === 'english'
+                    ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                    : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-bold text-primary text-sm shrink-0">
+                    EN
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-on-surface block">English Translations</span>
+                    <span className="text-[11px] text-on-surface-variant">Default view in English</span>
+                  </div>
+                </div>
+                {currentTranslation === 'english' && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
+              </div>
+
+              {/* Tamil */}
+              <div
+                onClick={() => handleTranslationChange('tamil')}
+                className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                  currentTranslation === 'tamil'
+                    ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                    : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-bold text-primary text-sm shrink-0">
+                    தமிழ்
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-on-surface block">தமிழ் மொழிபெயர்ப்புகள்</span>
+                    <span className="text-[11px] text-on-surface-variant">Default view in Tamil</span>
+                  </div>
+                </div>
+                {currentTranslation === 'tamil' && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
+              </div>
+            </div>
           </div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            {englishTranslations.map((trans) => {
-              const isSelected = currentEnglishTranslation === trans.id
+        {/* 🌟 English Translations List (Hidden when app language is Tamil) */}
+        {appLanguage === 'en' && (
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs sm:text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span>Official English Translations</span>
+              </span>
+              <span className="text-[11px] text-outline font-semibold">4 Recognized Editions</span>
+            </div>
 
-              return (
-                <div
-                  key={trans.id}
-                  onClick={() => handleEnglishTranslationChange(trans.id as EnglishTranslationKey)}
-                  className={`p-5 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-3 ${
-                    isSelected
-                      ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
-                      : 'glass-card border-outline-variant/30 hover:border-primary/40'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm sm:text-base font-bold text-on-surface block">
-                            {trans.name}
-                          </span>
-                          <span className="text-[10px] font-bold text-primary bg-primary/15 px-2 py-0.5 rounded-full border border-primary/20">
-                            {trans.badge}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {englishTranslations.map((trans) => {
+                const isSelected = currentEnglishTranslation === trans.id
+
+                return (
+                  <div
+                    key={trans.id}
+                    onClick={() => handleEnglishTranslationChange(trans.id as EnglishTranslationKey)}
+                    className={`p-5 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-3 ${
+                      isSelected
+                        ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
+                        : 'glass-card border-outline-variant/30 hover:border-primary/40'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm sm:text-base font-bold text-on-surface block">
+                              {trans.name}
+                            </span>
+                            <span className="text-[10px] font-bold text-primary bg-primary/15 px-2 py-0.5 rounded-full border border-primary/20">
+                              {trans.badge}
+                            </span>
+                          </div>
+                          <span className="text-xs text-outline font-medium block mt-0.5">
+                            {trans.author}
                           </span>
                         </div>
-                        <span className="text-xs text-outline font-medium block mt-0.5">
-                          {trans.author}
-                        </span>
+                        {isSelected && (
+                          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shrink-0 shadow-sm">
+                            <Check className="w-3.5 h-3.5" />
+                          </div>
+                        )}
                       </div>
-                      {isSelected && (
-                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shrink-0 shadow-sm">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                      )}
+
+                      <p className="text-xs text-on-surface-variant leading-relaxed">
+                        {trans.description}
+                      </p>
                     </div>
 
-                    <p className="text-xs text-on-surface-variant leading-relaxed">
-                      {trans.description}
-                    </p>
+                    <div className="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[10px] text-outline">
+                      <span className="truncate">{trans.publisher}</span>
+                      {isSelected && <span className="text-primary font-bold">{t('activeEnglish')}</span>}
+                    </div>
                   </div>
-
-                  <div className="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[10px] text-outline">
-                    <span className="truncate">{trans.publisher}</span>
-                    {isSelected && <span className="text-primary font-bold">Active English</span>}
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 🌟 Tamil Translations List */}
         <div className="space-y-3.5">
@@ -861,6 +955,8 @@ export const SettingsScreen: React.FC = () => {
   // Helper to render section by category
   const renderSection = (category: SettingCategory) => {
     switch (category) {
+      case 'language':
+        return renderLanguageSection()
       case 'theme':
         return renderThemeSection()
       case 'translation':
@@ -876,7 +972,7 @@ export const SettingsScreen: React.FC = () => {
       case 'about':
         return renderAboutSection()
       default:
-        return renderThemeSection()
+        return renderLanguageSection()
     }
   }
 
@@ -884,22 +980,63 @@ export const SettingsScreen: React.FC = () => {
 
   // Array of categories for navigation
   const categories: Array<{ id: SettingCategory; label: string; icon: any; desc: string }> = [
-    { id: 'theme', label: 'Theme & Appearance', icon: theme === 'dark' ? Moon : Sun, desc: `${theme.charAt(0).toUpperCase() + theme.slice(1)} Mode` },
-    { id: 'translation', label: 'Quran Translation', icon: Globe, desc: currentTranslation === 'tamil' ? 'தமிழ் (பாகவி)' : 'English (Sahih)' },
-    { id: 'font', label: 'Arabic Typography & Styles', icon: Type, desc: `${activeFontMeta.name} • ${currentFontSize}px` },
-    { id: 'target', label: 'Daily Verse Target', icon: Target, desc: `${currentGoal} Ayahs / Day` },
-    { id: 'notifications', label: 'Notifications & Adhan', icon: Bell, desc: readingAlerts ? 'Alerts Active' : 'Disabled' },
-    { id: 'sync', label: 'Cloud Sync & Storage', icon: Cloud, desc: syncStatus === 'synced' ? 'Synced' : 'Offline' },
-    { id: 'about', label: 'About Deenly', icon: Info, desc: 'Version 2.0 • Data Sources' },
+    { 
+      id: 'language', 
+      label: t('appLanguage'), 
+      icon: Languages, 
+      desc: appLanguage === 'ta' ? 'தமிழ் (முழு செயலி)' : 'English (Default)' 
+    },
+    { 
+      id: 'theme', 
+      label: t('themeAppearance'), 
+      icon: theme === 'dark' ? Moon : Sun, 
+      desc: `${theme.charAt(0).toUpperCase() + theme.slice(1)} Mode` 
+    },
+    { 
+      id: 'translation', 
+      label: t('quranTranslations'), 
+      icon: Globe, 
+      desc: appLanguage === 'ta' || currentTranslation === 'tamil' ? 'தமிழ் (பாகவி / ஜான் டிரஸ்ட்)' : 'English (Sahih)' 
+    },
+    { 
+      id: 'font', 
+      label: t('arabicTypography'), 
+      icon: Type, 
+      desc: `${activeFontMeta.name} • ${currentFontSize}px` 
+    },
+    { 
+      id: 'target', 
+      label: t('dailyGoalSetting'), 
+      icon: Target, 
+      desc: `${currentGoal} ${t('ayahs')} / ${t('days')}` 
+    },
+    { 
+      id: 'notifications', 
+      label: 'Notifications & Adhan', 
+      icon: Bell, 
+      desc: readingAlerts ? 'Alerts Active' : 'Disabled' 
+    },
+    { 
+      id: 'sync', 
+      label: t('multiDeviceSync'), 
+      icon: Cloud, 
+      desc: syncStatus === 'synced' ? 'Synced' : 'Offline' 
+    },
+    { 
+      id: 'about', 
+      label: t('aboutDeenly'), 
+      icon: Info, 
+      desc: 'Version 2.0 • Data Sources' 
+    },
   ]
 
   return (
     <div className="w-full pb-24 animate-fade-in">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">App Settings</h1>
+        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">{t('settingsTitle')}</h1>
         <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-          Customize your recitation theme, Arabic font styles, translations, and daily targets.
+          {t('settingsSub')}
         </p>
       </div>
 
@@ -915,7 +1052,7 @@ export const SettingsScreen: React.FC = () => {
               className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Settings</span>
+              <span>{t('back')}</span>
             </button>
 
             {renderSection(selectedTab)}

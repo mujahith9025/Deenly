@@ -13,18 +13,20 @@ import {
   ChevronRight 
 } from 'lucide-react'
 import { useAuthStore } from '../../store/useAuthStore'
-
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/quran', label: 'Quran', icon: BookOpen },
-  { path: '/hadith', label: 'Hadith', icon: ScrollText },
-  { path: '/settings', label: 'Settings', icon: Settings },
-]
+import { useI18nStore } from '../../lib/i18n'
 
 export const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const user = useAuthStore((state) => state.user)
   const signOut = useAuthStore((state) => state.signOut)
+  const t = useI18nStore((state) => state.t)
+
+  const navItems = [
+    { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+    { path: '/quran', label: t('quran'), icon: BookOpen },
+    { path: '/hadith', label: t('hadith'), icon: ScrollText },
+    { path: '/settings', label: t('settings'), icon: Settings },
+  ]
 
   return (
     <aside

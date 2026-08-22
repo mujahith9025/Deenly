@@ -31,6 +31,7 @@ import {
   DEFAULT_ENGLISH_TRANSLATION,
   DEFAULT_TAMIL_TRANSLATION
 } from '../lib/quranTranslations'
+import { useI18nStore } from '../lib/i18n'
 
 type FilterType = 'all' | 'meccan' | 'medinan'
 
@@ -38,6 +39,8 @@ export const QuranScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
+  const appLanguage = useI18nStore((state) => state.appLanguage)
+  const t = useI18nStore((state) => state.t)
   const storeFontSize = useReadingStore((state) => state.fontSize)
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
   const storeEnglishTranslation = useReadingStore((state) => state.englishTranslation)
@@ -78,8 +81,9 @@ export const QuranScreen: React.FC = () => {
   
   // Translation & Display
   const [translationLanguage, setTranslationLanguage] = useState<'en' | 'ta'>(
-    user?.preferredTranslation === 'tamil' ? 'ta' : 'en'
+    user?.preferredTranslation === 'tamil' || appLanguage === 'ta' ? 'ta' : 'en'
   )
+  const effectiveTranslationLanguage: 'en' | 'ta' = appLanguage === 'ta' ? 'ta' : translationLanguage
   const [copiedAyahId, setCopiedAyahId] = useState<number | null>(null)
 
   // Sync selectedSurahNumber with searchParams
@@ -146,32 +150,32 @@ export const QuranScreen: React.FC = () => {
   // Filter Surahs list
   const filteredSurahs = SURAH_METADATA.filter((surah) => {
     const matchesSearch =
-      searchQuery.trim() === '' ||
       surah.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      surah.englishName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       surah.englishNameTranslation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      surah.number.toString() === searchQuery.trim()
+      surah.number.toString().includes(searchQuery)
 
-    const matchesFilter =
+    const matchesType =
       filterType === 'all' ||
-      (filterType === 'meccan' && surah.revelationType === 'Meccan') ||
-      (filterType === 'medinan' && surah.revelationType === 'Medinan')
+      (filterType === 'meccan' && surah.revelationType.toLowerCase() === 'meccan') ||
+      (filterType === 'medinan' && surah.revelationType.toLowerCase() === 'medinan')
 
-    return matchesSearch && matchesFilter
+    return matchesSearch && matchesType
   })
 
-  // Navigation handlers
+  const currentSurahMeta = selectedSurahNumber
+    ? SURAH_METADATA.find((s) => s.number === selectedSurahNumber)
+    : null
+
+  // Handlers
   const handleSelectSurah = (surahNumber: number) => {
     setSelectedSurahNumber(surahNumber)
-    setActiveHighlightAyah(null)
-    setVerseSearchInput('')
     setSearchParams({ surah: surahNumber.toString() })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleBackToChapters = () => {
     setSelectedSurahNumber(null)
-    setSurahData(null)
-    setActiveHighlightAyah(null)
     setSearchParams({})
   }
 
@@ -180,27 +184,25 @@ export const QuranScreen: React.FC = () => {
     navigate(`/reading?surah=${surahNum}&ayah=${ayahNum}`)
   }
 
-  // Handle Jump to Verse in this chapter
-  const handleVerseSearchSubmit = (e: React.FormEvent) => {
+  const handleCopyAyah = (arabic: string, trans: string, surahNum: number, ayahNum: number) => {
+    const text = `${arabic}\n\n"${trans}"\n\n— Quran (${surahNum}:${ayahNum})`
+    navigator.clipboard.writeText(text)
+    setCopiedAyahId(ayahNum)
+    setTimeout(() => setCopiedAyahId(null), 2000)
+  }
+
+  const handleJumpToAyah = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!currentSurahMeta || !verseSearchInput.trim()) return
+    const num = parseInt(verseSearchInput.trim(), 10)
+    if (!surahData || isNaN(num) || num < 1 || num > surahData.numberOfAyahs) return
 
-    const parsedNum = parseInt(verseSearchInput.trim(), 10)
-    if (isNaN(parsedNum) || parsedNum < 1 || parsedNum > currentSurahMeta.numberOfAyahs) {
-      alert(`Please enter a valid verse number between 1 and ${currentSurahMeta.numberOfAyahs}`)
-      return
-    }
-
-    setActiveHighlightAyah(parsedNum)
-    setSearchParams({ surah: currentSurahMeta.number.toString(), ayah: parsedNum.toString() })
-
-    const el = document.getElementById(`ayah-${parsedNum}`)
+    setActiveHighlightAyah(num)
+    const el = document.getElementById(`ayah-${num}`)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }
 
-  // Handle Audio Play/Pause for a specific verse
   const handleToggleAyahAudio = (ayah: Ayah) => {
     if (!selectedSurahNumber || !surahData) return
 
@@ -216,23 +218,11 @@ export const QuranScreen: React.FC = () => {
     }
   }
 
-  // Copy Ayah to Clipboard
-  const handleCopyAyah = (ayah: Ayah) => {
-    const text = `${ayah.arabicText}\n\n"${ayah.translations[translationLanguage] || ayah.translations.en}"\n\n[Surah ${selectedSurahNumber}:${ayah.verseNumberInSurah}]`
-    navigator.clipboard.writeText(text)
-    setCopiedAyahId(ayah.verseNumberInSurah)
-    setTimeout(() => setCopiedAyahId(null), 2000)
-  }
-
-  const currentSurahMeta = selectedSurahNumber
-    ? SURAH_METADATA.find((s) => s.number === selectedSurahNumber)
-    : null
-
   const isCurrentSurahContinuousPlaying =
     audioStore.isPlaying && audioStore.surahNumber === selectedSurahNumber
 
   return (
-    <div className={`space-y-6 max-w-7xl mx-auto animate-fade-in ${audioStore.isPlayerVisible ? 'pb-44 sm:pb-36' : 'pb-24'}`}>
+    <div className="w-full pb-32 animate-fade-in space-y-6">
       
       {/* ========================================================================= */}
       {/* 1. TOP HEADER & NAVIGATION                                               */}
@@ -244,7 +234,7 @@ export const QuranScreen: React.FC = () => {
               <button
                 onClick={handleBackToChapters}
                 className="p-2 rounded-full glass-card hover:bg-surface-container-high border border-outline-variant/40 text-on-surface transition cursor-pointer"
-                title="Back to all Surahs"
+                title={t('returnToChapters')}
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -252,28 +242,37 @@ export const QuranScreen: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold font-h1 text-on-surface">
               {selectedSurahNumber && currentSurahMeta
                 ? `${currentSurahMeta.number}. ${currentSurahMeta.name}`
-                : 'Quran Explorer'}
+                : t('quranExplorer')}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
             {selectedSurahNumber && currentSurahMeta
-              ? `${currentSurahMeta.englishNameTranslation} • ${currentSurahMeta.numberOfAyahs} Verses • ${currentSurahMeta.revelationType}`
-              : 'Read, explore, and listen to continuous full-chapter audio recitations.'}
+              ? `${currentSurahMeta.englishNameTranslation} • ${currentSurahMeta.numberOfAyahs} ${t('verses')} • ${currentSurahMeta.revelationType === 'Meccan' ? t('meccan') : t('medinan')}`
+              : t('quranExplorerSub')}
           </p>
         </div>
 
         {/* Translation Language Toggle & Mode Controls */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button
-            onClick={() => setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')}
-            className="px-3.5 py-1.5 rounded-full glass-card border border-outline-variant/40 text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center gap-1.5"
-            title="Switch translation language (English / Tamil)"
-          >
-            <span>{translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}</span>
-            <span className="text-[10px] text-outline font-normal">
-              ({translationLanguage === 'ta' ? getTranslationMeta(currentTamilTranslation).name : getTranslationMeta(currentEnglishTranslation).name})
-            </span>
-          </button>
+          {appLanguage === 'en' ? (
+            <button
+              onClick={() => setTranslationLanguage(effectiveTranslationLanguage === 'en' ? 'ta' : 'en')}
+              className="px-3.5 py-1.5 rounded-full glass-card border border-outline-variant/40 text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center gap-1.5"
+              title="Switch translation language (English / Tamil)"
+            >
+              <span>{effectiveTranslationLanguage === 'ta' ? 'தமிழ்' : 'EN'}</span>
+              <span className="text-[10px] text-outline font-normal">
+                ({effectiveTranslationLanguage === 'ta' ? getTranslationMeta(currentTamilTranslation).name : getTranslationMeta(currentEnglishTranslation).name})
+              </span>
+            </button>
+          ) : (
+            <div className="px-3.5 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-xs font-bold text-primary shadow-sm flex items-center gap-1.5">
+              <span>தமிழ்</span>
+              <span className="text-[10px] text-outline font-normal">
+                ({getTranslationMeta(currentTamilTranslation).name})
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -288,7 +287,7 @@ export const QuranScreen: React.FC = () => {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-outline" />
               <input
                 type="text"
-                placeholder="Search Surah by name, translation, or number..."
+                placeholder={t('searchSurahPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 rounded-2xl glass-card border border-outline-variant/40 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition shadow-sm"
@@ -315,7 +314,7 @@ export const QuranScreen: React.FC = () => {
                       : 'text-outline hover:text-on-surface'
                   }`}
                 >
-                  {ft}
+                  {ft === 'all' ? t('all') : ft === 'meccan' ? t('meccan') : t('medinan')}
                 </button>
               ))}
             </div>
@@ -431,7 +430,7 @@ export const QuranScreen: React.FC = () => {
                 </button>
 
                 {/* Jump To Verse Form */}
-                <form onSubmit={handleVerseSearchSubmit} className="flex items-center gap-1.5">
+                <form onSubmit={handleJumpToAyah} className="flex items-center gap-1.5">
                   <input
                     type="number"
                     min={1}
@@ -604,7 +603,10 @@ export const QuranScreen: React.FC = () => {
 
                           {/* Copy Ayah */}
                           <button
-                            onClick={() => handleCopyAyah(ayah)}
+                            onClick={() => {
+                              const trans = ayah.translations[effectiveTranslationLanguage] || ayah.translations.en || ''
+                              handleCopyAyah(ayah.arabicText, trans, selectedSurahNumber || 1, ayah.verseNumberInSurah)
+                            }}
                             className="p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-outline hover:text-on-surface transition cursor-pointer"
                             title="Copy verse and translation"
                           >

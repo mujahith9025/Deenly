@@ -12,6 +12,12 @@
 
 ## 🌟 Key Features
 
+### 🌐 Comprehensive App Localization (English & Pure Tamil Mode)
+- **App Language Preference (பயன்பாட்டு மொழி)**: Dual-mode language architecture accessible in Settings:
+  - 🇬🇧 **English (`en`) — Default**: Standard international English UI with bilingual translation switcher.
+  - 🇮🇳 **தமிழ் (`ta`) — Pure Tamil Mode**: The entire user interface (Navigation, Dashboard, Quran Explorer, Reader, Hadith collections, and Settings) translates completely into pure, authentic Tamil.
+  - 🔒 **Pure Tamil Mode Lock**: When Tamil is chosen as the App Language, English Quran translations are disabled and locked exclusively to authentic Tamil editions (*Abdul Hameed Baqavi* & *Jan Trust*), ensuring a distraction-free, 100% Tamil Islamic reading experience alongside original Arabic scriptures.
+
 ### 📖 Authentic Quran Reading Experience
 - **Official Quran Font Styles**: 5 authentic calligraphic traditions with regional badges, live previews, and instant multi-screen persistence:
   - 🏛️ **Madani Uthmani** (*Amiri Quran* / King Fahd Complex standard)

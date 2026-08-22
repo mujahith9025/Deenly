@@ -17,17 +17,19 @@ import { useAuthStore } from '../store/useAuthStore'
 import { useBookmarkStore } from '../store/useBookmarkStore'
 import { useReadingStore } from '../store/useReadingStore'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
+import { useI18nStore } from '../lib/i18n'
 
 type ViewMode = 'books' | 'chapters' | 'hadiths'
 type LanguageMode = 'english' | 'tamil' | 'dual'
 
 export const HadithScreen: React.FC = () => {
   const [searchParams] = useSearchParams()
+  const appLanguage = useI18nStore((state) => state.appLanguage)
   const user = useAuthStore((state) => state.user)
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
   const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
   const arabicFontFamily = getArabicFontFamily(fontStyle)
-  const defaultLang: LanguageMode = user?.preferredTranslation === 'tamil' ? 'tamil' : 'english'
+  const defaultLang: LanguageMode = user?.preferredTranslation === 'tamil' || appLanguage === 'ta' ? 'tamil' : 'english'
 
   // Unified Bookmark Store
   const isHadithBookmarked = useBookmarkStore((state) => state.isHadithBookmarked)
@@ -52,6 +54,7 @@ export const HadithScreen: React.FC = () => {
 
   // Display options
   const [languageMode, setLanguageMode] = useState<LanguageMode>(defaultLang)
+  const effectiveLanguageMode: LanguageMode = appLanguage === 'ta' ? 'tamil' : languageMode
   const [copiedHadithId, setCopiedHadithId] = useState<number | null>(null)
 
   const storeFontSize = useReadingStore((state) => state.fontSize)
@@ -405,41 +408,47 @@ export const HadithScreen: React.FC = () => {
             </button>
 
             {/* Translation Language Selector */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-container border border-outline-variant/30 self-start sm:self-auto shadow-sm">
-              <button
-                type="button"
-                onClick={() => setLanguageMode('english')}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                  languageMode === 'english'
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                English
-              </button>
-              <button
-                type="button"
-                onClick={() => setLanguageMode('tamil')}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                  languageMode === 'tamil'
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                தமிழ் (Tamil)
-              </button>
-              <button
-                type="button"
-                onClick={() => setLanguageMode('dual')}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                  languageMode === 'dual'
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-on-surface-variant hover:text-on-surface'
-                }`}
-              >
-                Dual (EN + தமிழ்)
-              </button>
-            </div>
+            {appLanguage === 'en' ? (
+              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-surface-container border border-outline-variant/30 self-start sm:self-auto shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setLanguageMode('english')}
+                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    languageMode === 'english'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  English
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguageMode('tamil')}
+                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    languageMode === 'tamil'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  தமிழ் (Tamil)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguageMode('dual')}
+                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    languageMode === 'dual'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  Dual (EN + தமிழ்)
+                </button>
+              </div>
+            ) : (
+              <div className="px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-xs font-bold text-primary shadow-sm">
+                தமிழ் மொழிபெயர்ப்பு
+              </div>
+            )}
           </div>
 
           {/* Chapter Header Banner */}
@@ -575,9 +584,9 @@ export const HadithScreen: React.FC = () => {
                     {/* 🌟 TRANSLATION CONTAINER (ENGLISH / TAMIL / DUAL) */}
                     <div className="space-y-4 pt-1">
                       {/* English Translation */}
-                      {(languageMode === 'english' || languageMode === 'dual' || !h.tamilText) && (
+                      {(effectiveLanguageMode === 'english' || effectiveLanguageMode === 'dual' || !h.tamilText) && (
                         <div className="space-y-1">
-                          {languageMode === 'dual' && (
+                          {effectiveLanguageMode === 'dual' && (
                             <span className="text-[10px] uppercase font-bold text-outline font-label-caps tracking-wider block">
                               English Translation (Sahih International / Darussalam)
                             </span>
@@ -589,9 +598,9 @@ export const HadithScreen: React.FC = () => {
                       )}
 
                       {/* Tamil Translation */}
-                      {(languageMode === 'tamil' || languageMode === 'dual') && h.tamilText && (
+                      {(effectiveLanguageMode === 'tamil' || effectiveLanguageMode === 'dual') && h.tamilText && (
                         <div className="space-y-1 pt-1 border-t border-outline-variant/10">
-                          {languageMode === 'dual' && (
+                          {effectiveLanguageMode === 'dual' && (
                             <span className="text-[10px] uppercase font-bold text-tertiary font-label-caps tracking-wider block">
                               தமிழ் மொழிபெயர்ப்பு (Tamil Translation)
                             </span>

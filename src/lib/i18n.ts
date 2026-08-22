@@ -1,0 +1,362 @@
+import { create } from 'zustand'
+
+export type AppLanguage = 'en' | 'ta'
+
+export const TRANSLATIONS_DICT = {
+  en: {
+    // Brand & Common
+    appTitle: 'Deenly',
+    appSubtitle: 'Islamic Companion',
+    dashboard: 'Dashboard',
+    quran: 'Quran',
+    reading: 'Reading',
+    hadith: 'Hadith',
+    profile: 'Profile',
+    settings: 'Settings',
+    signIn: 'Sign In with Google',
+    signInShort: 'Sign In',
+    signOut: 'Sign Out',
+    pts: 'pts',
+    days: 'days',
+    verses: 'Verses',
+    ayahs: 'Ayahs',
+    juz: 'Juz',
+    page: 'Page',
+    chapter: 'Chapter',
+    meccan: 'Meccan',
+    medinan: 'Medinan',
+    all: 'All',
+    of: 'of',
+    save: 'Save',
+    cancel: 'Cancel',
+    clear: 'Clear',
+    close: 'Close',
+    back: 'Back',
+
+    // Dashboard
+    weeklyConsistency: 'Weekly Consistency',
+    weeklyDesc: 'Track your daily recitation habit',
+    dailyGoal: 'Daily Goal',
+    startJourney: 'Start Journey',
+    continueReading: 'Continue Reading',
+    reciteVersesSub: 'Recite verses with precision Hasanat tracking',
+    spiritualMetrics: 'Spiritual Metrics',
+    hasanatEarned: 'Hasanat Earned',
+    versesRecited: 'Verses Recited',
+    timeReciting: 'Time Reciting',
+    pagesRead: 'Pages Read',
+    verseOfTheDay: 'Verse of the Day',
+    hadithOfTheDay: 'Hadith of the Day',
+    dailyInspiration: 'Daily Inspiration',
+    propheticWisdom: 'Prophetic Wisdom',
+    listenRecitation: 'Listen Recitation',
+    readFullSurah: 'Read Full Surah',
+    readMoreHadiths: 'Explore More Hadiths',
+    suggestedSurahs: 'Suggested Surahs',
+    quickRecitations: 'Quick Daily Recitations',
+    surahsDirectory: 'Surahs Directory',
+    searchSurah: 'Search Surah...',
+    noRecitationYet: 'No recitation yet today. Begin your journey!',
+
+    // Quran Explorer
+    quranExplorer: 'Quran Explorer',
+    quranExplorerSub: 'Read, explore, and listen to continuous full-chapter audio recitations.',
+    searchSurahPlaceholder: 'Search Surah by name, translation, or number...',
+    allChapters: 'All Chapters',
+    playFullSurah: 'Play Full Surah',
+    pauseRecitation: 'Pause Recitation',
+    jumpToVerse: 'Jump',
+    ayahSearchPlaceholder: 'Ayah #...',
+    clearHighlight: 'Clear highlight',
+    loadingVerses: 'Loading Sacred Verses...',
+    connectingEdition: 'Connecting to authentic Uthmani text edition',
+    bismillahTranslation: 'In the Name of Allah, the Most Gracious, the Most Merciful',
+    copyVerse: 'Copy verse and translation',
+    addToFavorites: 'Add to Favorites',
+    removeFromFavorites: 'Remove from Favorites',
+    bookmarkAyah: 'Bookmark Ayah',
+    removeBookmark: 'Remove Bookmark',
+    focusedMode: 'Recite this verse in Focused 1-Verse Mode',
+    noChaptersFound: 'No chapters found',
+    noChaptersFoundSub: 'Try checking the spelling or resetting search filters.',
+    returnToChapters: 'Return to All Chapters',
+
+    // Reading Screen
+    ayahOfTotal: 'Ayah',
+    juzNumber: 'Juz',
+    returnToDashboard: 'Return to Dashboard',
+    imDone: "I'm Done",
+    finishSession: 'Finish Reading',
+    prevAyah: 'Previous Ayah',
+    nextAyah: 'Next Ayah',
+    surahCompletedTitle: 'Surah Completed! Well done.',
+    surahCompletedSub: 'Great progress on your spiritual journey.',
+
+    // Hadiths
+    hadithExplorer: 'Hadith Explorer',
+    hadithExplorerSub: 'Authentic traditions of Prophet Muhammad (ﷺ)',
+    searchHadithPlaceholder: 'Search Hadiths by keywords, narrator, or topic...',
+    sahihBukhari: 'Sahih al-Bukhari',
+    sahihMuslim: 'Sahih Muslim',
+    narratedBy: 'Narrated by',
+    bookSection: 'Book',
+
+    // Settings
+    settingsTitle: 'Settings',
+    settingsSub: 'Personalize your recitation, typography, and application preferences.',
+    appLanguage: 'App Language',
+    appLanguageDesc: 'Choose your complete application interface language.',
+    languageEnglish: 'English',
+    languageEnglishSub: 'Full app in English with bilingual translation options',
+    languageTamil: 'தமிழ் (Tamil)',
+    languageTamilSub: 'முழு பயன்பாடும் தமிழில் (Full app in Tamil)',
+    themeAppearance: 'Theme & Appearance',
+    themeAppearanceDesc: 'Select your preferred cosmic color palette.',
+    darkTheme: 'Cosmic Dark',
+    darkThemeSub: 'Deep space dark mode',
+    lightTheme: 'Cosmic Light',
+    lightThemeSub: 'Crisp bright mode',
+    systemTheme: 'System Default',
+    systemThemeSub: 'Syncs automatically with your OS',
+    quranTranslations: 'Quran Translations',
+    quranTranslationsDesc: 'Choose your preferred authentic scholarly translations.',
+    arabicTypography: 'Arabic Typography & Styles',
+    arabicTypographyDesc: 'Choose your preferred authentic Quran font style and adjust text sizing.',
+    dailyGoalSetting: 'Daily Reading Goal',
+    dailyGoalSettingDesc: 'Set your daily verse recitation target.',
+    multiDeviceSync: 'Multi-Device Cloud Sync',
+    multiDeviceSyncDesc: 'Real-time delta-merge cloud synchronization across your devices.',
+    syncNow: 'Sync Now',
+    storageCache: 'Storage & Offline Cache',
+    storageCacheDesc: 'Manage cached Surahs and audio recitations for offline usage.',
+    clearCache: 'Clear Offline Cache',
+    cacheCleared: 'Cache Cleared Successfully!',
+    aboutDeenly: 'About Deenly',
+    activeEnglish: 'Active English',
+    activeTamil: 'Active Tamil',
+
+    // Profile
+    myProfile: 'My Profile & Repository',
+    myProfileSub: 'Your personal spiritual metrics, saved favorites, and milestones.',
+    savedBookmarks: 'Saved Bookmarks',
+    favoriteVersesAndHadiths: 'Favorites (Verses & Hadiths)',
+    spiritualMilestones: 'Spiritual Milestones & Badges',
+    accountSafety: 'Account & Data Safety',
+    resetStats: 'Reset Reading Stats',
+    deleteAccount: 'Delete Account',
+    noBookmarksYet: 'No bookmarks saved yet.',
+    noFavoritesYet: 'No favorites saved yet.',
+
+    // Audio Player
+    nowReciting: 'Now Reciting • Continuous Mode',
+    misharyAlafasy: 'Sheikh Mishary Rashid Alafasy',
+    playAudio: 'Play',
+    pauseAudio: 'Pause',
+    rewind10s: 'Rewind 10s',
+    forward10s: 'Forward 10s',
+    prevVerse: 'Previous Verse',
+    nextVerse: 'Next Verse',
+    prevSurah: 'Previous Surah',
+    nextSurah: 'Next Surah',
+    autoscrollActive: 'Autoscroll Active',
+    autoscrollDisabled: 'Autoscroll Disabled',
+    repeatContinuous: 'Continuous Mode',
+    repeatSurah: 'Repeat Surah',
+    repeatVerse: 'Repeat Verse',
+  },
+
+  ta: {
+    // Brand & Common
+    appTitle: 'தீன்லி (Deenly)',
+    appSubtitle: 'இஸ்லாமிய வழிகாட்டி',
+    dashboard: 'முகப்பு',
+    quran: 'திருக்குர்ஆன்',
+    reading: 'ஓதுதல்',
+    hadith: 'நபிமொழிகள்',
+    profile: 'சுயவிவரம்',
+    settings: 'அமைப்புகள்',
+    signIn: 'கூகுள் மூலம் உள்நுழைக',
+    signInShort: 'உள்நுழைக',
+    signOut: 'வெளியேறு',
+    pts: 'புள்ளிகள்',
+    days: 'நாட்கள்',
+    verses: 'வசனங்கள்',
+    ayahs: 'வசனங்கள்',
+    juz: 'ஜுஸ்',
+    page: 'பக்கம்',
+    chapter: 'அத்தியாயம்',
+    meccan: 'மக்கீ',
+    medinan: 'மதனீ',
+    all: 'அனைத்தும்',
+    of: 'இல்',
+    save: 'சேமி',
+    cancel: 'ரத்து செய்',
+    clear: 'அழி',
+    close: 'மூடு',
+    back: 'பின்செல்க',
+
+    // Dashboard
+    weeklyConsistency: 'வாராந்திர தொடர்ச்சி',
+    weeklyDesc: 'தினசரி திருக்குர்ஆன் ஓதும் பழக்கத்தை கண்காணிக்கவும்',
+    dailyGoal: 'இன்றைய இலக்கு',
+    startJourney: 'பயணத்தைத் தொடங்குங்கள்',
+    continueReading: 'தொடர்ந்து ஓதுங்கள்',
+    reciteVersesSub: 'துல்லியமான நன்மைகள் (ஹஸனாத்) கணக்கீட்டுடன் ஓதுங்கள்',
+    spiritualMetrics: 'ஆன்மீக அளவீடுகள்',
+    hasanatEarned: 'பெற்ற நன்மைகள்',
+    versesRecited: 'ஓதிய வசனங்கள்',
+    timeReciting: 'ஓதிய நேரம்',
+    pagesRead: 'ஓதிய பக்கங்கள்',
+    verseOfTheDay: 'இன்றைய திருக்குர்ஆன் வசனம்',
+    hadithOfTheDay: 'இன்றைய நபியின் பொன்மொழி',
+    dailyInspiration: 'தினசரி வழிகாட்டல்',
+    propheticWisdom: 'நபிகளாரின் ஞானமொழி',
+    listenRecitation: 'ஓதுவதைக் கேளுங்கள்',
+    readFullSurah: 'முழு அத்தியாயத்தை வாசிக்கவும்',
+    readMoreHadiths: 'மேலும் நபிமொழிகளை வாசிக்கவும்',
+    suggestedSurahs: 'முக்கிய அத்தியாயங்கள்',
+    quickRecitations: 'தினசரி ஓத வேண்டியவை',
+    surahsDirectory: 'அத்தியாயங்கள் பட்டியல்',
+    searchSurah: 'அத்தியாயத்தைத் தேடுங்கள்...',
+    noRecitationYet: 'இன்று இன்னும் ஓதவில்லை. இப்பொழுதே தொடங்குங்கள்!',
+
+    // Quran Explorer
+    quranExplorer: 'திருக்குர்ஆன் உலாவி',
+    quranExplorerSub: 'முழு அத்தியாயங்களையும் வாசிக்கவும், தொடர் கிராஅத் கேட்கவும்.',
+    searchSurahPlaceholder: 'அத்தியாயத்தின் பெயர், மொழிபெயர்ப்பு அல்லது எண் மூலம் தேடவும்...',
+    allChapters: 'அனைத்து அத்தியாயங்களும் (114)',
+    playFullSurah: 'முழு அத்தியாயத்தை இயக்கு',
+    pauseRecitation: 'ஓதுவதை நிறுத்து',
+    jumpToVerse: 'செல்க',
+    ayahSearchPlaceholder: 'வசனம் #...',
+    clearHighlight: 'குறிப்பை நீக்கு',
+    loadingVerses: 'திருக்குர்ஆன் வசனங்கள் ஏற்றப்படுகின்றன...',
+    connectingEdition: 'அங்கீகரிக்கப்பட்ட உத்மானிய மூல உரையுடன் இணைகிறது',
+    bismillahTranslation: 'அளவற்ற அருளாளனும், நிகரற்ற அன்புடையோனுமாகிய அல்லாஹ்வின் பெயரால்...',
+    copyVerse: 'வசனத்தையும் மொழிபெயர்ப்பையும் நகலெடு',
+    addToFavorites: 'விருப்பத்தில் சேர்',
+    removeFromFavorites: 'விருப்பத்திலிருந்து நீக்கு',
+    bookmarkAyah: 'புக்மார்க் செய்க',
+    removeBookmark: 'புக்மார்க்கை நீக்கு',
+    focusedMode: 'தனி வசன ஓதுதல் முறையில் திறக்கவும்',
+    noChaptersFound: 'அத்தியாயங்கள் எதுவும் கிடைக்கவில்லை',
+    noChaptersFoundSub: 'எழுத்துப் பிழையைச் சரிபார்க்கவும் அல்லது வடிகட்டியை மாற்றவும்.',
+    returnToChapters: 'அனைத்து அத்தியாயங்களுக்கும் திரும்பு',
+
+    // Reading Screen
+    ayahOfTotal: 'வசனம்',
+    juzNumber: 'ஜுஸ்',
+    returnToDashboard: 'முகப்பிற்குத் திரும்பு',
+    imDone: 'முடித்துவிட்டேன்',
+    finishSession: 'வாசிப்பை முடிக்கவும்',
+    prevAyah: 'முந்தைய வசனம்',
+    nextAyah: 'அடுத்த வசனம்',
+    surahCompletedTitle: 'அத்தியாயம் நிறைவடைந்தது! மாஷா அல்லாஹ்.',
+    surahCompletedSub: 'உங்கள் ஆன்மீகப் பயணம் மேலும் சிறக்கட்டும்.',
+
+    // Hadiths
+    hadithExplorer: 'நபிமொழித் திரட்டு (ஹதீஸ்கள்)',
+    hadithExplorerSub: 'நபிகள் நாயகம் (ஸல்) அவர்களின் அங்கீகரிக்கப்பட்ட பொன்மொழிகள்',
+    searchHadithPlaceholder: 'கருப்பொருள், அறிவிப்பாளர் அல்லது வார்த்தை மூலம் தேடவும்...',
+    sahihBukhari: 'ஸஹீஹுல் புகாரி',
+    sahihMuslim: 'ஸஹீஹ் முஸ்லிம்',
+    narratedBy: 'அறிவிப்பாளர்',
+    bookSection: 'பாடம் / நூல்',
+
+    // Settings
+    settingsTitle: 'அமைப்புகள்',
+    settingsSub: 'உங்கள் வாசிப்பு, எழுத்துரு மற்றும் பயன்பாட்டு விருப்பங்களை மாற்றியமைக்கவும்.',
+    appLanguage: 'பயன்பாட்டு மொழி (App Language)',
+    appLanguageDesc: 'முழு பயன்பாட்டு மொழியையும் தமிழ் அல்லது ஆங்கிலத்திற்கு மாற்றவும்.',
+    languageEnglish: 'English (ஆங்கிலம்)',
+    languageEnglishSub: 'Full app in English with translation toggles',
+    languageTamil: 'தமிழ் (Tamil)',
+    languageTamilSub: 'முழு செயலியும் தமிழ் மொழியில் (Full app in Tamil)',
+    themeAppearance: 'தோற்றம் & வண்ணம்',
+    themeAppearanceDesc: 'உங்களுக்குப் பிடித்த வண்ணத்தை தேர்வு செய்யவும்.',
+    darkTheme: 'இருள் பயன்முறை (Dark)',
+    darkThemeSub: 'கண்களுக்கு இதமான இருண்ட தோற்றம்',
+    lightTheme: 'ஒளி பயன்முறை (Light)',
+    lightThemeSub: 'தெளிவான பகல் வெளிச்சத் தோற்றம்',
+    systemTheme: 'கணினி தானியங்கி (System)',
+    systemThemeSub: 'உங்கள் மொபைல் அமைப்புடன் தானாக பொருந்தும்',
+    quranTranslations: 'குர்ஆன் மொழிபெயர்ப்புகள்',
+    quranTranslationsDesc: 'அங்கீகரிக்கப்பட்ட தமிழ் மொழிபெயர்ப்புப் பதிப்பை தேர்வு செய்யவும்.',
+    arabicTypography: 'அரபி எழுத்துரு & அளவுகள்',
+    arabicTypographyDesc: 'அங்கீகரிக்கப்பட்ட அரபி எழுத்து நடை மற்றும் அளவை (54px வரை) மாற்றவும்.',
+    dailyGoalSetting: 'தினசரி வாசிப்பு இலக்கு',
+    dailyGoalSettingDesc: 'தினசரி ஓத வேண்டிய வசனங்களின் எண்ணிக்கையை அமைக்கவும்.',
+    multiDeviceSync: 'மேகக்கணி ஒத்திசைவு (Cloud Sync)',
+    multiDeviceSyncDesc: 'உங்கள் அனைத்து சாதனங்களிலும் நன்மைகள் மற்றும் தரவை ஒத்திசைக்கவும்.',
+    syncNow: 'இப்போதே ஒத்திசை',
+    storageCache: 'ஆஃப்லைன் சேமிப்பகம்',
+    storageCacheDesc: 'இணையம் இல்லாமலும் ஓத சேமிக்கப்பட்ட குர்ஆன் கோப்புகளை நிர்வகிக்கவும்.',
+    clearCache: 'சேமிப்பகத்தை அழிக்கவும்',
+    cacheCleared: 'சேமிப்பகம் வெற்றிகரமாக அழிக்கப்பட்டது!',
+    aboutDeenly: 'தீன்லி பற்றி',
+    activeEnglish: 'செயலில் உள்ள ஆங்கிலம்',
+    activeTamil: 'செயலில் உள்ள தமிழ்',
+
+    // Profile
+    myProfile: 'என் சுயவிவரம் & கருவூலம்',
+    myProfileSub: 'உங்கள் ஆன்மீக அளவீடுகள், சேமித்த விருப்பங்கள் மற்றும் சாதனைகள்.',
+    savedBookmarks: 'சேமிக்கப்பட்ட புக்மார்க்குகள்',
+    favoriteVersesAndHadiths: 'விருப்பமானவை (வசனங்கள் & ஹதீஸ்கள்)',
+    spiritualMilestones: 'ஆன்மீக மைல்கற்கள் & பதக்கங்கள்',
+    accountSafety: 'கணக்கு & தரவு பாதுகாப்பு',
+    resetStats: 'அளவீடுகளை மீட்டமை',
+    deleteAccount: 'கணக்கை நிரந்தரமாக நீக்கு',
+    noBookmarksYet: 'புக்மார்க்குகள் எதுவும் இதுவரை சேமிக்கப்படவில்லை.',
+    noFavoritesYet: 'விருப்பமான வசனங்கள் எதுவும் இதுவரை சேமிக்கப்படவில்லை.',
+
+    // Audio Player
+    nowReciting: 'தொடர்ந்து ஓதப்படுகிறது • தொடர் கிராஅத்',
+    misharyAlafasy: 'ஷேக் மிஷாரி ராஷித் அல்-அஃபாஸி',
+    playAudio: 'இயக்கு',
+    pauseAudio: 'நிறுத்து',
+    rewind10s: '10 வினாடி பின்செல்க',
+    forward10s: '10 வினாடி முன்செல்க',
+    prevVerse: 'முந்தைய வசனம்',
+    nextVerse: 'அடுத்த வசனம்',
+    prevSurah: 'முந்தைய அத்தியாயம்',
+    nextSurah: 'அடுத்த அத்தியாயம்',
+    autoscrollActive: 'தானியங்கி நகர்வு செயலில் உள்ளது',
+    autoscrollDisabled: 'தானியங்கி நகர்வு முடக்கப்பட்டுள்ளது',
+    repeatContinuous: 'தொடர் முறை',
+    repeatSurah: 'அத்தியாயத்தை மீண்டும் இயக்கு',
+    repeatVerse: 'வசனத்தை மீண்டும் இயக்கு',
+  }
+} as const
+
+export type TranslationDictionary = typeof TRANSLATIONS_DICT['en']
+export type TranslationKey = keyof TranslationDictionary
+
+export function getStoredAppLanguage(): AppLanguage {
+  if (typeof window === 'undefined') return 'en'
+  try {
+    const saved = localStorage.getItem('deenly_app_language')
+    if (saved === 'en' || saved === 'ta') return saved
+  } catch {}
+  return 'en'
+}
+
+interface I18nStoreState {
+  appLanguage: AppLanguage
+  setAppLanguage: (lang: AppLanguage) => void
+  t: (key: TranslationKey) => string
+}
+
+export const useI18nStore = create<I18nStoreState>((set, get) => ({
+  appLanguage: getStoredAppLanguage(),
+  setAppLanguage: (appLanguage: AppLanguage) => {
+    try {
+      localStorage.setItem('deenly_app_language', appLanguage)
+    } catch {}
+    set({ appLanguage })
+  },
+  t: (key: TranslationKey) => {
+    const lang = get().appLanguage
+    const dict = TRANSLATIONS_DICT[lang] || TRANSLATIONS_DICT['en']
+    return (dict as any)[key] || (TRANSLATIONS_DICT['en'] as any)[key] || key
+  }
+}))

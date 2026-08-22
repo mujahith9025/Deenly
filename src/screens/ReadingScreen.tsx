@@ -28,10 +28,13 @@ import {
   DEFAULT_ENGLISH_TRANSLATION,
   DEFAULT_TAMIL_TRANSLATION
 } from '../lib/quranTranslations'
+import { useI18nStore } from '../lib/i18n'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
+  const appLanguage = useI18nStore((state) => state.appLanguage)
+  const t = useI18nStore((state) => state.t)
 
   // State
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
@@ -358,7 +361,7 @@ export const ReadingScreen: React.FC = () => {
               </span>
             </div>
             <p className="text-[10px] sm:text-xs text-outline">
-              Ayah {currentAyahNumber || 1} of {totalAyahs} • Juz {juzProgress.juzNumber}
+              {t('ayahOfTotal')} {currentAyahNumber || 1} {t('of')} {totalAyahs} • {t('juzNumber')} {juzProgress.juzNumber}
             </p>
           </div>
         </div>
@@ -377,23 +380,29 @@ export const ReadingScreen: React.FC = () => {
           <div className="flex items-center gap-1.5 text-tertiary font-bold text-xs sm:text-sm md:text-base">
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>+{activeSession.sessionHasanat}</span>
-            <span className="hidden sm:inline text-[10px] md:text-xs opacity-75 font-normal">pts</span>
+            <span className="hidden sm:inline text-[10px] md:text-xs opacity-75 font-normal">{t('pts')}</span>
           </div>
         </div>
 
         {/* Right: Language Switcher, Bookmark & Favorite */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Language Toggle */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')
-            }}
-            className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-full bg-surface-container border border-outline-variant/30 text-xs sm:text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center justify-center"
-            title="Toggle translation language"
-          >
-            {translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}
-          </button>
+          {appLanguage === 'en' ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')
+              }}
+              className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-full bg-surface-container border border-outline-variant/30 text-xs sm:text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center justify-center"
+              title="Toggle translation language"
+            >
+              {translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}
+            </button>
+          ) : (
+            <div className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-full bg-primary/10 border border-primary/30 text-xs font-bold text-primary shadow-sm flex items-center justify-center">
+              தமிழ்
+            </div>
+          )}
 
           {/* 🌟 1. Favorite Button (Heart - SWAPPED FIRST) */}
           <button
@@ -530,7 +539,7 @@ export const ReadingScreen: React.FC = () => {
             onClick={(e) => handleFinishSession(e)}
             className="flex-1 h-13 sm:h-15 md:h-16 rounded-full bg-surface-container-high border border-outline-variant/40 hover:border-primary text-on-surface text-sm sm:text-base md:text-lg font-bold flex items-center justify-center transition cursor-pointer shadow-md active:scale-98"
           >
-            I'm Done
+            {t('imDone')}
           </button>
 
           {/* Right Button: Next Arrow */}

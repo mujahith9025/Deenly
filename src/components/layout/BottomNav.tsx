@@ -1,15 +1,17 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, BookOpen, ScrollText, Settings } from 'lucide-react'
-
-const mobileNavItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/quran', label: 'Quran', icon: BookOpen },
-  { path: '/hadith', label: 'Hadith', icon: ScrollText },
-  { path: '/settings', label: 'Settings', icon: Settings },
-]
+import { useI18nStore } from '../../lib/i18n'
 
 export const BottomNav: React.FC = () => {
+  const t = useI18nStore((state) => state.t)
+
+  const mobileNavItems = [
+    { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+    { path: '/quran', label: t('quran'), icon: BookOpen },
+    { path: '/hadith', label: t('hadith'), icon: ScrollText },
+    { path: '/settings', label: t('settings'), icon: Settings },
+  ]
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-nav border-t border-outline-variant/30 px-3 py-2">
       <div className="flex items-center justify-around max-w-md mx-auto">

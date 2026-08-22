@@ -2,9 +2,11 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Flame, Sparkles, User, BookOpen, LogIn } from 'lucide-react'
 import { useAuthStore } from '../../store/useAuthStore'
+import { useI18nStore } from '../../lib/i18n'
 
 export const Header: React.FC = () => {
   const user = useAuthStore((state) => state.user)
+  const t = useI18nStore((state) => state.t)
 
   return (
     <header className="sticky top-0 z-40 w-full h-16 glass-nav border-b border-outline-variant/30 px-4 md:px-6 flex items-center justify-between">
@@ -30,8 +32,8 @@ export const Header: React.FC = () => {
             title="Sign in with Google to sync stats"
           >
             <LogIn className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Sign In with Google</span>
-            <span className="sm:hidden">Sign In</span>
+            <span className="hidden sm:inline">{t('signIn')}</span>
+            <span className="sm:hidden">{t('signInShort')}</span>
           </Link>
         )}
 

@@ -26,6 +26,7 @@ import {
   getLocalDateString 
 } from '../lib/hasanatEngine'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
+import { useI18nStore } from '../lib/i18n'
 
 type TimeframeFilter = 'today' | 'week' | 'all'
 
@@ -211,6 +212,7 @@ const DAILY_HADITHS = [
 export const DashboardScreen: React.FC = () => {
   const [timeframe, setTimeframe] = useState<TimeframeFilter>('today')
 
+  const appLanguage = useI18nStore((state) => state.appLanguage)
   const user = useAuthStore((state) => state.user)
   const dailyHistory = useAuthStore((state) => state.dailyHistory)
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
@@ -220,7 +222,7 @@ export const DashboardScreen: React.FC = () => {
   const arabicFontFamily = getArabicFontFamily(fontStyle)
 
   // Language translation preference (English / Tamil)
-  const isTamil = user?.preferredTranslation === 'tamil'
+  const isTamil = appLanguage === 'ta' || user?.preferredTranslation === 'tamil'
 
   const todayStr = getLocalDateString(new Date())
   const habitStorageKey = `deenly_habits_${user?.id || 'guest'}_${todayStr}`
@@ -325,7 +327,10 @@ export const DashboardScreen: React.FC = () => {
   }
 
   // 4. Weekly Streak Circles (Monday - Sunday of Current Week with Missed Red Outline)
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((dayName, index) => {
+  const dayLabels = isTamil
+    ? ['திங்', 'செவ்', 'புதன்', 'வியா', 'வெள்', 'சனி', 'ஞாயிறு']
+    : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  const weekDays = dayLabels.map((dayName, index) => {
     const curr = new Date()
     const dayOfWeek = curr.getDay() // 0 = Sun, 1 = Mon ...
     const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1 // 0 = Mon ... 6 = Sun

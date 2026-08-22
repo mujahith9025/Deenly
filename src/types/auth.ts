@@ -20,6 +20,7 @@ export interface SessionDelta {
 
 import type { ArabicFontStyle } from '../lib/quranFonts'
 import type { EnglishTranslationKey, TamilTranslationKey } from '../lib/quranTranslations'
+import type { AppLanguage } from '../lib/i18n'
 
 export interface UserProfile {
   id: string
@@ -28,6 +29,7 @@ export interface UserProfile {
   email: string
   photoUrl: string | null
   createdAt: string
+  appLanguage?: AppLanguage
   preferredTranslation: 'english' | 'tamil' | string
   englishTranslation?: EnglishTranslationKey
   tamilTranslation?: TamilTranslationKey
