@@ -10,8 +10,7 @@ import {
   Check, 
   Share2, 
   CheckCircle2, 
-  Bookmark,
-  Layers
+  Bookmark
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
@@ -22,7 +21,6 @@ import {
   formatTimer, 
   calculateJuzProgress 
 } from '../lib/hasanatEngine'
-import { getArabicTransliteration } from '../lib/transliteration'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -33,7 +31,6 @@ export const ReadingScreen: React.FC = () => {
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
   const [copiedShare, setCopiedShare] = useState(false)
   const [chapterCompletedBanner, setChapterCompletedBanner] = useState<string | null>(null)
-  const [showTransliteration, setShowTransliteration] = useState(true)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -105,11 +102,6 @@ export const ReadingScreen: React.FC = () => {
   const totalAyahs = currentSurah?.numberOfAyahs || currentSurah?.ayahs?.length || 7
   const juzProgress = calculateJuzProgress(currentSurahNumber, currentAyahNumber)
   const audioUrl = currentAyah ? `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${currentAyah.number}.mp3` : ''
-
-  // Transliteration text
-  const transliterationText = currentAyah 
-    ? getArabicTransliteration(currentAyah.arabicText, currentSurahNumber, currentAyah.verseNumberInSurah) 
-    : ''
 
   // Audio Playback
   const togglePlayAudio = (e?: React.MouseEvent) => {
@@ -229,7 +221,7 @@ export const ReadingScreen: React.FC = () => {
   const handleShareAyah = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     if (!currentAyah || !currentSurah) return
-    const text = `${currentSurah.name} (${currentSurahNumber}:${currentAyah.verseNumberInSurah})\n\n${currentAyah.arabicText}\n\n${transliterationText ? `[${transliterationText}]\n\n` : ''}${currentAyah.translations[translationLanguage] || currentAyah.translations.en}\n\n— Recited with Deenly`
+    const text = `${currentSurah.name} (${currentSurahNumber}:${currentAyah.verseNumberInSurah})\n\n${currentAyah.arabicText}\n\n${currentAyah.translations[translationLanguage] || currentAyah.translations.en}\n\n— Recited with Deenly`
     navigator.clipboard?.writeText(text)
     setCopiedShare(true)
     setTimeout(() => setCopiedShare(false), 2000)
@@ -257,7 +249,7 @@ export const ReadingScreen: React.FC = () => {
       <audio ref={audioRef} src={audioUrl} preload="none" />
 
       {/* ========================================================================= */}
-      {/* 1. FIXED TOP BAR: PINNED TO TOP (ENLARGED & MATCHED WITH FOOTER)          */}
+      {/* 1. FIXED TOP BAR: PINNED TO TOP (MATCHED DIMENSIONS WITH FOOTER)          */}
       {/*    Includes Surah Name, Responsive Scaled Timer & Hasanat, and Audio Tools */}
       {/* ========================================================================= */}
       <header className="w-full flex items-center justify-between gap-2.5 sm:gap-4 px-3.5 sm:px-5 py-3 sm:py-3.5 shrink-0 rounded-2xl sm:rounded-3xl glass-card border border-outline-variant/30 shadow-md z-30 bg-surface/95 backdrop-blur-lg">
@@ -304,7 +296,7 @@ export const ReadingScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Audio Reciter, Language Switcher, Transliteration, Bookmark & Copy */}
+        {/* Right: Audio Reciter, Language Switcher, Bookmark & Copy */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Audio Button */}
           <button
@@ -317,22 +309,6 @@ export const ReadingScreen: React.FC = () => {
             title="Play / Pause Audio"
           >
             {isPlayingAudio ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
-          </button>
-
-          {/* Transliteration Toggle Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowTransliteration(!showTransliteration)
-            }}
-            className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-full border text-xs font-bold transition cursor-pointer shadow-sm flex items-center justify-center gap-1 ${
-              showTransliteration
-                ? 'bg-primary/20 border-primary/50 text-primary'
-                : 'bg-surface-container border-outline-variant/30 text-outline'
-            }`}
-            title="Toggle phonetic transliteration"
-          >
-            <span className="font-serif italic text-xs">Aa</span>
           </button>
 
           {/* Language Toggle */}
@@ -380,43 +356,22 @@ export const ReadingScreen: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 2. DEDICATED CENTER CANVAS: IMMERSIVE ARABIC, TRANSLITERATION & HASANAT   */}
+      {/* 2. PROPORTIONED CENTER: 100% VISIBILITY FOR ALL VERSES (SHORT TO LONG)     */}
+      {/*    🌟 Smooth unclipped scrolling & centered alignment for every verse      */}
       {/*    🌟 TOUCHING/CLICKING ANYWHERE ADVANCES TO NEXT AYAH                    */}
       {/* ========================================================================= */}
       <main 
         onClick={handleMarkAndNext}
-        className="flex-1 overflow-y-auto w-full px-1 sm:px-2 py-1 min-h-0 flex flex-col justify-center items-center cursor-pointer select-none overscroll-contain"
+        className="flex-1 overflow-y-auto w-full px-2 sm:px-4 py-2 sm:py-3 min-h-0 cursor-pointer select-none overscroll-contain"
         title="Tap anywhere to mark read and advance to next verse"
       >
         {isLoadingSurah ? (
-          <div className="p-8 text-center space-y-2 my-auto">
+          <div className="p-8 text-center space-y-2 my-auto flex flex-col items-center justify-center h-full">
             <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
             <p className="text-xs sm:text-sm text-on-surface-variant">Loading sacred verse...</p>
           </div>
         ) : currentAyah ? (
-          <div className="w-full flex flex-col items-center justify-center space-y-2.5 sm:space-y-3.5 my-auto py-1 animate-fade-in">
-            
-            {/* 🌟 1. VERSE REWARD & LETTER BREAKDOWN CAPSULE (Fills Top Blank Space) */}
-            <div className="w-full flex items-center justify-between gap-2 px-3.5 sm:px-5 py-2 rounded-2xl bg-surface-container/60 border border-outline-variant/30 text-xs shadow-sm">
-              <div className="flex items-center gap-2 text-on-surface-variant font-medium">
-                <span className="flex items-center gap-1 text-primary font-bold">
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>{currentAyah.arabicLetterCount} Letters</span>
-                </span>
-                <span className="text-outline">•</span>
-                <span className="hidden sm:inline text-outline font-mono">
-                  Page {currentAyah.page} • Juz {juzProgress.juzNumber}
-                </span>
-              </div>
-
-              {/* Hasanat Multiplier Badge */}
-              <div className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-tertiary-container/40 border border-tertiary/40 text-tertiary font-extrabold text-xs">
-                <Sparkles className="w-3 h-3" />
-                <span>+{currentAyah.hasanatValue} Hasanat</span>
-                <span className="hidden sm:inline text-[10px] opacity-75 font-normal">(10x / letter)</span>
-              </div>
-            </div>
-
+          <div className="min-h-full flex flex-col justify-center items-center space-y-3 sm:space-y-4 max-w-3xl mx-auto py-2 animate-fade-in">
             {/* Bismillah Header (Shown only on Ayah 1 if not Surah 9) */}
             {currentAyahNumber === 1 && currentSurahNumber !== 9 && (
               <div className="text-center py-0.5">
@@ -426,42 +381,30 @@ export const ReadingScreen: React.FC = () => {
               </div>
             )}
 
-            {/* 🌟 2. ARABIC SCRIPT HIGHLIGHTED CARD */}
+            {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (UNCLIPPED FULL VISIBILITY) */}
             <div 
-              className="w-full p-6 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-2xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200 active:scale-[0.99] hover:border-primary/70 select-none flex flex-col items-center justify-center min-h-[140px] sm:min-h-[180px]"
+              className="w-full p-5 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200 active:scale-[0.99] hover:border-primary/70 select-none flex flex-col items-center justify-center break-words"
             >
               <p
-                className="font-noto-serif text-center text-on-surface leading-[2.3] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none drop-shadow-sm font-medium"
+                className="font-noto-serif text-center text-on-surface leading-[2.3] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none drop-shadow-sm font-medium break-words w-full"
                 style={{ fontSize: `${fontSize}px` }}
                 dir="rtl"
               >
                 {currentAyah.arabicText}{' '}
-                <span className="text-primary font-serif text-xl sm:text-2xl md:text-3xl inline-block px-1 select-none">
+                <span className="text-primary font-serif text-xl sm:text-2xl md:text-3xl inline-block px-1 select-none whitespace-nowrap">
                   ﴿{currentAyah.verseNumberInSurah}﴾
                 </span>
               </p>
             </div>
 
-            {/* 🌟 3. PHONETIC TRANSLITERATION GUIDE (Fills Space Between Arabic & Meaning) */}
-            {showTransliteration && transliterationText && (
-              <div className="w-full px-4 sm:px-5 py-2.5 rounded-2xl bg-surface-container/50 border border-outline-variant/20 text-center select-none shadow-sm">
-                <span className="text-[9px] uppercase font-bold text-outline font-label-caps tracking-wider block mb-0.5">
-                  Phonetic Pronunciation Guide
-                </span>
-                <p className="font-serif italic text-xs sm:text-sm md:text-base text-primary-fixed-dim leading-relaxed">
-                  "{transliterationText}"
-                </p>
-              </div>
-            )}
-
-            {/* 🌟 4. TRANSLATION CONTAINER */}
+            {/* 🌟 2. TRANSLATION CONTAINER (FULL VISIBILITY FOR ANY LENGTH) */}
             <div 
-              className="w-full p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1 select-none shadow-sm"
+              className="w-full p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1.5 select-none shadow-sm break-words"
             >
               <span className="text-[10px] sm:text-xs uppercase font-bold text-outline font-label-caps tracking-wider block">
                 {translationLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்பு (பாகவி)' : 'Sahih International Translation'}
               </span>
-              <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed font-normal max-w-2xl mx-auto">
+              <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed font-normal max-w-2xl mx-auto break-words">
                 {currentAyah.translations[translationLanguage] ||
                   currentAyah.translations['en'] ||
                   'Translation loading...'}
