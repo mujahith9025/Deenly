@@ -284,40 +284,95 @@ export const SettingsScreen: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold font-h1 text-on-surface">Arabic Typography & Size</h1>
           <p className="text-xs text-on-surface-variant mt-1">
-            Adjust the Arabic script size to match your eyesight and screen comfortably.
+            Adjust the Arabic script size. Changes are automatically fixed and saved across Quran & Hadith readers.
           </p>
         </div>
 
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6 shadow-md">
-          {/* Slider */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-outline uppercase tracking-wider">Font Size</span>
-              <span className="text-sm font-mono font-bold text-primary px-3 py-1 rounded-full bg-primary/10 border border-primary/30">
+          {/* Header with Stepper */}
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-outline uppercase tracking-wider block">Arabic Font Size</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-primary font-mono mt-0.5 block">
                 {currentFontSize}px
               </span>
             </div>
+
+            {/* Stepper Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => updateUserSettings({ arabicFontSize: Math.max(18, currentFontSize - 2) })}
+                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
+              >
+                -
+              </button>
+              <button
+                type="button"
+                onClick={() => updateUserSettings({ arabicFontSize: Math.min(48, currentFontSize + 2) })}
+                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Slider */}
+          <div className="space-y-2">
             <input
               type="range"
-              min="20"
-              max="44"
+              min="18"
+              max="48"
               step="2"
               value={currentFontSize}
               onChange={handleFontSizeChange}
               className="w-full accent-primary h-2 bg-surface-container-highest rounded-lg cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-outline">
-              <span>20px (Compact)</span>
+              <span>18px (Compact)</span>
               <span>28px (Standard)</span>
-              <span>44px (Large)</span>
+              <span>48px (Extra Large)</span>
+            </div>
+          </div>
+
+          {/* Quick Presets */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-outline uppercase tracking-wider block">Quick Presets</span>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: 'Compact', size: 22 },
+                { label: 'Standard', size: 28 },
+                { label: 'Medium', size: 34 },
+                { label: 'Large', size: 40 },
+              ].map((p) => (
+                <button
+                  key={p.size}
+                  type="button"
+                  onClick={() => updateUserSettings({ arabicFontSize: p.size })}
+                  className={`py-2.5 px-1 rounded-2xl text-xs font-bold transition cursor-pointer border text-center ${
+                    currentFontSize === p.size
+                      ? 'primary-gradient-btn text-white shadow-md'
+                      : 'bg-surface-container/60 border-outline-variant/30 text-on-surface hover:border-primary/40'
+                  }`}
+                >
+                  <span className="block">{p.size}px</span>
+                  <span className="text-[10px] opacity-75 block font-normal">{p.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Live Preview Card */}
           <div className="p-6 rounded-2xl bg-surface-container/70 border border-outline-variant/40 space-y-3 text-center">
-            <span className="text-[10px] uppercase font-bold text-outline tracking-wider">Live Preview</span>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-bold text-outline tracking-wider">Live Preview</span>
+              <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" />
+                <span>Auto-saved</span>
+              </span>
+            </div>
             <p
-              className="font-noto-serif text-on-surface leading-loose"
+              className="font-noto-serif text-on-surface leading-loose transition-all duration-200"
               style={{ fontSize: `${currentFontSize}px` }}
               dir="rtl"
             >

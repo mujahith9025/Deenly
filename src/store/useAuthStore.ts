@@ -114,10 +114,15 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
         // Re-compute streak based on history
         const { currentStreak } = calculateDailyStreak(history)
+        const savedFontSize = typeof window !== 'undefined' 
+          ? parseInt(localStorage.getItem('deenly_arabic_font_size') || '0', 10) 
+          : 0
+        const effectiveFontSize = savedFontSize > 0 ? savedFontSize : (initialUser.arabicFontSize || 28)
+
         const updatedUser = {
           ...initialUser,
           currentStreak: Math.max(initialUser.currentStreak || 0, currentStreak),
-          arabicFontSize: initialUser.arabicFontSize || 28,
+          arabicFontSize: effectiveFontSize,
         }
 
         // Apply CSS variable
@@ -389,12 +394,17 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       ...settings,
     }
 
-    // 1. Sync CSS variable for Arabic font size if updated
-    if (settings.arabicFontSize && typeof document !== 'undefined') {
-      document.documentElement.style.setProperty(
-        '--arabic-font-size',
-        `${settings.arabicFontSize}px`
-      )
+    // 1. Sync CSS variable and localStorage for Arabic font size if updated
+    if (settings.arabicFontSize) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('deenly_arabic_font_size', settings.arabicFontSize.toString())
+      }
+      if (typeof document !== 'undefined') {
+        document.documentElement.style.setProperty(
+          '--arabic-font-size',
+          `${settings.arabicFontSize}px`
+        )
+      }
       useReadingStore.getState().setFontSize(settings.arabicFontSize)
     }
 

@@ -35,7 +35,8 @@ export const ReadingScreen: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const user = useAuthStore((state) => state.user)
-  const fontSize = user?.arabicFontSize || 28
+  const storeFontSize = useReadingStore((state) => state.fontSize)
+  const fontSize = storeFontSize || user?.arabicFontSize || 28
 
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
   const currentAyahNumber = useReadingStore((state) => state.currentAyahNumber)

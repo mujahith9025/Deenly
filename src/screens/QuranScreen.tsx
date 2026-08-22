@@ -54,7 +54,8 @@ export const QuranScreen: React.FC = () => {
   const [translationLanguage, setTranslationLanguage] = useState<'en' | 'ta'>(
     user?.preferredTranslation === 'tamil' ? 'ta' : 'en'
   )
-  const fontSize = user?.arabicFontSize || 28
+  const storeFontSize = useReadingStore((state) => state.fontSize)
+  const fontSize = storeFontSize || user?.arabicFontSize || 28
   const [copiedAyahId, setCopiedAyahId] = useState<number | null>(null)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)

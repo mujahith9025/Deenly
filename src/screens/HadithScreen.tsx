@@ -15,6 +15,7 @@ import { hadithApi, type HadithChapter, type HadithItem } from '../lib/hadithApi
 import { HADITH_BOOKS, type HadithBook } from '../lib/hadithData'
 import { useAuthStore } from '../store/useAuthStore'
 import { useBookmarkStore } from '../store/useBookmarkStore'
+import { useReadingStore } from '../store/useReadingStore'
 
 type ViewMode = 'books' | 'chapters' | 'hadiths'
 type LanguageMode = 'english' | 'tamil' | 'dual'
@@ -49,7 +50,8 @@ export const HadithScreen: React.FC = () => {
   const [languageMode, setLanguageMode] = useState<LanguageMode>(defaultLang)
   const [copiedHadithId, setCopiedHadithId] = useState<number | null>(null)
 
-  const arabicFontSize = user?.arabicFontSize || 28
+  const storeFontSize = useReadingStore((state) => state.fontSize)
+  const arabicFontSize = storeFontSize || user?.arabicFontSize || 28
   const hadithRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
   // Deep linking from bookmarks or search params
