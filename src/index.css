@@ -100,6 +100,23 @@
     -webkit-backdrop-filter: blur(20px);
     border-color: var(--border-outline-variant);
   }
+
+  /* Quran Arabic Font Style Classes */
+  .font-quran-madani {
+    font-family: 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', serif;
+  }
+  .font-quran-indopak {
+    font-family: 'Lateef', 'Amiri', serif;
+  }
+  .font-quran-ottoman {
+    font-family: 'Scheherazade New', 'Amiri', serif;
+  }
+  .font-quran-noto {
+    font-family: 'Noto Naskh Arabic', 'Amiri', serif;
+  }
+  .font-quran-kufi {
+    font-family: 'Noto Kufi Arabic', 'Amiri', sans-serif;
+  }
 }
 
 /* Keyframe animations */

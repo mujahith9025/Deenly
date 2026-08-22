@@ -22,6 +22,7 @@ import {
   formatTimer, 
   calculateJuzProgress 
 } from '../lib/hasanatEngine'
+import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -43,8 +44,11 @@ export const ReadingScreen: React.FC = () => {
   const user = useAuthStore((state) => state.user)
   const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
   const storeFontSize = useReadingStore((state) => state.fontSize)
+  const storeFontStyle = useReadingStore((state) => state.fontStyle)
   const setFontSize = useReadingStore((state) => state.setFontSize)
   const fontSize = storeFontSize || user?.arabicFontSize || 28
+  const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
+  const arabicFontFamily = getArabicFontFamily(fontStyle)
 
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
   const currentAyahNumber = useReadingStore((state) => state.currentAyahNumber)
@@ -488,19 +492,23 @@ export const ReadingScreen: React.FC = () => {
             {/* Bismillah Header (Shown only on Ayah 1 if not Surah 9) */}
             {currentAyahNumber === 1 && currentSurahNumber !== 9 && (
               <div className="text-center py-0.5">
-                <p className="font-noto-serif text-base sm:text-xl md:text-2xl text-primary-fixed-dim opacity-90" dir="rtl">
+                <p 
+                  className="text-base sm:text-xl md:text-2xl text-primary-fixed-dim opacity-90 transition-all duration-150"
+                  style={{ fontFamily: arabicFontFamily }}
+                  dir="rtl"
+                >
                   بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                 </p>
               </div>
             )}
 
-            {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (SCALES ON PINCH/ZOOM) */}
+            {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (SCALES ON PINCH/ZOOM & USES SELECTED FONT) */}
             <div 
               className="w-full p-5 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-150 active:scale-[0.99] hover:border-primary/70 select-none flex flex-col items-center justify-center break-words"
             >
               <p
-                className="font-noto-serif text-center text-on-surface leading-[2.3] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none drop-shadow-sm font-medium break-words w-full transition-all duration-150"
-                style={{ fontSize: `${fontSize}px` }}
+                className="text-center text-on-surface leading-[2.3] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none drop-shadow-sm font-medium break-words w-full transition-all duration-150"
+                style={{ fontSize: `${fontSize}px`, fontFamily: arabicFontFamily }}
                 dir="rtl"
               >
                 {currentAyah.arabicText}{' '}

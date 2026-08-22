@@ -25,6 +25,7 @@ import {
   formatDurationHuman, 
   getLocalDateString 
 } from '../lib/hasanatEngine'
+import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 
 type TimeframeFilter = 'today' | 'week' | 'all'
 
@@ -214,6 +215,9 @@ export const DashboardScreen: React.FC = () => {
   const dailyHistory = useAuthStore((state) => state.dailyHistory)
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
   const currentAyahNumber = useReadingStore((state) => state.currentAyahNumber)
+  const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
+  const arabicFontFamily = getArabicFontFamily(fontStyle)
 
   // Language translation preference (English / Tamil)
   const isTamil = user?.preferredTranslation === 'tamil'
@@ -459,7 +463,10 @@ export const DashboardScreen: React.FC = () => {
               </div>
             </div>
 
-            <span className="font-noto-serif text-3xl text-white/95 shrink-0 font-bold">
+            <span 
+              className="text-3xl text-white/95 shrink-0 font-bold"
+              style={{ fontFamily: arabicFontFamily }}
+            >
               {currentSurahMeta.arabicName}
             </span>
           </div>
@@ -535,7 +542,10 @@ export const DashboardScreen: React.FC = () => {
               </p>
             </div>
 
-            <span className="font-noto-serif text-3xl sm:text-4xl text-white/90 shrink-0 font-bold">
+            <span 
+              className="text-3xl sm:text-4xl text-white/90 shrink-0 font-bold"
+              style={{ fontFamily: arabicFontFamily }}
+            >
               {currentSurahMeta.arabicName}
             </span>
           </div>
@@ -746,7 +756,11 @@ export const DashboardScreen: React.FC = () => {
             </div>
 
             {/* Arabic Script */}
-            <p className="font-noto-serif text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1" dir="rtl">
+            <p 
+              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1" 
+              style={{ fontFamily: arabicFontFamily }}
+              dir="rtl"
+            >
               {dailyVerse.arabic}
             </p>
 
@@ -783,7 +797,11 @@ export const DashboardScreen: React.FC = () => {
             </div>
 
             {/* Arabic Script */}
-            <p className="font-noto-serif text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1" dir="rtl">
+            <p 
+              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1" 
+              style={{ fontFamily: arabicFontFamily }}
+              dir="rtl"
+            >
               {dailyHadith.arabic}
             </p>
 

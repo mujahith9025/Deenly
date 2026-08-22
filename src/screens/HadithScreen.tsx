@@ -16,6 +16,7 @@ import { HADITH_BOOKS, type HadithBook } from '../lib/hadithData'
 import { useAuthStore } from '../store/useAuthStore'
 import { useBookmarkStore } from '../store/useBookmarkStore'
 import { useReadingStore } from '../store/useReadingStore'
+import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 
 type ViewMode = 'books' | 'chapters' | 'hadiths'
 type LanguageMode = 'english' | 'tamil' | 'dual'
@@ -23,6 +24,9 @@ type LanguageMode = 'english' | 'tamil' | 'dual'
 export const HadithScreen: React.FC = () => {
   const [searchParams] = useSearchParams()
   const user = useAuthStore((state) => state.user)
+  const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
+  const arabicFontFamily = getArabicFontFamily(fontStyle)
   const defaultLang: LanguageMode = user?.preferredTranslation === 'tamil' ? 'tamil' : 'english'
 
   // Unified Bookmark Store
@@ -560,8 +564,8 @@ export const HadithScreen: React.FC = () => {
                     {/* 🌟 ARABIC SCRIPT HIGHLIGHTED WITH ILLUMINATED CARD CONTAINER */}
                     <div className="p-5 sm:p-7 rounded-2xl glass-card border border-primary/30 bg-surface-container-low/80 shadow-md space-y-1 text-right">
                       <p
-                        className="font-noto-serif text-on-surface leading-[2.3] sm:leading-[2.5] tracking-wide select-text drop-shadow-sm font-medium"
-                        style={{ fontSize: `${arabicFontSize}px` }}
+                        className="text-on-surface leading-[2.3] sm:leading-[2.5] tracking-wide select-text drop-shadow-sm font-medium"
+                        style={{ fontSize: `${arabicFontSize}px`, fontFamily: arabicFontFamily }}
                         dir="rtl"
                       >
                         {h.arabicText}

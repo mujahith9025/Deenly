@@ -55,6 +55,7 @@ const initialGuestUser: UserProfile = {
   currentStreak: 0,
   bestStreak: 0,
   arabicFontSize: 28,
+  arabicFontStyle: 'madani',
   prayerNotifications: true,
   readingReminders: true,
   authProvider: 'guest',

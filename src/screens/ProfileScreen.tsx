@@ -25,8 +25,10 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
 import { useAuth } from '../hooks/useAuth'
+import { useReadingStore } from '../store/useReadingStore'
 import { useBookmarkStore, type BookmarkItem } from '../store/useBookmarkStore'
 import { useFavoriteStore, type FavoriteItem } from '../store/useFavoriteStore'
+import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 
 type ProfileSubPage = 
   | null 
@@ -49,6 +51,10 @@ export const ProfileScreen: React.FC = () => {
   const [favoriteFilter, setFavoriteFilter] = useState<ItemFilter>('all')
 
   const { user, signOut } = useAuth()
+  const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
+  const arabicFontFamily = getArabicFontFamily(fontStyle)
+
   const resetUserStatsToZero = useAuthStore((state) => state.resetUserStatsToZero)
   const deleteAccount = useAuthStore((state) => state.deleteAccount)
   const bookmarks = useBookmarkStore((state) => state.bookmarks)
@@ -257,7 +263,11 @@ export const ProfileScreen: React.FC = () => {
 
                 {/* Arabic Snippet */}
                 {bm.arabicText && (
-                  <p className="font-noto-serif text-sm sm:text-base text-primary-fixed-dim line-clamp-2 text-right" dir="rtl">
+                  <p 
+                    className="text-sm sm:text-base text-primary-fixed-dim line-clamp-2 text-right" 
+                    style={{ fontFamily: arabicFontFamily }}
+                    dir="rtl"
+                  >
                     {bm.arabicText}
                   </p>
                 )}
@@ -408,7 +418,11 @@ export const ProfileScreen: React.FC = () => {
 
                 {/* Arabic Snippet */}
                 {fav.arabicText && (
-                  <p className="font-noto-serif text-sm sm:text-base text-rose-300/90 line-clamp-2 text-right" dir="rtl">
+                  <p 
+                    className="text-sm sm:text-base text-rose-300/90 line-clamp-2 text-right" 
+                    style={{ fontFamily: arabicFontFamily }}
+                    dir="rtl"
+                  >
                     {fav.arabicText}
                   </p>
                 )}

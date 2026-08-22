@@ -18,6 +18,8 @@ export interface SessionDelta {
   dateStr: string // YYYY-MM-DD
 }
 
+import type { ArabicFontStyle } from '../lib/quranFonts'
+
 export interface UserProfile {
   id: string
   uid: string
@@ -34,6 +36,7 @@ export interface UserProfile {
   currentStreak: number
   bestStreak: number
   arabicFontSize?: number
+  arabicFontStyle?: ArabicFontStyle
   prayerNotifications?: boolean
   readingReminders?: boolean
   authProvider?: 'google' | 'email' | 'guest'

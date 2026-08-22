@@ -13,8 +13,15 @@
 ## 🌟 Key Features
 
 ### 📖 Authentic Quran Reading Experience
-- **Diacritic-Aware Arabic Typography**: Beautiful Noto Serif Uthmani script rendering with responsive typography scaling (18px – 54px) via dynamic CSS variables and instant auto-saving.
+- **Official Quran Font Styles**: 5 authentic calligraphic traditions with regional badges, live previews, and instant multi-screen persistence:
+  - 🏛️ **Madani Uthmani** (*Amiri Quran* / King Fahd Complex standard)
+  - 🕌 **Indo-Pak Traditional** (*Lateef* / South Asian Tajweed orthography)
+  - 🇹🇷 **Ottoman / Turkish Naskh** (*Scheherazade New* / Diyanet edition)
+  - 📱 **Modern Digital Naskh** (*Noto Naskh Arabic* / High-DPI OLED standard)
+  - 🏺 **Classical Early Kufic** (*Noto Kufi Arabic* / Ancient manuscript script)
+- **Diacritic-Aware Typography Scaling**: Responsive typography scaling (18px – 54px) via dynamic CSS variables, steppers, and quick presets with instant auto-saving.
 - **Pinch-to-Zoom & Gesture Scaling**: 2-finger mobile pinch gestures and trackpad wheel zooming to smoothly scale Arabic text size on the fly with live visual indicator pills.
+- **Verse of the Day & Hadith of the Day**: Automatic midnight rotation of inspiring Quranic verses and authentic Prophetic Hadiths with bilingual English and Tamil translations.
 - **Unified Favorites & Bookmarks**: Dedicated Heart (Favorite) and Ribbon (Bookmark) actions across Quran chapters and Hadiths with full persistence and direct deep-linking.
 - **Hadith-Accurate Hasanat Engine**: Precise isolation of Quranic letters yielding **10 Hasanat points per letter** in accordance with authentic Hadith (*Sunan at-Tirmidhi 2910*).
 - **Multi-Language Dual Translations**: Instant switching between **English** (*Sahih International*) and **தமிழ்** (*Abdul Hameed Baqavi*) without network re-fetches.

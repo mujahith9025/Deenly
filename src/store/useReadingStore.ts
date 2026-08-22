@@ -5,9 +5,13 @@ import { quranApi } from '../lib/quranApi'
 import { calculateVerseHasanat, type SessionMetrics } from '../lib/hasanatEngine'
 import { useAuthStore } from './useAuthStore'
 
+import type { ArabicFontStyle } from '../lib/quranFonts'
+import { DEFAULT_ARABIC_FONT } from '../lib/quranFonts'
+
 interface ReadingStoreActions {
   setCurrentPosition: (surah: number, ayah: number, page?: number, juz?: number) => void
   setFontSize: (size: number) => void
+  setFontStyle: (style: ArabicFontStyle) => void
   setTranslationLanguage: (lang: 'en' | 'ta') => void
   setIsPlayingAudio: (isPlaying: boolean) => void
   toggleAudioMute: () => void
@@ -31,12 +35,33 @@ const initialActiveSession: ActiveReadingSession = {
   recentHasanatGain: null,
 }
 
+const getStoredFontSize = (): number => {
+  if (typeof window === 'undefined') return 28
+  try {
+    const s = localStorage.getItem('deenly_arabic_font_size')
+    return s ? parseInt(s, 10) : 28
+  } catch {
+    return 28
+  }
+}
+
+const getStoredFontStyle = (): ArabicFontStyle => {
+  if (typeof window === 'undefined') return DEFAULT_ARABIC_FONT
+  try {
+    const s = localStorage.getItem('deenly_arabic_font_style') as ArabicFontStyle
+    return s || DEFAULT_ARABIC_FONT
+  } catch {
+    return DEFAULT_ARABIC_FONT
+  }
+}
+
 const initialReadingState: ReadingSessionState = {
   currentSurahNumber: 1, // Al-Fatihah
   currentAyahNumber: 1,
   currentJuzNumber: 1,
   currentPageNumber: 1,
-  fontSize: 28,
+  fontSize: getStoredFontSize(),
+  fontStyle: getStoredFontStyle(),
   translationLanguage: 'en',
   isPlayingAudio: false,
   isAudioMuted: false,
@@ -57,7 +82,19 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
       currentJuzNumber: juz,
     }),
 
-  setFontSize: (fontSize) => set({ fontSize }),
+  setFontSize: (fontSize) => {
+    try {
+      localStorage.setItem('deenly_arabic_font_size', fontSize.toString())
+    } catch {}
+    set({ fontSize })
+  },
+  setFontStyle: (fontStyle) => {
+    try {
+      localStorage.setItem('deenly_arabic_font_style', fontStyle)
+    } catch {}
+    set({ fontStyle })
+    useAuthStore.getState().updateUserSettings({ arabicFontStyle: fontStyle })
+  },
   setTranslationLanguage: (translationLanguage) => set({ translationLanguage }),
   setIsPlayingAudio: (isPlayingAudio) => set({ isPlayingAudio }),
   toggleAudioMute: () => set((state) => ({ isAudioMuted: !state.isAudioMuted })),

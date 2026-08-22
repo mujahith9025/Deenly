@@ -1,4 +1,5 @@
 import type { SurahDetail } from './quran'
+import type { ArabicFontStyle } from '../lib/quranFonts'
 
 export interface Surah {
   number: number
@@ -36,6 +37,7 @@ export interface ReadingSessionState {
   currentJuzNumber: number
   currentPageNumber: number
   fontSize: number
+  fontStyle: ArabicFontStyle
   translationLanguage: 'en' | 'ta'
   isPlayingAudio: boolean
   isAudioMuted: boolean

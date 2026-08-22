@@ -17,13 +17,16 @@ import {
   ArrowLeft, 
   Check,
   User as UserIcon,
-  ShieldCheck
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthStore } from '../store/useAuthStore'
 import { useThemeStore } from '../store/useThemeStore'
+import { useReadingStore } from '../store/useReadingStore'
 import { syncService } from '../lib/syncService'
 import { quranCache } from '../lib/quranCache'
+import { QURAN_FONT_STYLES, getArabicFontFamily, getArabicFontMeta, type ArabicFontStyle } from '../lib/quranFonts'
 
 type SettingCategory = 
   | 'theme' 
@@ -64,9 +67,15 @@ export const SettingsScreen: React.FC = () => {
   const syncNow = useAuthStore((state) => state.syncNow)
   const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
 
+  const storeFontSize = useReadingStore((state) => state.fontSize)
+  const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const setFontSize = useReadingStore((state) => state.setFontSize)
+  const setFontStyle = useReadingStore((state) => state.setFontStyle)
+
   const deviceId = syncService.getDeviceId()
 
-  const currentFontSize = user?.arabicFontSize || 28
+  const currentFontSize = user?.arabicFontSize || storeFontSize || 28
+  const currentFontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
   const currentTranslation = user?.preferredTranslation || 'english'
   const currentGoal = user?.dailyGoalVerses || 10
   const prayerAlerts = user?.prayerNotifications !== false
@@ -78,7 +87,13 @@ export const SettingsScreen: React.FC = () => {
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const size = parseInt(e.target.value, 10)
+    setFontSize(size)
     updateUserSettings({ arabicFontSize: size })
+  }
+
+  const handleFontStyleChange = (style: ArabicFontStyle) => {
+    setFontStyle(style)
+    updateUserSettings({ arabicFontStyle: style })
   }
 
   const handleGoalStep = (delta: number) => {
@@ -254,107 +269,196 @@ export const SettingsScreen: React.FC = () => {
     </div>
   )
 
-  // 3. Font Size Section
-  const renderFontSection = () => (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Arabic Font Size & Script</h2>
-        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-          Adjust the typography scale from 18px up to 54px. Changes are saved and applied across all readers instantly.
-        </p>
-      </div>
+  // 3. Font Size & Arabic Font Styles Section
+  const renderFontSection = () => {
+    const activeMeta = getArabicFontMeta(currentFontStyle)
+    const activeFontFamily = getArabicFontFamily(currentFontStyle)
 
-      {/* Live Preview Card */}
-      <div className="p-6 sm:p-8 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-lg space-y-3 text-center">
-        <span className="text-[10px] sm:text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
-          Live Bismillah Preview ({currentFontSize}px)
-        </span>
-        <p
-          className="font-noto-serif text-on-surface text-center leading-relaxed transition-all duration-200"
-          style={{ fontSize: `${currentFontSize}px` }}
-          dir="rtl"
-        >
-          بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
-        </p>
-        <p className="text-xs text-on-surface-variant italic">
-          "In the Name of Allah, the Most Compassionate, the Most Merciful"
-        </p>
-      </div>
+    return (
+      <div className="space-y-7 animate-fade-in">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Arabic Typography & Styles</h2>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+            Choose your preferred authentic Quran font style and adjust text sizing up to 54px.
+          </p>
+        </div>
 
-      {/* Controls Card */}
-      <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm font-bold text-on-surface block">Font Scaling</span>
-            <span className="text-xs text-on-surface-variant">Selected: <strong className="text-primary">{currentFontSize}px</strong></span>
+        {/* 🌟 Live Bismillah & Ayah Preview Card */}
+        <div className="p-6 sm:p-8 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-xl space-y-3 text-center transition-all duration-200">
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider font-label-caps bg-primary/15 px-3 py-1 rounded-full border border-primary/30 inline-block">
+              {activeMeta.name} • {currentFontSize}px
+            </span>
           </div>
 
-          {/* Stepper Buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => updateUserSettings({ arabicFontSize: Math.max(18, currentFontSize - 2) })}
-              className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
-            >
-              -
-            </button>
-            <button
-              type="button"
-              onClick={() => updateUserSettings({ arabicFontSize: Math.min(54, currentFontSize + 2) })}
-              className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
-            >
-              +
-            </button>
+          <p
+            className="text-on-surface text-center leading-[2.2] transition-all duration-200 pt-1"
+            style={{ fontSize: `${currentFontSize}px`, fontFamily: activeFontFamily }}
+            dir="rtl"
+          >
+            بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+          </p>
+          <p
+            className="text-on-surface text-center leading-[2.2] transition-all duration-200 opacity-90"
+            style={{ fontSize: `${Math.max(16, currentFontSize - 6)}px`, fontFamily: activeFontFamily }}
+            dir="rtl"
+          >
+            ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ
+          </p>
+          <p className="text-xs text-on-surface-variant italic pt-1">
+            "In the Name of Allah, the Most Compassionate, the Most Merciful • All praise is to Allah, Lord of all worlds"
+          </p>
+        </div>
+
+        {/* 🌟 Official Arabic Quran Font Styles Picker */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>Official Quran Font Styles</span>
+            </span>
+            <span className="text-[11px] text-outline font-semibold">5 Authentic Traditions</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {QURAN_FONT_STYLES.map((style) => {
+              const isSelected = currentFontStyle === style.id
+
+              return (
+                <div
+                  key={style.id}
+                  onClick={() => handleFontStyleChange(style.id)}
+                  className={`p-4 sm:p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
+                    isSelected
+                      ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+                      : 'glass-card border-outline-variant/30 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-0.5">
+                      <span className="text-xs font-bold text-primary block">
+                        {style.name}
+                      </span>
+                      <span className="text-[10px] text-outline px-2 py-0.5 rounded-full bg-surface-container border border-outline-variant/30 inline-block font-semibold">
+                        {style.region}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shadow-sm">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Sample Text Rendered in that Exact Font */}
+                  <div className="p-3 rounded-2xl bg-surface-container-low/70 border border-outline-variant/20 text-center">
+                    <p
+                      className="text-on-surface text-lg sm:text-xl text-center leading-relaxed"
+                      style={{ fontFamily: style.fontFamily }}
+                      dir="rtl"
+                    >
+                      {style.sampleText}
+                    </p>
+                  </div>
+
+                  <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                    {style.description}
+                  </p>
+                </div>
+              )
+            })}
           </div>
         </div>
 
-        {/* Slider */}
-        <div className="space-y-2">
-          <input
-            type="range"
-            min="18"
-            max="54"
-            step="2"
-            value={currentFontSize}
-            onChange={handleFontSizeChange}
-            className="w-full accent-primary h-2 bg-surface-container-highest rounded-lg cursor-pointer"
-          />
-          <div className="flex justify-between text-[10px] text-outline">
-            <span>18px (Compact)</span>
-            <span>28px (Standard)</span>
-            <span>54px (Max / 54px)</span>
-          </div>
-        </div>
+        {/* 🌟 Controls Card: Font Scaling (18px - 54px) */}
+        <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-bold text-on-surface block">Font Scaling</span>
+              <span className="text-xs text-on-surface-variant">Selected: <strong className="text-primary">{currentFontSize}px</strong></span>
+            </div>
 
-        {/* Quick Presets */}
-        <div className="space-y-2">
-          <span className="text-xs font-bold text-outline uppercase tracking-wider block">Quick Presets</span>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { label: 'Compact', size: 22 },
-              { label: 'Standard', size: 28 },
-              { label: 'Large', size: 38 },
-              { label: 'Max', size: 54 },
-            ].map((p) => (
+            {/* Stepper Buttons */}
+            <div className="flex items-center gap-2">
               <button
-                key={p.size}
                 type="button"
-                onClick={() => updateUserSettings({ arabicFontSize: p.size })}
-                className={`py-2.5 px-1 rounded-2xl text-xs font-bold transition cursor-pointer border text-center ${
-                  currentFontSize === p.size
-                    ? 'primary-gradient-btn text-white shadow-md'
-                    : 'bg-surface-container/60 border-outline-variant/30 text-on-surface hover:border-primary/40'
-                }`}
+                onClick={() => {
+                  const size = Math.max(18, currentFontSize - 2)
+                  setFontSize(size)
+                  updateUserSettings({ arabicFontSize: size })
+                }}
+                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
               >
-                <span className="block">{p.size}px</span>
-                <span className="text-[10px] opacity-75 block font-normal">{p.label}</span>
+                -
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => {
+                  const size = Math.min(54, currentFontSize + 2)
+                  setFontSize(size)
+                  updateUserSettings({ arabicFontSize: size })
+                }}
+                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* Slider */}
+          <div className="space-y-2">
+            <input
+              type="range"
+              min="18"
+              max="54"
+              step="2"
+              value={currentFontSize}
+              onChange={handleFontSizeChange}
+              className="w-full accent-primary h-2 bg-surface-container-highest rounded-lg cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-outline">
+              <span>18px (Compact)</span>
+              <span>28px (Standard)</span>
+              <span>54px (Max / 54px)</span>
+            </div>
+          </div>
+
+          {/* Quick Presets */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-outline uppercase tracking-wider block">Quick Presets</span>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: 'Compact', size: 22 },
+                { label: 'Standard', size: 28 },
+                { label: 'Large', size: 38 },
+                { label: 'Max', size: 54 },
+              ].map((p) => (
+                <button
+                  key={p.size}
+                  type="button"
+                  onClick={() => {
+                    setFontSize(p.size)
+                    updateUserSettings({ arabicFontSize: p.size })
+                  }}
+                  className={`py-2.5 px-1 rounded-2xl text-xs font-bold transition cursor-pointer border text-center ${
+                    currentFontSize === p.size
+                      ? 'primary-gradient-btn text-white shadow-md'
+                      : 'bg-surface-container/60 border-outline-variant/30 text-on-surface hover:border-primary/40'
+                  }`}
+                >
+                  <span className="block">{p.size}px</span>
+                  <span className="text-[10px] opacity-75 block font-normal">{p.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   // 4. Daily Target Section
   const renderTargetSection = () => (
@@ -624,11 +728,13 @@ export const SettingsScreen: React.FC = () => {
     }
   }
 
+  const activeFontMeta = getArabicFontMeta(currentFontStyle)
+
   // Array of categories for navigation
   const categories: Array<{ id: SettingCategory; label: string; icon: any; desc: string }> = [
     { id: 'theme', label: 'Theme & Appearance', icon: theme === 'dark' ? Moon : Sun, desc: `${theme.charAt(0).toUpperCase() + theme.slice(1)} Mode` },
     { id: 'translation', label: 'Quran Translation', icon: Globe, desc: currentTranslation === 'tamil' ? 'தமிழ் (பாகவி)' : 'English (Sahih)' },
-    { id: 'font', label: 'Arabic Typography', icon: Type, desc: `${currentFontSize}px Arabic Script` },
+    { id: 'font', label: 'Arabic Typography & Styles', icon: Type, desc: `${activeFontMeta.name} • ${currentFontSize}px` },
     { id: 'target', label: 'Daily Verse Target', icon: Target, desc: `${currentGoal} Ayahs / Day` },
     { id: 'notifications', label: 'Notifications & Adhan', icon: Bell, desc: readingAlerts ? 'Alerts Active' : 'Disabled' },
     { id: 'sync', label: 'Cloud Sync & Storage', icon: Cloud, desc: syncStatus === 'synced' ? 'Synced' : 'Offline' },
@@ -641,7 +747,7 @@ export const SettingsScreen: React.FC = () => {
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">App Settings</h1>
         <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-          Customize your recitation theme, font scale, translations, and daily targets.
+          Customize your recitation theme, Arabic font styles, translations, and daily targets.
         </p>
       </div>
 

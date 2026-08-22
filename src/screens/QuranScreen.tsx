@@ -21,6 +21,7 @@ import { useReadingStore } from '../store/useReadingStore'
 import { useBookmarkStore } from '../store/useBookmarkStore'
 import { useFavoriteStore } from '../store/useFavoriteStore'
 import type { SurahDetail, Ayah } from '../types/quran'
+import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 
 type FilterType = 'all' | 'meccan' | 'medinan'
 
@@ -28,6 +29,12 @@ export const QuranScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
+  const storeFontSize = useReadingStore((state) => state.fontSize)
+  const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const fontSize = storeFontSize || user?.arabicFontSize || 28
+  const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
+  const arabicFontFamily = getArabicFontFamily(fontStyle)
+
   const setCurrentPosition = useReadingStore((state) => state.setCurrentPosition)
   const isQuranBookmarked = useBookmarkStore((state) => state.isQuranBookmarked)
   const toggleQuranBookmark = useBookmarkStore((state) => state.toggleQuranBookmark)
@@ -58,8 +65,6 @@ export const QuranScreen: React.FC = () => {
   const [translationLanguage, setTranslationLanguage] = useState<'en' | 'ta'>(
     user?.preferredTranslation === 'tamil' ? 'ta' : 'en'
   )
-  const storeFontSize = useReadingStore((state) => state.fontSize)
-  const fontSize = storeFontSize || user?.arabicFontSize || 28
   const [copiedAyahId, setCopiedAyahId] = useState<number | null>(null)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -628,8 +633,8 @@ export const QuranScreen: React.FC = () => {
                       {/* Arabic Verse Text */}
                       <div className="text-right py-2 select-text">
                         <p
-                          className="font-noto-serif text-right text-on-surface leading-[2.2] tracking-wide"
-                          style={{ fontSize: `${fontSize}px` }}
+                          className="text-right text-on-surface leading-[2.2] tracking-wide"
+                          style={{ fontSize: `${fontSize}px`, fontFamily: arabicFontFamily }}
                           dir="rtl"
                         >
                           {ayah.arabicText}
