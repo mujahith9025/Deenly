@@ -13,7 +13,9 @@
 ## 🌟 Key Features
 
 ### 📖 Authentic Quran Reading Experience
-- **Diacritic-Aware Arabic Typography**: Beautiful Noto Serif Uthmani script rendering with responsive typography scaling (20px – 44px) via dynamic CSS variables.
+- **Diacritic-Aware Arabic Typography**: Beautiful Noto Serif Uthmani script rendering with responsive typography scaling (18px – 54px) via dynamic CSS variables and instant auto-saving.
+- **Pinch-to-Zoom & Gesture Scaling**: 2-finger mobile pinch gestures and trackpad wheel zooming to smoothly scale Arabic text size on the fly with live visual indicator pills.
+- **Unified Favorites & Bookmarks**: Dedicated Heart (Favorite) and Ribbon (Bookmark) actions across Quran chapters and Hadiths with full persistence and direct deep-linking.
 - **Hadith-Accurate Hasanat Engine**: Precise isolation of Quranic letters yielding **10 Hasanat points per letter** in accordance with authentic Hadith (*Sunan at-Tirmidhi 2910*).
 - **Multi-Language Dual Translations**: Instant switching between **English** (*Sahih International*) and **தமிழ்** (*Abdul Hameed Baqavi*) without network re-fetches.
 - **Offline-First Storage**: IndexedDB caching layer (`deenly_quran_cache`) ensuring chapters load instantly even without an internet connection.
@@ -23,6 +25,12 @@
 - **Floating Hasanat Badges**: Real-time visual reward feedback (`+770 Hasanat`) popping up as verses are recited and marked complete.
 - **Dynamic Juz Progress**: Live calculation of active Juz completion percentages and remaining verses.
 - **Khatm Milestones**: Real-time progress bar tracking progress through the 604 pages of the Holy Quran.
+
+### 👤 Modern Profile & Spiritual Repository
+- **Favorite Verses & Hadiths**: Dedicated collection sub-page with categorized filtering (`All`, `Quran`, `Hadiths`) and 1-tap reader navigation.
+- **Saved Bookmarks**: Full bookmark management with quick removal and search.
+- **Spiritual Milestones & Badges**: Achievement tracking across daily streaks, Surah completions, and milestone targets.
+- **Recitation Analytics**: Detailed breakdown of daily streak, pages read, ayahs completed, and accumulated Hasanat rewards.
 
 ### 🔄 Multi-Device Realtime Cloud Sync
 - **Additive Delta Merge**: Counters (`deltaHasanat`, `deltaVerses`, `deltaTimeSeconds`, `deltaPages`) merge additively across concurrent devices via Supabase Realtime Channels and `BroadcastChannel`, preventing overwrites.
