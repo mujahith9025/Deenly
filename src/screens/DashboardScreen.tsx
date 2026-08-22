@@ -158,7 +158,7 @@ export const DashboardScreen: React.FC = () => {
         : user?.pages || 0,
   }
 
-  // 4. Weekly Streak Circles (Monday - Sunday of Current Week)
+  // 4. Weekly Streak Circles (Monday - Sunday of Current Week with Missed Red Outline)
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((dayName, index) => {
     const curr = new Date()
     const dayOfWeek = curr.getDay() // 0 = Sun, 1 = Mon ...
@@ -172,17 +172,21 @@ export const DashboardScreen: React.FC = () => {
     const versesReadOnDay = rec ? rec.verses : 0
     const isGoalMetOnDay = versesReadOnDay >= dailyGoalVerses || versesReadOnDay > 0
     const isToday = index === adjustedDay
+    const isPast = index < adjustedDay
+    const isMissed = isPast && !isGoalMetOnDay
 
     return {
       day: dayName,
       completed: isGoalMetOnDay,
       verses: versesReadOnDay,
       isToday,
+      isPast,
+      isMissed,
       dayNum: targetDate.getDate(),
     }
   })
 
-  // 5. Position & Bookmark Calculations (Always sequential from 1:1)
+  // 5. Position Calculations (Always sequential from 1:1)
   const lastSurah = user?.lastReadSurah || currentSurahNumber || 1
   const lastAyah = user?.lastReadAyah || currentAyahNumber || 1
   const currentSurahMeta = SURAH_METADATA.find((s) => s.number === lastSurah) || SURAH_METADATA[0]
@@ -195,6 +199,43 @@ export const DashboardScreen: React.FC = () => {
   const dailyVerse = DAILY_VERSES[dailyVerseIndex]
 
   const isStartingFresh = lastSurah === 1 && lastAyah === 1
+
+  // Helper to render circle
+  const renderCircle = (wd: typeof weekDays[0], i: number) => {
+    let circleClass = 'bg-surface-container-highest text-outline'
+    let text = wd.dayNum.toString()
+
+    if (wd.completed) {
+      circleClass = 'primary-gradient-btn text-white shadow-md'
+      text = '✓'
+    } else if (wd.isToday) {
+      circleClass = 'border-2 border-primary text-primary bg-primary/10 shadow-sm'
+    } else if (wd.isMissed) {
+      circleClass = 'border-2 border-rose-500 text-rose-400 bg-rose-500/10 shadow-sm'
+    }
+
+    return (
+      <div key={i} className="flex flex-col items-center gap-1">
+        <span className={`text-[10px] font-medium ${wd.isMissed ? 'text-rose-400 font-semibold' : 'text-outline'}`}>
+          {wd.day}
+        </span>
+        <div
+          title={
+            wd.completed
+              ? `Goal achieved (${wd.verses} verses)`
+              : wd.isMissed
+              ? `Missed on ${wd.day}`
+              : wd.isToday
+              ? `Today: ${wd.verses}/${dailyGoalVerses} verses`
+              : `Upcoming`
+          }
+          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold transition ${circleClass}`}
+        >
+          {text}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8 w-full max-w-7xl mx-auto pb-24 animate-fade-in">
@@ -220,78 +261,87 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. 🌟 HERO SECTION                                                       */}
-      {/*    MOBILE: Weekly Consistency on TOP (order-1), Continue Reading BELOW (order-2) */}
-      {/*    DESKTOP: Continue Reading (left 7 cols), Weekly Consistency (right 5 cols)  */}
+      {/* 2. 📱 MOBILE HERO: WEEKLY CONSISTENCY CIRCLES (TOP) + COMBINED GOAL/JOURNEY */}
       {/* ========================================================================= */}
-      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 items-stretch">
-        
-        {/* WEEKLY CONSISTENCY & DAILY GOAL (ORDER 1 ON MOBILE, RIGHT COL ON DESKTOP) */}
-        <div className="order-1 lg:order-2 lg:col-span-5 xl:col-span-5 p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-xl flex flex-col justify-between space-y-5">
-          
-          {/* Top Row: Daily Goal Header */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-outline font-label-caps block">
-                Daily Recitation Target
-              </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-extrabold text-on-surface">
-                  {todayVerses} <span className="text-base sm:text-lg font-normal text-on-surface-variant">/ {dailyGoalVerses}</span>
-                </span>
-                <span className="text-xs font-semibold text-tertiary">Ayahs</span>
-              </div>
-            </div>
-
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-sm shadow-md shrink-0 ${
-              isDailyGoalMet
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                : 'bg-primary/15 text-primary border border-primary/30'
-            }`}>
-              {isDailyGoalMet ? <Check className="w-6 h-6" /> : `${Math.round((todayVerses / dailyGoalVerses) * 100)}%`}
-            </div>
-          </div>
-
-          {/* 7-Day Consistency Weekdays Row */}
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-outline uppercase tracking-wider block font-label-caps">
-              Weekly Consistency
-            </span>
-            <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-              {weekDays.map((wd, i) => (
-                <div key={i} className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-outline font-medium">{wd.day}</span>
-                  <div
-                    title={wd.completed ? `Goal achieved (${wd.verses} verses)` : `Incomplete (${wd.verses}/${dailyGoalVerses} verses)`}
-                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-bold transition shadow-sm ${
-                      wd.completed
-                        ? 'primary-gradient-btn text-white shadow-md'
-                        : wd.isToday
-                        ? 'border-2 border-primary text-primary bg-primary/10'
-                        : 'bg-surface-container-highest text-outline'
-                    }`}
-                  >
-                    {wd.completed ? '✓' : wd.dayNum}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Motivation Snippet Card */}
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
-            <span className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
-              <span>Current streak: <strong className="text-on-surface">{user?.currentStreak || 0} days</strong></span>
-            </span>
-            <Link to="/settings" className="text-primary font-bold hover:underline text-[11px]">
-              Edit Goal →
-            </Link>
+      <div className="block lg:hidden space-y-4">
+        {/* Mobile: Only the 7-day circular indication with missed red outline */}
+        <div className="p-4 rounded-3xl glass-card border border-outline-variant/30 shadow-md">
+          <div className="grid grid-cols-7 gap-1">
+            {weekDays.map((wd, i) => renderCircle(wd, i))}
           </div>
         </div>
 
-        {/* CONTINUE READING CARD (ORDER 2 ON MOBILE, LEFT COL ON DESKTOP) */}
-        <div className="order-2 lg:order-1 lg:col-span-7 xl:col-span-7 rounded-3xl bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#6d28d9] p-6 sm:p-7 text-white shadow-xl relative overflow-hidden border border-white/20 flex flex-col justify-between space-y-5">
+        {/* Mobile: Combined Goal + Start/Continue Journey Purple Card */}
+        <div className="rounded-3xl bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#6d28d9] p-6 text-white shadow-xl relative overflow-hidden border border-white/20 space-y-4">
+          <div className="absolute top-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+
+          {/* Top: Goal + Arabic Title */}
+          <div className="flex items-start justify-between gap-3 relative z-10">
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-white/80 font-label-caps block">
+                Goal • Per Day Verses
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-extrabold text-white">
+                  {todayVerses} <span className="text-sm font-normal text-white/80">/ {dailyGoalVerses}</span>
+                </span>
+                <span className="text-xs font-semibold text-white/90">Ayahs</span>
+              </div>
+            </div>
+
+            <span className="font-noto-serif text-3xl text-white/95 shrink-0 font-bold">
+              {currentSurahMeta.arabicName}
+            </span>
+          </div>
+
+          {/* Middle: Surah Name & Progress Slider */}
+          <div className="space-y-2 relative z-10 pt-1">
+            <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-white">
+              <span>
+                {currentSurahMeta.number}. {currentSurahMeta.name} | {lastAyah}/{currentSurahMeta.numberOfAyahs}
+              </span>
+              <span className="text-xs font-medium text-white/80">{currentSurahMeta.englishNameTranslation}</span>
+            </div>
+
+            <div className="relative w-full py-1">
+              <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden relative">
+                <div
+                  className="bg-white h-full rounded-full transition-all duration-500 shadow-sm"
+                  style={{ width: `${Math.max(2, overallQuranProgress.percent)}%` }}
+                />
+              </div>
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.95)] border-2 border-[#6d28d9] pointer-events-none transition-all duration-500"
+                style={{ left: `calc(${Math.min(97, Math.max(2, overallQuranProgress.percent))}% - 8px)` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-xs font-semibold text-white/95">
+              <span>Juz {juzProgress.juzNumber} of 30</span>
+              <span>{overallQuranProgress.percent.toFixed(1)}%</span>
+            </div>
+          </div>
+
+          {/* Bottom Button */}
+          <div className="relative z-10 pt-1">
+            <Link
+              to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
+              className="w-full py-3.5 px-4 rounded-2xl bg-white text-[#6d28d9] hover:bg-white/95 active:scale-[0.99] font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+            >
+              <Play className="w-4 h-4 fill-[#6d28d9]" />
+              <span>{isStartingFresh ? 'Start Quran Journey' : 'Continue Reading'}</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. 🖥️ DESKTOP HERO: EXACT 2-COLUMN SPLIT (PRESERVED & PERFECTED)           */}
+      {/* ========================================================================= */}
+      <div className="hidden lg:grid lg:grid-cols-12 gap-6 items-stretch">
+        
+        {/* LEFT HERO CARD: CONTINUE RECITATION (COMPACT & BALANCED) */}
+        <div className="lg:col-span-7 xl:col-span-7 rounded-3xl bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#6d28d9] p-6 sm:p-7 text-white shadow-xl relative overflow-hidden border border-white/20 flex flex-col justify-between space-y-5">
           {/* Ambient Glow */}
           <div className="absolute top-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
 
@@ -339,7 +389,7 @@ export const DashboardScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom Action: Single Direct Sequential Reading Button (NO SKIP/SELECT CHAPTERS) */}
+          {/* Bottom Action */}
           <div className="relative z-10 pt-1">
             <Link
               to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
@@ -347,6 +397,54 @@ export const DashboardScreen: React.FC = () => {
             >
               <Play className="w-4 h-4 fill-[#6d28d9]" />
               <span>{isStartingFresh ? 'Start Reading from Chapter 1' : 'Continue Reading'}</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* RIGHT HERO CARD: WEEKLY CONSISTENCY & DAILY GOAL */}
+        <div className="lg:col-span-5 xl:col-span-5 p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-xl flex flex-col justify-between space-y-5">
+          
+          {/* Top Row: Daily Goal Header */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-outline font-label-caps block">
+                Daily Recitation Target
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-extrabold text-on-surface">
+                  {todayVerses} <span className="text-base sm:text-lg font-normal text-on-surface-variant">/ {dailyGoalVerses}</span>
+                </span>
+                <span className="text-xs font-semibold text-tertiary">Ayahs</span>
+              </div>
+            </div>
+
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-sm shadow-md shrink-0 ${
+              isDailyGoalMet
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                : 'bg-primary/15 text-primary border border-primary/30'
+            }`}>
+              {isDailyGoalMet ? <Check className="w-6 h-6" /> : `${Math.round((todayVerses / dailyGoalVerses) * 100)}%`}
+            </div>
+          </div>
+
+          {/* 7-Day Consistency Weekdays Row with Missed Red Outline */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-outline uppercase tracking-wider block font-label-caps">
+              Weekly Consistency
+            </span>
+            <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+              {weekDays.map((wd, i) => renderCircle(wd, i))}
+            </div>
+          </div>
+
+          {/* Motivation Snippet Card */}
+          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
+            <span className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
+              <span>Current streak: <strong className="text-on-surface">{user?.currentStreak || 0} days</strong></span>
+            </span>
+            <Link to="/settings" className="text-primary font-bold hover:underline text-[11px]">
+              Edit Goal →
             </Link>
           </div>
         </div>
