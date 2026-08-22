@@ -309,7 +309,7 @@ export const SettingsScreen: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => updateUserSettings({ arabicFontSize: Math.min(48, currentFontSize + 2) })}
+                onClick={() => updateUserSettings({ arabicFontSize: Math.min(54, currentFontSize + 2) })}
                 className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
               >
                 +
@@ -322,7 +322,7 @@ export const SettingsScreen: React.FC = () => {
             <input
               type="range"
               min="18"
-              max="48"
+              max="54"
               step="2"
               value={currentFontSize}
               onChange={handleFontSizeChange}
@@ -331,7 +331,7 @@ export const SettingsScreen: React.FC = () => {
             <div className="flex justify-between text-[10px] text-outline">
               <span>18px (Compact)</span>
               <span>28px (Standard)</span>
-              <span>48px (Extra Large)</span>
+              <span>54px (Max / 54px)</span>
             </div>
           </div>
 
@@ -342,8 +342,8 @@ export const SettingsScreen: React.FC = () => {
               {[
                 { label: 'Compact', size: 22 },
                 { label: 'Standard', size: 28 },
-                { label: 'Medium', size: 34 },
-                { label: 'Large', size: 40 },
+                { label: 'Large', size: 38 },
+                { label: 'Max', size: 54 },
               ].map((p) => (
                 <button
                   key={p.size}
