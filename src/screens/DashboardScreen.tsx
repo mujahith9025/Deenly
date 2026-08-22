@@ -211,26 +211,26 @@ export const DashboardScreen: React.FC = () => {
   )
 
   return (
-    <div className="space-y-5 max-w-4xl mx-auto pb-20">
+    <div className="space-y-6 max-w-6xl mx-auto pb-24 animate-fade-in">
       {/* ========================================================================= */}
       {/* 1. TOP GREETING HEADER WITH STREAK & CALENDAR BADGE                      */}
       {/* ========================================================================= */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-emerald-300/90 text-gray-950 font-bold text-base flex items-center justify-center shadow-md">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-full bg-emerald-300/90 text-gray-950 font-bold text-base flex items-center justify-center shadow-md shrink-0">
             {user?.name ? user.name.charAt(0).toUpperCase() : 'M'}
           </div>
-          <div>
+          <div className="truncate">
             <p className="text-xs text-on-surface-variant font-medium">Asalam Alaykum,</p>
-            <h1 className="text-lg sm:text-xl font-bold font-h1 text-on-surface">
+            <h1 className="text-lg sm:text-xl font-bold font-h1 text-on-surface truncate">
               {user?.name || 'Seeker'}
             </h1>
           </div>
         </div>
 
         {/* Top Right: Calendar + Flame Streak Pill */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-surface-container border border-outline-variant/30 shadow-sm">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-surface-container-high border border-outline-variant/30">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-surface-container border border-outline-variant/30 shadow-sm shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-surface-container-high border border-outline-variant/30">
             <span className="text-xs">📅</span>
             <div className="w-px h-3.5 bg-outline-variant/50" />
             <div className="flex items-center gap-1 text-xs font-bold text-amber-400">
@@ -242,274 +242,254 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. WEEKLY CONSISTENCY CIRCLES (M, T, W, T, F, S, S)                       */}
+      {/* 2. RESPONSIVE 2-COLUMN GRID (LEFT: GOAL & STATS | RIGHT: HABITS & SURAHS) */}
       {/* ========================================================================= */}
-      <div className="p-3.5 sm:p-4 rounded-3xl bg-surface-container/60 border border-outline-variant/30 shadow-sm">
-        <div className="flex items-center justify-between max-w-md mx-auto px-2">
-          {weekDays.map((wd, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <div
-                title={wd.completed ? `Goal achieved (${wd.verses} verses)` : `Target: ${dailyGoalVerses} verses`}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-bold transition shadow-sm ${
-                  wd.completed
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : wd.isToday
-                    ? 'border-2 border-purple-400 text-white bg-purple-600/30 ring-2 ring-purple-500/40'
-                    : 'bg-surface-container-highest/60 text-outline'
-                }`}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* ======================================================================= */}
+        {/* LEFT COLUMN: WEEKLY CIRCLES, GOAL HERO CARD, AND STATS (SPAN 7/12)     */}
+        {/* ======================================================================= */}
+        <div className="lg:col-span-7 space-y-5">
+          {/* Weekly Consistency Circles (M, T, W, T, F, S, S) */}
+          <div className="p-3.5 sm:p-4 rounded-3xl bg-surface-container/60 border border-outline-variant/30 shadow-sm">
+            <div className="flex items-center justify-between max-w-md mx-auto px-2">
+              {weekDays.map((wd, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div
+                    title={wd.completed ? `Goal achieved (${wd.verses} verses)` : `Target: ${dailyGoalVerses} verses`}
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-bold transition shadow-sm ${
+                      wd.completed
+                        ? 'bg-purple-600 text-white shadow-md'
+                        : wd.isToday
+                        ? 'border-2 border-purple-400 text-white bg-purple-600/30 ring-2 ring-purple-500/40'
+                        : 'bg-surface-container-highest/60 text-outline'
+                    }`}
+                  >
+                    {wd.letter}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 🌟 QURANLY-INSPIRED GOAL & CONTINUE READING HERO CARD */}
+          <div className="rounded-3xl bg-gradient-to-br from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] p-6 sm:p-7 text-white shadow-2xl relative overflow-hidden border border-white/20 space-y-5 transition-all">
+            {/* Ambient Glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+
+            {/* Top Row: Goal Title, Daily Verses Count & Live Reading Pill */}
+            <div className="flex items-start justify-between gap-4 relative z-10">
+              <div className="space-y-0.5">
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-h2">
+                  Goal
+                </h2>
+                <p className="text-xs sm:text-sm font-medium text-white/85">
+                  Per Day Verses
+                </p>
+                <p className="text-base sm:text-lg font-bold text-white tracking-wide pt-0.5">
+                  {todayVerses}/{dailyGoalVerses}
+                </p>
+              </div>
+
+              {/* Live Readers Pill with Overlapping Avatar Badges */}
+              <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 shadow-sm self-start">
+                <div className="flex -space-x-2 overflow-hidden">
+                  <div className="w-5 h-5 rounded-full bg-emerald-400 border border-white/40 flex items-center justify-center text-[9px] font-bold text-black">
+                    👤
+                  </div>
+                  <div className="w-5 h-5 rounded-full bg-teal-300 border border-white/40 flex items-center justify-center text-[9px] font-bold text-black">
+                    👤
+                  </div>
+                  <div className="w-5 h-5 rounded-full bg-indigo-300 border border-white/40 flex items-center justify-center text-[9px] font-bold text-black">
+                    👤
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-white/95">
+                  <span className="font-bold">249</span>
+                  <span className="opacity-90">Reading Live</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                </div>
+              </div>
+            </div>
+
+            {/* Middle Row: Surah Name, Verses Progress & Edit/Picker Button */}
+            <div className="space-y-2 relative z-10 pt-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-base sm:text-lg text-white">
+                    {currentSurahMeta.number} {currentSurahMeta.name} | {lastAyah}/{currentSurahMeta.numberOfAyahs}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowSurahPickerModal(true)}
+                    className="p-1 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition cursor-pointer"
+                    title="Change Surah or Ayah"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress Slider Track with Draggable/Glowing Dot */}
+              <div className="relative w-full py-1">
+                <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden relative">
+                  <div
+                    className="bg-white h-full rounded-full transition-all duration-500 shadow-sm"
+                    style={{ width: `${Math.max(3, currentVersePercent)}%` }}
+                  />
+                </div>
+                {/* Glowing White Thumb Indicator */}
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.95)] border-2 border-[#7c3aed] pointer-events-none transition-all duration-500"
+                  style={{ left: `calc(${Math.min(96, Math.max(2, currentVersePercent))}% - 8px)` }}
+                />
+              </div>
+
+              {/* Bottom of Progress: Juz Position and Percentage */}
+              <div className="flex items-center justify-between text-xs font-semibold text-white/90 pt-0.5">
+                <span>{juzProgress.juzNumber}/30 Juz</span>
+                <span>{currentVersePercent.toFixed(1)}%</span>
+              </div>
+            </div>
+
+            {/* Bottom Action Button: Read Quran */}
+            <div className="relative z-10 pt-2">
+              <Link
+                to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
+                className="w-full py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 active:scale-[0.99] backdrop-blur-md border border-white/30 text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
               >
-                {wd.letter}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 3. 🌟 QURANLY-INSPIRED GOAL & CONTINUE READING HERO CARD                  */}
-      {/* ========================================================================= */}
-      <div className="rounded-3xl bg-gradient-to-br from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] p-6 sm:p-7 text-white shadow-2xl relative overflow-hidden border border-white/20 space-y-5 transition-all">
-        {/* Ambient Top Glow */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
-
-        {/* Top Row: Goal Title, Daily Verses Count & Live Reading Pill */}
-        <div className="flex items-start justify-between gap-4 relative z-10">
-          <div className="space-y-0.5">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-h2">
-              Goal
-            </h2>
-            <p className="text-xs sm:text-sm font-medium text-white/85">
-              Per Day Verses
-            </p>
-            <p className="text-base sm:text-lg font-bold text-white tracking-wide pt-0.5">
-              {todayVerses}/{dailyGoalVerses}
-            </p>
-          </div>
-
-          {/* Live Readers Pill with Overlapping Avatar Badges */}
-          <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 shadow-sm self-start">
-            <div className="flex -space-x-2 overflow-hidden">
-              <div className="w-5 h-5 rounded-full bg-emerald-400 border border-white/40 flex items-center justify-center text-[9px] font-bold text-black">
-                👤
-              </div>
-              <div className="w-5 h-5 rounded-full bg-teal-300 border border-white/40 flex items-center justify-center text-[9px] font-bold text-black">
-                👤
-              </div>
-              <div className="w-5 h-5 rounded-full bg-indigo-300 border border-white/40 flex items-center justify-center text-[9px] font-bold text-black">
-                👤
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-white/95">
-              <span className="font-bold">249</span>
-              <span className="opacity-90">Reading Live</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Read Quran</span>
+              </Link>
             </div>
           </div>
+
+          {/* Timeframe Filter Tabs & 2-Column Stats Cards */}
+          <div className="space-y-4 pt-1">
+            {/* Timeframe Switcher Tabs */}
+            <div className="flex items-center justify-center bg-surface-container p-1 rounded-full border border-outline-variant/30 max-w-xs mx-auto">
+              {(['today', 'week', 'all'] as const).map((tf) => (
+                <button
+                  key={tf}
+                  onClick={() => setTimeframe(tf)}
+                  className={`flex-1 py-1.5 px-4 rounded-full text-xs font-bold transition cursor-pointer capitalize ${
+                    timeframe === tf
+                      ? 'bg-primary text-white shadow-md'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  {tf === 'all' ? 'All' : tf}
+                </button>
+              ))}
+            </div>
+
+            {/* 2-Column Stats Cards: Hasanat & Verses */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Hasanat Card */}
+              <div className="p-5 rounded-3xl glass-card border border-rose-500/20 bg-surface-container/70 flex flex-col items-center justify-center text-center space-y-2 shadow-sm">
+                <div className="text-3xl sm:text-4xl animate-bounce duration-1000">
+                  💖
+                </div>
+                <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps">
+                  Hasanat
+                </span>
+                <p className="text-2xl sm:text-3xl font-extrabold text-on-surface">
+                  {displayStats.hasanat.toLocaleString()}
+                </p>
+              </div>
+
+              {/* Verses Card */}
+              <div className="p-5 rounded-3xl glass-card border border-blue-500/20 bg-surface-container/70 flex flex-col items-center justify-center text-center space-y-2 shadow-sm">
+                <div className="text-3xl sm:text-4xl">
+                  📑
+                </div>
+                <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps">
+                  Verses
+                </span>
+                <p className="text-2xl sm:text-3xl font-extrabold text-on-surface">
+                  {displayStats.verses.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Middle Row: Surah Name, Verses Progress & Edit/Picker Button */}
-        <div className="space-y-2 relative z-10 pt-1">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-base sm:text-lg text-white">
-                {currentSurahMeta.number} {currentSurahMeta.name} | {lastAyah}/{currentSurahMeta.numberOfAyahs}
+        {/* ======================================================================= */}
+        {/* RIGHT COLUMN: DAILY HABITS & RECOMMENDED RECITATION (SPAN 5/12)        */}
+        {/* ======================================================================= */}
+        <div className="lg:col-span-5 space-y-5">
+          {/* Habits Checklist */}
+          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold font-h2 text-on-surface">Daily Habits</h3>
+              <span className="text-xs text-tertiary font-semibold">
+                {habits.filter((h) => h.completed).length}/{habits.length} Done
               </span>
-              <button
-                type="button"
-                onClick={() => setShowSurahPickerModal(true)}
-                className="p-1 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition cursor-pointer"
-                title="Change Surah or Ayah"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </button>
+            </div>
+
+            <div className="space-y-2">
+              {habits.map((habit) => (
+                <div
+                  key={habit.id}
+                  onClick={() => toggleHabit(habit.id)}
+                  className={`p-3 rounded-2xl flex items-center justify-between border cursor-pointer transition ${
+                    habit.completed
+                      ? 'bg-surface-container-highest/60 border-tertiary/30 text-on-surface'
+                      : 'bg-surface-container/60 border-outline-variant/20 text-on-surface-variant hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {habit.completed ? (
+                      <CheckCircle2 className="w-4 h-4 text-tertiary shrink-0" />
+                    ) : (
+                      <Circle className="w-4 h-4 text-outline shrink-0" />
+                    )}
+                    <div>
+                      <p className={`text-xs font-semibold ${habit.completed ? 'line-through opacity-70' : 'text-on-surface'}`}>
+                        {habit.name}
+                      </p>
+                      <p className="text-[10px] text-outline">{habit.time}</p>
+                    </div>
+                  </div>
+
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-outline border border-outline-variant/30">
+                    {habit.category}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Progress Slider Track with Draggable/Glowing Dot */}
-          <div className="relative w-full py-1">
-            <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden relative">
-              <div
-                className="bg-white h-full rounded-full transition-all duration-500 shadow-sm"
-                style={{ width: `${Math.max(3, currentVersePercent)}%` }}
-              />
-            </div>
-            {/* Glowing White Thumb Indicator */}
-            <div
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.95)] border-2 border-[#7c3aed] pointer-events-none transition-all duration-500"
-              style={{ left: `calc(${Math.min(96, Math.max(2, currentVersePercent))}% - 8px)` }}
-            />
-          </div>
-
-          {/* Bottom of Progress: Juz Position and Percentage */}
-          <div className="flex items-center justify-between text-xs font-semibold text-white/90 pt-0.5">
-            <span>{juzProgress.juzNumber}/30 Juz</span>
-            <span>{currentVersePercent.toFixed(1)}%</span>
-          </div>
-        </div>
-
-        {/* Bottom Action Button: Read Quran */}
-        <div className="relative z-10 pt-2">
-          <Link
-            to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
-            className="w-full py-3.5 rounded-2xl bg-white/20 hover:bg-white/30 active:scale-[0.99] backdrop-blur-md border border-white/30 text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
-          >
-            <span>Read Quran</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 4. 🌟 SALWAT CHALLENGE CARD                                               */}
-      {/* ========================================================================= */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#065f46] via-[#047857] to-[#059669] text-white shadow-xl relative overflow-hidden border border-emerald-400/20 space-y-3">
-        <div className="flex items-start justify-between gap-3 relative z-10">
-          <div>
-            <h3 className="text-lg sm:text-xl font-bold font-h2 text-white">
-              Salwat Challenge
+          {/* Recommended Surahs for Today */}
+          <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
+            <h3 className="text-base font-bold font-h2 text-on-surface flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>Recommended Recitation</span>
             </h3>
-            <p className="text-xs text-emerald-100 font-medium mt-0.5">
-              Sending salutations on the Prophet (saw)
-            </p>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
-            ✓
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2 bg-black/25 px-3 py-1.5 rounded-full border border-emerald-400/30 text-xs font-bold text-emerald-200 self-start w-fit">
-          <span>🌍 20,000,000 +13,465,580</span>
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 5. TIMEFRAME FILTER TABS & 2-COLUMN STAT CARDS (HASANAT & VERSES)        */}
-      {/* ========================================================================= */}
-      <div className="space-y-4">
-        {/* Timeframe Switcher Tabs */}
-        <div className="flex items-center justify-center bg-surface-container p-1 rounded-full border border-outline-variant/30 max-w-xs mx-auto">
-          {(['today', 'week', 'all'] as const).map((tf) => (
-            <button
-              key={tf}
-              onClick={() => setTimeframe(tf)}
-              className={`flex-1 py-1.5 px-4 rounded-full text-xs font-bold transition cursor-pointer capitalize ${
-                timeframe === tf
-                  ? 'bg-primary text-white shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              {tf === 'all' ? 'All' : tf}
-            </button>
-          ))}
-        </div>
-
-        {/* 2-Column Stats Cards: Hasanat & Verses */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Hasanat Card */}
-          <div className="p-5 rounded-3xl glass-card border border-rose-500/20 bg-surface-container/70 flex flex-col items-center justify-center text-center space-y-2 shadow-sm">
-            <div className="text-3xl sm:text-4xl animate-bounce duration-1000">
-              💖
-            </div>
-            <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps">
-              Hasanat
-            </span>
-            <p className="text-2xl sm:text-3xl font-extrabold text-on-surface">
-              {displayStats.hasanat.toLocaleString()}
-            </p>
-          </div>
-
-          {/* Verses Card */}
-          <div className="p-5 rounded-3xl glass-card border border-blue-500/20 bg-surface-container/70 flex flex-col items-center justify-center text-center space-y-2 shadow-sm">
-            <div className="text-3xl sm:text-4xl">
-              📑
-            </div>
-            <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps">
-              Verses
-            </span>
-            <p className="text-2xl sm:text-3xl font-extrabold text-on-surface">
-              {displayStats.verses.toLocaleString()}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 6. TODAY'S ISLAMIC HABITS & QUICK SUGGESTIONS                             */}
-      {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        {/* Habits Checklist */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold font-h2 text-on-surface">Daily Habits</h3>
-            <span className="text-xs text-tertiary font-semibold">
-              {habits.filter((h) => h.completed).length}/{habits.length} Done
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {habits.map((habit) => (
-              <div
-                key={habit.id}
-                onClick={() => toggleHabit(habit.id)}
-                className={`p-3 rounded-2xl flex items-center justify-between border cursor-pointer transition ${
-                  habit.completed
-                    ? 'bg-surface-container-highest/60 border-tertiary/30 text-on-surface'
-                    : 'bg-surface-container/60 border-outline-variant/20 text-on-surface-variant hover:border-primary/40'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {habit.completed ? (
-                    <CheckCircle2 className="w-4 h-4 text-tertiary shrink-0" />
-                  ) : (
-                    <Circle className="w-4 h-4 text-outline shrink-0" />
-                  )}
-                  <div>
-                    <p className={`text-xs font-semibold ${habit.completed ? 'line-through opacity-70' : 'text-on-surface'}`}>
-                      {habit.name}
-                    </p>
-                    <p className="text-[10px] text-outline">{habit.time}</p>
+            <div className="space-y-2.5">
+              {SUGGESTED_SURAHS.slice(0, 4).map((s) => (
+                <div
+                  key={s.number}
+                  onClick={() => handleQuickLaunchSurah(s.number)}
+                  className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/30 hover:border-primary/60 transition cursor-pointer flex items-center justify-between gap-3 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-xs font-mono font-bold text-primary">
+                      {s.number}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-on-surface group-hover:text-primary transition">
+                        {s.name}
+                      </p>
+                      <p className="text-[10px] text-outline">{s.tag}</p>
+                    </div>
                   </div>
+
+                  <span className="font-noto-serif text-sm text-primary-fixed-dim shrink-0">
+                    {s.arabicName}
+                  </span>
                 </div>
-
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-outline border border-outline-variant/30">
-                  {habit.category}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recommended Surahs for Today */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <h3 className="text-base font-bold font-h2 text-on-surface flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span>Recommended Recitation</span>
-          </h3>
-
-          <div className="space-y-2.5">
-            {SUGGESTED_SURAHS.slice(0, 4).map((s) => (
-              <div
-                key={s.number}
-                onClick={() => handleQuickLaunchSurah(s.number)}
-                className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/30 hover:border-primary/60 transition cursor-pointer flex items-center justify-between gap-3 group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-xs font-mono font-bold text-primary">
-                    {s.number}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-on-surface group-hover:text-primary transition">
-                      {s.name}
-                    </p>
-                    <p className="text-[10px] text-outline">{s.tag}</p>
-                  </div>
-                </div>
-
-                <span className="font-noto-serif text-sm text-primary-fixed-dim shrink-0">
-                  {s.arabicName}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
