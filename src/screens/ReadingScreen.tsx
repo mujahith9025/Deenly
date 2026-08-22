@@ -7,16 +7,16 @@ import {
   Sparkles, 
   Loader2, 
   Clock, 
-  Check, 
-  Share2, 
   CheckCircle2, 
   Bookmark,
+  Heart,
   ZoomIn
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { useBookmarkStore } from '../store/useBookmarkStore'
+import { useFavoriteStore } from '../store/useFavoriteStore'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   formatTimer, 
@@ -30,7 +30,6 @@ export const ReadingScreen: React.FC = () => {
   // State
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
-  const [copiedShare, setCopiedShare] = useState(false)
   const [chapterCompletedBanner, setChapterCompletedBanner] = useState<string | null>(null)
   const [zoomFeedback, setZoomFeedback] = useState<number | null>(null)
 
@@ -58,6 +57,8 @@ export const ReadingScreen: React.FC = () => {
 
   const isQuranBookmarked = useBookmarkStore((state) => state.isQuranBookmarked)
   const toggleQuranBookmark = useBookmarkStore((state) => state.toggleQuranBookmark)
+  const isQuranFavorite = useFavoriteStore((state) => state.isQuranFavorite)
+  const toggleQuranFavorite = useFavoriteStore((state) => state.toggleQuranFavorite)
 
   // Auth & Session
   const activeSession = useReadingStore((state) => state.activeSession)
@@ -309,13 +310,21 @@ export const ReadingScreen: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleMarkAndNext, handlePrevAyah, handleFinishSession])
 
-  const handleShareAyah = (e?: React.MouseEvent) => {
+  const isCurrentAyahFavorite = currentSurahNumber && currentAyah
+    ? isQuranFavorite(currentSurahNumber, currentAyah.verseNumberInSurah)
+    : false
+
+  const handleToggleFavorite = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     if (!currentAyah || !currentSurah) return
-    const text = `${currentSurah.name} (${currentSurahNumber}:${currentAyah.verseNumberInSurah})\n\n${currentAyah.arabicText}\n\n${currentAyah.translations[translationLanguage] || currentAyah.translations.en}\n\n— Recited with Deenly`
-    navigator.clipboard?.writeText(text)
-    setCopiedShare(true)
-    setTimeout(() => setCopiedShare(false), 2000)
+    toggleQuranFavorite({
+      surahNumber: currentSurahNumber,
+      surahName: currentSurah.name,
+      arabicName: currentSurah.arabicName,
+      ayahNumber: currentAyah.verseNumberInSurah,
+      arabicText: currentAyah.arabicText,
+      translationText: currentAyah.translations[translationLanguage] || currentAyah.translations.en || '',
+    })
   }
 
   const isCurrentAyahBookmarked = currentSurahNumber && currentAyah 
@@ -422,26 +431,30 @@ export const ReadingScreen: React.FC = () => {
             {translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}
           </button>
 
-          {/* Bookmark Button */}
+          {/* 🌟 1. Favorite Button (Heart - SWAPPED FIRST) */}
+          <button
+            onClick={(e) => handleToggleFavorite(e)}
+            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition cursor-pointer flex items-center justify-center shadow-sm ${
+              isCurrentAyahFavorite
+                ? 'bg-rose-500/20 border-rose-500/50 text-rose-500'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-rose-400'
+            }`}
+            title={isCurrentAyahFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+          >
+            <Heart className={`w-4 h-4 ${isCurrentAyahFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
+          </button>
+
+          {/* 🌟 2. Bookmark Button (Bookmark Ribbon - SWAPPED SECOND) */}
           <button
             onClick={(e) => handleToggleBookmark(e)}
             className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition cursor-pointer flex items-center justify-center shadow-sm ${
               isCurrentAyahBookmarked
                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
-                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-on-surface'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-amber-400'
             }`}
             title={isCurrentAyahBookmarked ? 'Remove Bookmark' : 'Bookmark Ayah'}
           >
-            <Bookmark className={`w-4 h-4 ${isCurrentAyahBookmarked ? 'fill-amber-400' : ''}`} />
-          </button>
-
-          {/* Share / Copy */}
-          <button
-            onClick={(e) => handleShareAyah(e)}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-outline hover:text-on-surface transition cursor-pointer flex items-center justify-center shadow-sm"
-            title="Copy Ayah"
-          >
-            {copiedShare ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+            <Bookmark className={`w-4 h-4 ${isCurrentAyahBookmarked ? 'fill-amber-400 text-amber-400' : ''}`} />
           </button>
         </div>
       </header>
