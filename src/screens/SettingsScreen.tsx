@@ -46,10 +46,10 @@ function formatLastSynced(timestamp: string | null): string {
 }
 
 export const SettingsScreen: React.FC = () => {
-  // Mobile drilldown state (null = list view)
-  const [activeMobileSubPage, setActiveMobileSubPage] = useState<SettingCategory | null>(null)
-  // Desktop active tab
-  const [activeDesktopTab, setActiveDesktopTab] = useState<SettingCategory>('theme')
+  // Active selected tab (shared between desktop & mobile)
+  const [selectedTab, setSelectedTab] = useState<SettingCategory>('theme')
+  // Mobile drilldown open state
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false)
 
   const [isClearingCache, setIsClearingCache] = useState(false)
   const [cacheClearedSuccess, setCacheClearedSuccess] = useState(false)
@@ -114,12 +114,12 @@ export const SettingsScreen: React.FC = () => {
   }
 
   // =========================================================================
-  // MODULAR SECTION RENDERERS (REUSED ACROSS DESKTOP & MOBILE)
+  // MODULAR SECTION RENDERERS
   // =========================================================================
 
   // 1. Theme Section
   const renderThemeSection = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Theme & Appearance</h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
@@ -196,7 +196,7 @@ export const SettingsScreen: React.FC = () => {
 
   // 2. Translation Section
   const renderTranslationSection = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Quran Translation</h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
@@ -256,7 +256,7 @@ export const SettingsScreen: React.FC = () => {
 
   // 3. Font Size Section
   const renderFontSection = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Arabic Font Size & Script</h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
@@ -358,7 +358,7 @@ export const SettingsScreen: React.FC = () => {
 
   // 4. Daily Target Section
   const renderTargetSection = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Daily Recitation Target</h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
@@ -427,7 +427,7 @@ export const SettingsScreen: React.FC = () => {
 
   // 5. Notifications Section
   const renderNotificationsSection = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Notifications & Reminders</h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
@@ -487,7 +487,7 @@ export const SettingsScreen: React.FC = () => {
 
   // 6. Sync Section
   const renderSyncSection = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Cloud Sync & Storage</h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
@@ -569,7 +569,7 @@ export const SettingsScreen: React.FC = () => {
 
   // 7. About Section
   const renderAboutSection = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">About Deenly</h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
@@ -602,8 +602,30 @@ export const SettingsScreen: React.FC = () => {
     </div>
   )
 
+  // Helper to render section by category
+  const renderSection = (category: SettingCategory) => {
+    switch (category) {
+      case 'theme':
+        return renderThemeSection()
+      case 'translation':
+        return renderTranslationSection()
+      case 'font':
+        return renderFontSection()
+      case 'target':
+        return renderTargetSection()
+      case 'notifications':
+        return renderNotificationsSection()
+      case 'sync':
+        return renderSyncSection()
+      case 'about':
+        return renderAboutSection()
+      default:
+        return renderThemeSection()
+    }
+  }
+
   // Array of categories for navigation
-  const categories: Array<{ id: SettingCategory; label: string; icon: any; desc: string; badge?: string }> = [
+  const categories: Array<{ id: SettingCategory; label: string; icon: any; desc: string }> = [
     { id: 'theme', label: 'Theme & Appearance', icon: theme === 'dark' ? Moon : Sun, desc: `${theme.charAt(0).toUpperCase() + theme.slice(1)} Mode` },
     { id: 'translation', label: 'Quran Translation', icon: Globe, desc: currentTranslation === 'tamil' ? 'தமிழ் (பாகவி)' : 'English (Sahih)' },
     { id: 'font', label: 'Arabic Typography', icon: Type, desc: `${currentFontSize}px Arabic Script` },
@@ -613,34 +635,6 @@ export const SettingsScreen: React.FC = () => {
     { id: 'about', label: 'About Deenly', icon: Info, desc: 'Version 2.0 • Data Sources' },
   ]
 
-  // =========================================================================
-  // MOBILE SUB-PAGE DRILLDOWN VIEW (ONLY ON MOBILE WHEN activeMobileSubPage IS SET)
-  // =========================================================================
-  if (activeMobileSubPage) {
-    return (
-      <div className="lg:hidden space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
-        <button
-          onClick={() => setActiveMobileSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Settings</span>
-        </button>
-
-        {activeMobileSubPage === 'theme' && renderThemeSection()}
-        {activeMobileSubPage === 'translation' && renderTranslationSection()}
-        {activeMobileSubPage === 'font' && renderFontSection()}
-        {activeMobileSubPage === 'target' && renderTargetSection()}
-        {activeMobileSubPage === 'notifications' && renderNotificationsSection()}
-        {activeMobileSubPage === 'sync' && renderSyncSection()}
-        {activeMobileSubPage === 'about' && renderAboutSection()}
-      </div>
-    )
-  }
-
-  // =========================================================================
-  // DESKTOP TWO-COLUMN RESPONSIVE LAYOUT + MOBILE DIRECTORY
-  // =========================================================================
   return (
     <div className="w-full pb-24 animate-fade-in">
       {/* Header */}
@@ -651,14 +645,90 @@ export const SettingsScreen: React.FC = () => {
         </p>
       </div>
 
-      {/* 🌟 RESPONSIVE WRAPPER: 2 COLUMNS ON DESKTOP (`lg:`), SINGLE LIST ON MOBILE */}
-      <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+      {/* ========================================================================= */}
+      {/* 1. MOBILE VIEW: EITHER DIRECTORY LIST OR FOCUSED SUBPAGE                  */}
+      {/* ========================================================================= */}
+      <div className="block lg:hidden space-y-4">
+        {isMobileDetailOpen ? (
+          /* Mobile Sub-page with Back Button */
+          <div className="space-y-6">
+            <button
+              onClick={() => setIsMobileDetailOpen(false)}
+              className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Settings</span>
+            </button>
+
+            {renderSection(selectedTab)}
+          </div>
+        ) : (
+          /* Mobile Directory List */
+          <div className="space-y-4">
+            {/* Profile Shortcut Card */}
+            <Link
+              to="/profile"
+              className="p-4 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition flex items-center justify-between shadow-sm group cursor-pointer"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-11 h-11 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+                  <UserIcon className="w-5 h-5" />
+                </div>
+                <div className="truncate">
+                  <span className="text-sm font-bold text-on-surface block truncate">
+                    {user?.name || 'Muslim Seeker'}
+                  </span>
+                  <span className="text-xs text-outline flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span className="truncate">Manage Account</span>
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition shrink-0" />
+            </Link>
+
+            {/* Mobile Category List */}
+            <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
+              {categories.map((cat) => {
+                const Icon = cat.icon
+                return (
+                  <div
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedTab(cat.id)
+                      setIsMobileDetailOpen(true)
+                    }}
+                    className="p-4 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="truncate">
+                        <span className="text-sm font-bold text-on-surface block truncate">
+                          {cat.label}
+                        </span>
+                        <span className="text-xs text-outline truncate block">
+                          {cat.desc}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition shrink-0" />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. DESKTOP VIEW: 2-COLUMN MASTER-DETAIL CONTROL CENTER                     */}
+      {/* ========================================================================= */}
+      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-8 items-start">
         
-        {/* ===================================================================== */}
-        {/* LEFT COLUMN / SIDEBAR NAV (DESKTOP & MOBILE DIRECTORY)                */}
-        {/* ===================================================================== */}
-        <div className="lg:col-span-4 xl:col-span-4 space-y-4">
-          
+        {/* Left Column: Navigation Sidebar */}
+        <div className="lg:col-span-4 xl:col-span-4 space-y-4 sticky top-6">
           {/* Profile Shortcut Card */}
           <Link
             to="/profile"
@@ -681,35 +751,32 @@ export const SettingsScreen: React.FC = () => {
             <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition shrink-0" />
           </Link>
 
-          {/* Settings Navigation Menu */}
+          {/* Desktop Categories Menu */}
           <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
             {categories.map((cat) => {
               const Icon = cat.icon
-              const isSelectedOnDesktop = activeDesktopTab === cat.id
+              const isSelected = selectedTab === cat.id
 
               return (
                 <div
                   key={cat.id}
-                  onClick={() => {
-                    setActiveDesktopTab(cat.id)
-                    setActiveMobileSubPage(cat.id) // For mobile
-                  }}
-                  className={`p-3.5 sm:p-4 transition cursor-pointer flex items-center justify-between group ${
-                    isSelectedOnDesktop
-                      ? 'lg:bg-primary/15 lg:border-l-4 lg:border-l-primary'
+                  onClick={() => setSelectedTab(cat.id)}
+                  className={`p-4 transition cursor-pointer flex items-center justify-between group ${
+                    isSelected
+                      ? 'bg-primary/15 border-l-4 border-l-primary'
                       : 'hover:bg-surface-container/60'
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3.5 min-w-0">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
-                      isSelectedOnDesktop 
+                      isSelected 
                         ? 'bg-primary text-white shadow-md' 
                         : 'bg-surface-container-high border border-outline-variant/40 text-primary'
                     }`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div className="truncate">
-                      <span className={`text-sm font-bold block truncate ${isSelectedOnDesktop ? 'text-primary' : 'text-on-surface'}`}>
+                      <span className={`text-sm font-bold block truncate ${isSelected ? 'text-primary' : 'text-on-surface'}`}>
                         {cat.label}
                       </span>
                       <span className="text-xs text-outline truncate block">
@@ -719,31 +786,22 @@ export const SettingsScreen: React.FC = () => {
                   </div>
 
                   <ChevronRight className={`w-4.5 h-4.5 shrink-0 transition ${
-                    isSelectedOnDesktop ? 'text-primary' : 'text-outline group-hover:text-primary'
+                    isSelected ? 'text-primary' : 'text-outline group-hover:text-primary'
                   }`} />
                 </div>
               )
             })}
           </div>
 
-          {/* Subtle Desktop Footnote */}
-          <p className="hidden lg:block text-[11px] text-outline text-center pt-2">
-            Deenly • Recitation Companion • v2.0
+          <p className="text-[11px] text-outline text-center pt-2">
+            Deenly • Islamic Recitation Companion • v2.0
           </p>
         </div>
 
-        {/* ===================================================================== */}
-        {/* RIGHT COLUMN (EXPANDED DETAIL PANEL ON DESKTOP)                       */}
-        {/* ===================================================================== */}
-        <div className="hidden lg:block lg:col-span-8 xl:col-span-8">
+        {/* Right Column: Active Category Content */}
+        <div className="lg:col-span-8 xl:col-span-8">
           <div className="p-6 xl:p-8 rounded-3xl glass-card border border-outline-variant/30 shadow-md min-h-[560px]">
-            {activeDesktopTab === 'theme' && renderThemeSection()}
-            {activeDesktopTab === 'translation' && renderTranslationSection()}
-            {activeDesktopTab === 'font' && renderFontSection()}
-            {activeDesktopTab === 'target' && renderTargetSection()}
-            {activeDesktopTab === 'notifications' && renderNotificationsSection()}
-            {activeDesktopTab === 'sync' && renderSyncSection()}
-            {activeDesktopTab === 'about' && renderAboutSection()}
+            {renderSection(selectedTab)}
           </div>
         </div>
 
