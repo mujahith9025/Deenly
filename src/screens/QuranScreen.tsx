@@ -24,6 +24,13 @@ import { useQuranAudioStore } from '../store/useQuranAudioStore'
 import { QuranChapterAudioPlayer } from '../components/QuranChapterAudioPlayer'
 import type { SurahDetail, Ayah } from '../types/quran'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
+import { 
+  getTranslationMeta, 
+  type EnglishTranslationKey, 
+  type TamilTranslationKey,
+  DEFAULT_ENGLISH_TRANSLATION,
+  DEFAULT_TAMIL_TRANSLATION
+} from '../lib/quranTranslations'
 
 type FilterType = 'all' | 'meccan' | 'medinan'
 
@@ -33,9 +40,14 @@ export const QuranScreen: React.FC = () => {
   const user = useAuthStore((state) => state.user)
   const storeFontSize = useReadingStore((state) => state.fontSize)
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const storeEnglishTranslation = useReadingStore((state) => state.englishTranslation)
+  const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
   const fontSize = storeFontSize || user?.arabicFontSize || 28
   const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
   const arabicFontFamily = getArabicFontFamily(fontStyle)
+
+  const currentEnglishTranslation: EnglishTranslationKey = user?.englishTranslation || storeEnglishTranslation || DEFAULT_ENGLISH_TRANSLATION
+  const currentTamilTranslation: TamilTranslationKey = user?.tamilTranslation || storeTamilTranslation || DEFAULT_TAMIL_TRANSLATION
 
   const setCurrentPosition = useReadingStore((state) => state.setCurrentPosition)
   const isQuranBookmarked = useBookmarkStore((state) => state.isQuranBookmarked)
@@ -101,7 +113,7 @@ export const QuranScreen: React.FC = () => {
     setIsLoadingVerses(true)
 
     quranApi
-      .getSurah(selectedSurahNumber, ['en', 'ta'])
+      .getSurah(selectedSurahNumber, ['en', 'ta', currentEnglishTranslation, currentTamilTranslation])
       .then((data) => {
         if (isMounted) {
           setSurahData(data)
@@ -129,7 +141,7 @@ export const QuranScreen: React.FC = () => {
     return () => {
       isMounted = false
     }
-  }, [selectedSurahNumber, activeHighlightAyah])
+  }, [selectedSurahNumber, activeHighlightAyah, currentEnglishTranslation, currentTamilTranslation])
 
   // Filter Surahs list
   const filteredSurahs = SURAH_METADATA.filter((surah) => {
@@ -254,9 +266,13 @@ export const QuranScreen: React.FC = () => {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={() => setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')}
-            className="px-3.5 py-1.5 rounded-full glass-card border border-outline-variant/40 text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm"
+            className="px-3.5 py-1.5 rounded-full glass-card border border-outline-variant/40 text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center gap-1.5"
+            title="Switch translation language (English / Tamil)"
           >
-            {translationLanguage === 'ta' ? 'தமிழ் (பாகவி)' : 'EN (Sahih)'}
+            <span>{translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}</span>
+            <span className="text-[10px] text-outline font-normal">
+              ({translationLanguage === 'ta' ? getTranslationMeta(currentTamilTranslation).name : getTranslationMeta(currentEnglishTranslation).name})
+            </span>
           </button>
         </div>
       </div>
@@ -622,14 +638,23 @@ export const QuranScreen: React.FC = () => {
                       </div>
 
                       {/* Translation Text */}
-                      <div className="pt-4 border-t border-outline-variant/20 space-y-1">
-                        <span className="text-[10px] uppercase font-bold text-outline font-label-caps tracking-wider">
-                          {translationLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்பு (பாகவி)' : 'Sahih International'}
-                        </span>
+                      <div className="pt-4 border-t border-outline-variant/20 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase font-bold text-outline font-label-caps tracking-wider">
+                            {translationLanguage === 'ta' 
+                              ? `தமிழ் மொழிபெயர்ப்பு (${getTranslationMeta(currentTamilTranslation).name})`
+                              : getTranslationMeta(currentEnglishTranslation).name}
+                          </span>
+                          <span className="text-[10px] text-primary font-medium">
+                            {translationLanguage === 'ta'
+                              ? getTranslationMeta(currentTamilTranslation).badge
+                              : getTranslationMeta(currentEnglishTranslation).badge}
+                          </span>
+                        </div>
                         <p className="text-sm md:text-base text-on-surface leading-relaxed font-normal">
-                          {ayah.translations[translationLanguage] ||
-                            ayah.translations.en ||
-                            'Translation loading...'}
+                          {translationLanguage === 'ta'
+                            ? (ayah.translations[currentTamilTranslation] || ayah.translations['ta'] || ayah.translations['ta_baqavi'] || 'மொழிபெயர்ப்பு ஏற்றப்படுகிறது...')
+                            : (ayah.translations[currentEnglishTranslation] || ayah.translations['en'] || ayah.translations['en_sahih'] || 'Translation loading...')}
                         </p>
                       </div>
                     </div>

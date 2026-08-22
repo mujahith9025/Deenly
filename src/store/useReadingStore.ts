@@ -7,12 +7,16 @@ import { useAuthStore } from './useAuthStore'
 
 import type { ArabicFontStyle } from '../lib/quranFonts'
 import { DEFAULT_ARABIC_FONT } from '../lib/quranFonts'
+import type { EnglishTranslationKey, TamilTranslationKey } from '../lib/quranTranslations'
+import { getStoredEnglishTranslation, getStoredTamilTranslation } from '../lib/quranTranslations'
 
 interface ReadingStoreActions {
   setCurrentPosition: (surah: number, ayah: number, page?: number, juz?: number) => void
   setFontSize: (size: number) => void
   setFontStyle: (style: ArabicFontStyle) => void
   setTranslationLanguage: (lang: 'en' | 'ta') => void
+  setEnglishTranslation: (trans: EnglishTranslationKey) => void
+  setTamilTranslation: (trans: TamilTranslationKey) => void
   setIsPlayingAudio: (isPlaying: boolean) => void
   toggleAudioMute: () => void
   loadSurah: (surahNumber: number) => Promise<void>
@@ -63,6 +67,8 @@ const initialReadingState: ReadingSessionState = {
   fontSize: getStoredFontSize(),
   fontStyle: getStoredFontStyle(),
   translationLanguage: 'en',
+  englishTranslation: getStoredEnglishTranslation(),
+  tamilTranslation: getStoredTamilTranslation(),
   isPlayingAudio: false,
   isAudioMuted: false,
   currentSurah: null,
@@ -96,13 +102,28 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
     useAuthStore.getState().updateUserSettings({ arabicFontStyle: fontStyle })
   },
   setTranslationLanguage: (translationLanguage) => set({ translationLanguage }),
+  setEnglishTranslation: (englishTranslation) => {
+    try {
+      localStorage.setItem('deenly_english_translation', englishTranslation)
+    } catch {}
+    set({ englishTranslation })
+    useAuthStore.getState().updateUserSettings({ englishTranslation })
+  },
+  setTamilTranslation: (tamilTranslation) => {
+    try {
+      localStorage.setItem('deenly_tamil_translation', tamilTranslation)
+    } catch {}
+    set({ tamilTranslation })
+    useAuthStore.getState().updateUserSettings({ tamilTranslation })
+  },
   setIsPlayingAudio: (isPlayingAudio) => set({ isPlayingAudio }),
   toggleAudioMute: () => set((state) => ({ isAudioMuted: !state.isAudioMuted })),
 
   loadSurah: async (surahNumber: number) => {
     set({ isLoadingSurah: true, error: null, currentSurahNumber: surahNumber })
     try {
-      const surahData = await quranApi.getSurah(surahNumber, ['en', 'ta'])
+      const state = get()
+      const surahData = await quranApi.getSurah(surahNumber, ['en', 'ta', state.englishTranslation, state.tamilTranslation])
       set({
         currentSurah: surahData,
         currentSurahNumber: surahNumber,

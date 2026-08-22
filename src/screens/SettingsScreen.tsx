@@ -27,6 +27,13 @@ import { useReadingStore } from '../store/useReadingStore'
 import { syncService } from '../lib/syncService'
 import { quranCache } from '../lib/quranCache'
 import { QURAN_FONT_STYLES, getArabicFontFamily, getArabicFontMeta, type ArabicFontStyle } from '../lib/quranFonts'
+import { 
+  QURAN_TRANSLATIONS, 
+  type EnglishTranslationKey, 
+  type TamilTranslationKey,
+  DEFAULT_ENGLISH_TRANSLATION,
+  DEFAULT_TAMIL_TRANSLATION
+} from '../lib/quranTranslations'
 
 type SettingCategory = 
   | 'theme' 
@@ -69,20 +76,36 @@ export const SettingsScreen: React.FC = () => {
 
   const storeFontSize = useReadingStore((state) => state.fontSize)
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const storeEnglishTranslation = useReadingStore((state) => state.englishTranslation)
+  const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
   const setFontSize = useReadingStore((state) => state.setFontSize)
   const setFontStyle = useReadingStore((state) => state.setFontStyle)
+  const setEnglishTranslation = useReadingStore((state) => state.setEnglishTranslation)
+  const setTamilTranslation = useReadingStore((state) => state.setTamilTranslation)
 
   const deviceId = syncService.getDeviceId()
 
   const currentFontSize = user?.arabicFontSize || storeFontSize || 28
   const currentFontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
   const currentTranslation = user?.preferredTranslation || 'english'
+  const currentEnglishTranslation: EnglishTranslationKey = user?.englishTranslation || storeEnglishTranslation || DEFAULT_ENGLISH_TRANSLATION
+  const currentTamilTranslation: TamilTranslationKey = user?.tamilTranslation || storeTamilTranslation || DEFAULT_TAMIL_TRANSLATION
   const currentGoal = user?.dailyGoalVerses || 10
   const prayerAlerts = user?.prayerNotifications !== false
   const readingAlerts = user?.readingReminders !== false
 
   const handleTranslationChange = (lang: 'english' | 'tamil') => {
     updateUserSettings({ preferredTranslation: lang })
+  }
+
+  const handleEnglishTranslationChange = (key: EnglishTranslationKey) => {
+    setEnglishTranslation(key)
+    updateUserSettings({ englishTranslation: key })
+  }
+
+  const handleTamilTranslationChange = (key: TamilTranslationKey) => {
+    setTamilTranslation(key)
+    updateUserSettings({ tamilTranslation: key })
   }
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,64 +233,193 @@ export const SettingsScreen: React.FC = () => {
   )
 
   // 2. Translation Section
-  const renderTranslationSection = () => (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Quran Translation</h2>
-        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-          Select your primary translation for Quran verses and authentic Hadiths.
-        </p>
-      </div>
+  const renderTranslationSection = () => {
+    const englishTranslations = QURAN_TRANSLATIONS.filter((t) => t.language === 'en')
+    const tamilTranslations = QURAN_TRANSLATIONS.filter((t) => t.language === 'ta')
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* English */}
-        <div
-          onClick={() => handleTranslationChange('english')}
-          className={`p-5 rounded-3xl border transition cursor-pointer flex items-start justify-between ${
-            currentTranslation === 'english'
-              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
-              : 'glass-card border-outline-variant/30 hover:border-primary/40'
-          }`}
-        >
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-              EN
-            </div>
-            <div className="space-y-1">
-              <span className="text-base font-bold text-on-surface block">English (Sahih International)</span>
-              <span className="text-xs text-on-surface-variant block leading-relaxed">
-                Standard contemporary English translation by Umm Muhammad. Highly acclaimed for accuracy.
-              </span>
-            </div>
-          </div>
-          {currentTranslation === 'english' && <Check className="w-5 h-5 text-primary shrink-0 ml-2" />}
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Quran Translations</h2>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+            Choose your preferred authentic scholarly translations for English and Tamil. Changes save automatically across all screens.
+          </p>
         </div>
 
-        {/* Tamil */}
-        <div
-          onClick={() => handleTranslationChange('tamil')}
-          className={`p-5 rounded-3xl border transition cursor-pointer flex items-start justify-between ${
-            currentTranslation === 'tamil'
-              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
-              : 'glass-card border-outline-variant/30 hover:border-primary/40'
-          }`}
-        >
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-              தமிழ்
+        {/* 🌟 Primary Active Language Switcher */}
+        <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-md space-y-3">
+          <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+            Active Display Language
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* English */}
+            <div
+              onClick={() => handleTranslationChange('english')}
+              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                currentTranslation === 'english'
+                  ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                  : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-bold text-primary text-sm shrink-0">
+                  EN
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-on-surface block">English Translations</span>
+                  <span className="text-[11px] text-on-surface-variant">Default view in English</span>
+                </div>
+              </div>
+              {currentTranslation === 'english' && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
             </div>
-            <div className="space-y-1">
-              <span className="text-base font-bold text-on-surface block">தமிழ் (அப்துல் ஹமீது பாகவி)</span>
-              <span className="text-xs text-on-surface-variant block leading-relaxed">
-                Classic authentic Tamil translation by Allama Baqavi / Jan Trust Foundation.
-              </span>
+
+            {/* Tamil */}
+            <div
+              onClick={() => handleTranslationChange('tamil')}
+              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                currentTranslation === 'tamil'
+                  ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                  : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center font-bold text-primary text-sm shrink-0">
+                  தமிழ்
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-on-surface block">தமிழ் மொழிபெயர்ப்புகள்</span>
+                  <span className="text-[11px] text-on-surface-variant">Default view in Tamil</span>
+                </div>
+              </div>
+              {currentTranslation === 'tamil' && <Check className="w-4 h-4 text-primary shrink-0 ml-2" />}
             </div>
           </div>
-          {currentTranslation === 'tamil' && <Check className="w-5 h-5 text-primary shrink-0 ml-2" />}
+        </div>
+
+        {/* 🌟 English Translations List */}
+        <div className="space-y-3.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>Official English Translations</span>
+            </span>
+            <span className="text-[11px] text-outline font-semibold">4 Recognized Editions</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {englishTranslations.map((trans) => {
+              const isSelected = currentEnglishTranslation === trans.id
+
+              return (
+                <div
+                  key={trans.id}
+                  onClick={() => handleEnglishTranslationChange(trans.id as EnglishTranslationKey)}
+                  className={`p-5 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-3 ${
+                    isSelected
+                      ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
+                      : 'glass-card border-outline-variant/30 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm sm:text-base font-bold text-on-surface block">
+                            {trans.name}
+                          </span>
+                          <span className="text-[10px] font-bold text-primary bg-primary/15 px-2 py-0.5 rounded-full border border-primary/20">
+                            {trans.badge}
+                          </span>
+                        </div>
+                        <span className="text-xs text-outline font-medium block mt-0.5">
+                          {trans.author}
+                        </span>
+                      </div>
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shrink-0 shadow-sm">
+                          <Check className="w-3.5 h-3.5" />
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-on-surface-variant leading-relaxed">
+                      {trans.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[10px] text-outline">
+                    <span className="truncate">{trans.publisher}</span>
+                    {isSelected && <span className="text-primary font-bold">Active English</span>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 🌟 Tamil Translations List */}
+        <div className="space-y-3.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>அதிகாரப்பூர்வ தமிழ் மொழிபெயர்ப்புகள்</span>
+            </span>
+            <span className="text-[11px] text-outline font-semibold">2 அங்கீகரிக்கப்பட்ட பதிப்புகள்</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {tamilTranslations.map((trans) => {
+              const isSelected = currentTamilTranslation === trans.id
+
+              return (
+                <div
+                  key={trans.id}
+                  onClick={() => handleTamilTranslationChange(trans.id as TamilTranslationKey)}
+                  className={`p-5 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-3 ${
+                    isSelected
+                      ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
+                      : 'glass-card border-outline-variant/30 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm sm:text-base font-bold text-on-surface block">
+                            {trans.name}
+                          </span>
+                          <span className="text-[10px] font-bold text-primary bg-primary/15 px-2 py-0.5 rounded-full border border-primary/20">
+                            {trans.badge}
+                          </span>
+                        </div>
+                        <span className="text-xs text-outline font-medium block mt-0.5">
+                          {trans.author}
+                        </span>
+                      </div>
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shrink-0 shadow-sm">
+                          <Check className="w-3.5 h-3.5" />
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-on-surface-variant leading-relaxed">
+                      {trans.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-[10px] text-outline">
+                    <span className="truncate">{trans.publisher}</span>
+                    {isSelected && <span className="text-primary font-bold">Active Tamil</span>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   // 3. Font Size & Arabic Font Styles Section
   const renderFontSection = () => {

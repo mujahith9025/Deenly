@@ -19,6 +19,7 @@ export interface SessionDelta {
 }
 
 import type { ArabicFontStyle } from '../lib/quranFonts'
+import type { EnglishTranslationKey, TamilTranslationKey } from '../lib/quranTranslations'
 
 export interface UserProfile {
   id: string
@@ -28,6 +29,8 @@ export interface UserProfile {
   photoUrl: string | null
   createdAt: string
   preferredTranslation: 'english' | 'tamil' | string
+  englishTranslation?: EnglishTranslationKey
+  tamilTranslation?: TamilTranslationKey
   dailyGoalVerses: number
   hasanat: number
   verses: number

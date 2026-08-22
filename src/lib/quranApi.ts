@@ -7,12 +7,22 @@ const JSDELIVR_BASE = 'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editi
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions'
 
 // Standard Edition IDs in fawazahmed0/quran-api
-export const EDITION_CODES = {
-  ar: 'ara-quranacademy',       // High-quality Uthmani text with diacritics
-  en: 'eng-ummmuhammad',       // Sahih International
-  en_haleem: 'eng-abdelhaleem',// Abdel Haleem
-  ta: 'tam-abdulhameedbaqa',   // Abdul Hameed Baqavi (Classic Tamil)
-  ta_trust: 'tam-janturstfoundat', // Jan Turst Foundation
+export const EDITION_CODES: Record<string, string> = {
+  ar: 'ara-quranacademy',              // High-quality Uthmani text with diacritics
+  en: 'eng-ummmuhammad',              // Sahih International (Default)
+  en_sahih: 'eng-ummmuhammad',        // Sahih International
+  en_khattab: 'eng-mustafakhattaba',   // The Clear Quran (Dr. Mustafa Khattab)
+  en_hilali: 'eng-muhammadtaqiudd',   // The Noble Quran (King Fahd Complex Madinah)
+  en_haleem: 'eng-abdelhaleem',       // Oxford World's Classics (Prof. Abdel Haleem)
+  ta: 'tam-abdulhameedbaqa',          // Abdul Hameed Baqavi (Default Tamil)
+  ta_baqavi: 'tam-abdulhameedbaqa',   // Allama A.K. Abdul Hameed Baqavi
+  ta_jantrust: 'tam-janturstfoundat', // Jan Trust Foundation (King Fahd Complex Madinah)
+}
+
+export function resolveEditionCode(key: string): string {
+  if (EDITION_CODES[key]) return EDITION_CODES[key]
+  if (key.startsWith('ta')) return EDITION_CODES.ta
+  return EDITION_CODES.en
 }
 
 /**
@@ -111,24 +121,34 @@ export const quranApi = {
 
     // 3. Fetch missing translation editions in parallel
     const translationPromises = missingLanguages.map(async (lang) => {
-      const edition = lang === 'ta' ? EDITION_CODES.ta : EDITION_CODES.en
+      const edition = resolveEditionCode(lang)
       const verses = await fetchEditionChapter(edition, surahNumber)
       return { lang, verses }
     })
 
     const translationResults = await Promise.all(translationPromises)
 
+    // Helper to assign translation with fallback aliases
+    const applyTranslations = (target: Record<string, string>, verseNumber: number, idx: number) => {
+      for (const tr of translationResults) {
+        const matched = tr.verses.find((v) => v.verse === verseNumber) || tr.verses[idx]
+        if (matched) {
+          target[tr.lang] = matched.text
+          if (tr.lang.startsWith('en')) {
+            target['en'] = matched.text
+          } else if (tr.lang.startsWith('ta')) {
+            target['ta'] = matched.text
+          }
+        }
+      }
+    }
+
     // 4. Construct / Update Ayah objects
     let ayahs: Ayah[] = []
     if (cached) {
       ayahs = cached.ayahs.map((ayah, idx) => {
         const updatedTranslations = { ...ayah.translations }
-        for (const tr of translationResults) {
-          const matched = tr.verses.find((v) => v.verse === ayah.verseNumberInSurah) || tr.verses[idx]
-          if (matched) {
-            updatedTranslations[tr.lang] = matched.text
-          }
-        }
+        applyTranslations(updatedTranslations, ayah.verseNumberInSurah, idx)
         return {
           ...ayah,
           translations: updatedTranslations,
@@ -139,13 +159,7 @@ export const quranApi = {
         const verseNum = arVerse.verse || idx + 1
         const letterCount = countArabicLetters(arVerse.text)
         const translations: Record<string, string> = {}
-
-        for (const tr of translationResults) {
-          const matched = tr.verses.find((v) => v.verse === verseNum) || tr.verses[idx]
-          if (matched) {
-            translations[tr.lang] = matched.text
-          }
-        }
+        applyTranslations(translations, verseNum, idx)
 
         const { juz, page } = calculateAyahJuzAndPage(surahNumber, verseNum, meta)
 

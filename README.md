@@ -24,7 +24,16 @@
 - **Verse of the Day & Hadith of the Day**: Automatic midnight rotation of inspiring Quranic verses and authentic Prophetic Hadiths with bilingual English and Tamil translations.
 - **Unified Favorites & Bookmarks**: Dedicated Heart (Favorite) and Ribbon (Bookmark) actions across Quran chapters and Hadiths with full persistence and direct deep-linking.
 - **Hadith-Accurate Hasanat Engine**: Precise isolation of Quranic letters yielding **10 Hasanat points per letter** in accordance with authentic Hadith (*Sunan at-Tirmidhi 2910*).
-- **Multi-Language Dual Translations**: Instant switching between **English** (*Sahih International*) and **தமிழ்** (*Abdul Hameed Baqavi*) without network re-fetches.
+- **Official Scholarly Translations (English & Tamil)**: Instant switching and auto-saving of recognized scholarly editions:
+  - 🇬🇧 **English Translations**:
+    - **Sahih International** (*Umm Muhammad* — Default)
+    - **The Clear Quran** (*Dr. Mustafa Khattab* — Al-Azhar Approved, Modern)
+    - **The Noble Quran** (*Dr. Al-Hilali & Dr. Muhsin Khan* — King Fahd Complex Madinah)
+    - **Oxford World's Classics** (*Prof. M.A.S. Abdel Haleem* — Literary Standard)
+  - 🇮🇳 / 🇱🇰 **Tamil Translations (தமிழ்)**:
+    - **மௌலானா ஏ.கே. அப்துல் ஹமீது பாகவி** (*Allama A.K. Abdul Hameed Baqavi* — Default Tamil)
+    - **ஜான் டிரஸ்ட் பதிப்பு** (*Jan Trust Foundation* — King Fahd Complex Madinah Official Edition)
+- **Continuous Spotify-Grade Quran Audio Player**: Full-chapter sequential recitation by Sheikh Mishary Rashid Alafasy with MediaSession background lock screen controls, draggable seekbar, autoscroll, and automatic next chapter advancement.
 - **Offline-First Storage**: IndexedDB caching layer (`deenly_quran_cache`) ensuring chapters load instantly even without an internet connection.
 
 ### ⏱️ Reading Session & Realtime Metrics

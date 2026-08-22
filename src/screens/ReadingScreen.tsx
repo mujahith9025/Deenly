@@ -21,6 +21,13 @@ import {
   calculateJuzProgress 
 } from '../lib/hasanatEngine'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
+import { 
+  getTranslationMeta, 
+  type EnglishTranslationKey, 
+  type TamilTranslationKey,
+  DEFAULT_ENGLISH_TRANSLATION,
+  DEFAULT_TAMIL_TRANSLATION
+} from '../lib/quranTranslations'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -41,10 +48,15 @@ export const ReadingScreen: React.FC = () => {
   const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
   const storeFontSize = useReadingStore((state) => state.fontSize)
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const storeEnglishTranslation = useReadingStore((state) => state.englishTranslation)
+  const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
   const setFontSize = useReadingStore((state) => state.setFontSize)
   const fontSize = storeFontSize || user?.arabicFontSize || 28
   const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
   const arabicFontFamily = getArabicFontFamily(fontStyle)
+
+  const currentEnglishTranslation: EnglishTranslationKey = user?.englishTranslation || storeEnglishTranslation || DEFAULT_ENGLISH_TRANSLATION
+  const currentTamilTranslation: TamilTranslationKey = user?.tamilTranslation || storeTamilTranslation || DEFAULT_TAMIL_TRANSLATION
 
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
   const currentAyahNumber = useReadingStore((state) => state.currentAyahNumber)
@@ -471,12 +483,14 @@ export const ReadingScreen: React.FC = () => {
               className="w-full p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1.5 select-none shadow-sm break-words"
             >
               <span className="text-[10px] sm:text-xs uppercase font-bold text-outline font-label-caps tracking-wider block">
-                {translationLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்பு (பாகவி)' : 'Sahih International Translation'}
+                {translationLanguage === 'ta' 
+                  ? `தமிழ் மொழிபெயர்ப்பு (${getTranslationMeta(currentTamilTranslation).name})`
+                  : getTranslationMeta(currentEnglishTranslation).name}
               </span>
               <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed font-normal max-w-2xl mx-auto break-words">
-                {currentAyah.translations[translationLanguage] ||
-                  currentAyah.translations['en'] ||
-                  'Translation loading...'}
+                {translationLanguage === 'ta'
+                  ? (currentAyah.translations[currentTamilTranslation] || currentAyah.translations['ta'] || currentAyah.translations['ta_baqavi'] || 'மொழிபெயர்ப்பு ஏற்றப்படுகிறது...')
+                  : (currentAyah.translations[currentEnglishTranslation] || currentAyah.translations['en'] || currentAyah.translations['en_sahih'] || 'Translation loading...')}
               </p>
             </div>
           </div>

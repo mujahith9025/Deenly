@@ -31,6 +31,8 @@ export interface ActiveReadingSession {
   recentHasanatGain: { amount: number; timestamp: number } | null
 }
 
+import type { EnglishTranslationKey, TamilTranslationKey } from '../lib/quranTranslations'
+
 export interface ReadingSessionState {
   currentSurahNumber: number
   currentAyahNumber: number
@@ -39,6 +41,8 @@ export interface ReadingSessionState {
   fontSize: number
   fontStyle: ArabicFontStyle
   translationLanguage: 'en' | 'ta'
+  englishTranslation: EnglishTranslationKey
+  tamilTranslation: TamilTranslationKey
   isPlayingAudio: boolean
   isAudioMuted: boolean
   currentSurah: SurahDetail | null

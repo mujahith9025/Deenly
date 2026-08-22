@@ -47,6 +47,8 @@ const initialGuestUser: UserProfile = {
   photoUrl: null,
   createdAt: new Date().toISOString(),
   preferredTranslation: 'english',
+  englishTranslation: 'en_sahih',
+  tamilTranslation: 'ta_baqavi',
   dailyGoalVerses: 10,
   hasanat: 0,
   verses: 0,
