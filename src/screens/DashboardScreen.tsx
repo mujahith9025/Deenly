@@ -222,7 +222,8 @@ export const DashboardScreen: React.FC = () => {
   const arabicFontFamily = getArabicFontFamily(fontStyle)
 
   // Language translation preference (English / Tamil)
-  const isTamil = appLanguage === 'ta' || user?.preferredTranslation === 'tamil'
+  const isTamil = appLanguage === 'ta'
+  const isTamilTranslation = appLanguage === 'ta' || user?.preferredTranslation === 'tamil'
 
   const todayStr = getLocalDateString(new Date())
   const habitStorageKey = `deenly_habits_${user?.id || 'guest'}_${todayStr}`
@@ -771,7 +772,7 @@ export const DashboardScreen: React.FC = () => {
 
             {/* Dynamic Translation (Tamil / English) */}
             <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed">
-              "{isTamil ? dailyVerse.translationTa : dailyVerse.translationEn}"
+              "{isTamilTranslation ? dailyVerse.translationTa : dailyVerse.translationEn}"
             </p>
           </div>
 
@@ -812,7 +813,7 @@ export const DashboardScreen: React.FC = () => {
 
             {/* Dynamic Translation (Tamil / English) */}
             <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed">
-              "{isTamil ? dailyHadith.translationTa : dailyHadith.translationEn}"
+              "{isTamilTranslation ? dailyHadith.translationTa : dailyHadith.translationEn}"
             </p>
           </div>
 

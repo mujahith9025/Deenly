@@ -67,6 +67,7 @@ export const ReadingScreen: React.FC = () => {
   const isLoadingSurah = useReadingStore((state) => state.isLoadingSurah)
   const translationLanguage = useReadingStore((state) => state.translationLanguage)
   const setTranslationLanguage = useReadingStore((state) => state.setTranslationLanguage)
+  const effectiveTranslationLanguage: 'en' | 'ta' = appLanguage === 'ta' ? 'ta' : translationLanguage
   const loadSurah = useReadingStore((state) => state.loadSurah)
   const setCurrentPosition = useReadingStore((state) => state.setCurrentPosition)
 
@@ -492,12 +493,12 @@ export const ReadingScreen: React.FC = () => {
               className="w-full p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1.5 select-none shadow-sm break-words"
             >
               <span className="text-[10px] sm:text-xs uppercase font-bold text-outline font-label-caps tracking-wider block">
-                {translationLanguage === 'ta' 
+                {effectiveTranslationLanguage === 'ta' 
                   ? `தமிழ் மொழிபெயர்ப்பு (${getTranslationMeta(currentTamilTranslation).name})`
                   : getTranslationMeta(currentEnglishTranslation).name}
               </span>
               <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed font-normal max-w-2xl mx-auto break-words">
-                {translationLanguage === 'ta'
+                {effectiveTranslationLanguage === 'ta'
                   ? (currentAyah.translations[currentTamilTranslation] || currentAyah.translations['ta'] || currentAyah.translations['ta_baqavi'] || 'மொழிபெயர்ப்பு ஏற்றப்படுகிறது...')
                   : (currentAyah.translations[currentEnglishTranslation] || currentAyah.translations['en'] || currentAyah.translations['en_sahih'] || 'Translation loading...')}
               </p>
