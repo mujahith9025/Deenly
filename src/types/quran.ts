@@ -15,9 +15,11 @@ export interface Ayah {
 export interface SurahSummary {
   number: number
   name: string
+  nameTa?: string
   arabicName: string
   englishName: string
   englishNameTranslation: string
+  englishNameTranslationTa?: string
   numberOfAyahs: number
   revelationType: 'Meccan' | 'Medinan'
   startPage: number

@@ -355,7 +355,7 @@ export const ReadingScreen: React.FC = () => {
           <div className="truncate">
             <div className="flex items-center gap-1.5 sm:gap-2.5">
               <span className="font-bold text-sm sm:text-base md:text-lg text-on-surface truncate">
-                {currentSurah?.name || 'Surah'}
+                {appLanguage === 'ta' ? (currentSurah?.nameTa || currentSurah?.name || 'அத்தியாயம்') : (currentSurah?.name || 'Surah')}
               </span>
               <span className="font-noto-serif text-sm sm:text-base md:text-xl text-primary-fixed-dim shrink-0">
                 {currentSurah?.arabicName}

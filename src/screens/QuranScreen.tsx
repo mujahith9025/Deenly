@@ -149,11 +149,15 @@ export const QuranScreen: React.FC = () => {
 
   // Filter Surahs list
   const filteredSurahs = SURAH_METADATA.filter((surah) => {
+    const q = searchQuery.toLowerCase().trim()
     const matchesSearch =
-      surah.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      surah.englishName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      surah.englishNameTranslation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      surah.number.toString().includes(searchQuery)
+      surah.name.toLowerCase().includes(q) ||
+      surah.englishName.toLowerCase().includes(q) ||
+      surah.englishNameTranslation.toLowerCase().includes(q) ||
+      (surah.nameTa && surah.nameTa.toLowerCase().includes(q)) ||
+      (surah.englishNameTranslationTa && surah.englishNameTranslationTa.toLowerCase().includes(q)) ||
+      surah.arabicName.includes(q) ||
+      surah.number.toString().includes(q)
 
     const matchesType =
       filterType === 'all' ||
@@ -337,13 +341,15 @@ export const QuranScreen: React.FC = () => {
                   <div className="truncate">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm text-on-surface truncate group-hover:text-primary transition-colors">
-                        {surah.name}
+                        {appLanguage === 'ta' ? (surah.nameTa || surah.name) : surah.name}
                       </span>
                       <span className="text-[10px] text-outline font-normal px-2 py-0.5 rounded-full bg-surface-container border border-outline-variant/30 shrink-0">
                         {surah.revelationType === 'Meccan' ? (appLanguage === 'ta' ? 'மக்கீ' : 'Meccan') : (appLanguage === 'ta' ? 'மதனீ' : 'Medinan')}
                       </span>
                     </div>
-                    <p className="text-xs text-outline truncate">{surah.englishNameTranslation}</p>
+                    <p className="text-xs text-outline truncate">
+                      {appLanguage === 'ta' ? (surah.englishNameTranslationTa || surah.englishNameTranslation) : surah.englishNameTranslation}
+                    </p>
                     <p className="text-[10px] text-tertiary mt-0.5">{surah.numberOfAyahs} {appLanguage === 'ta' ? 'வசனங்கள்' : 'Verses'}</p>
                   </div>
                 </div>
@@ -393,13 +399,13 @@ export const QuranScreen: React.FC = () => {
                   </span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold font-h2 text-on-surface flex items-baseline gap-2">
-                  <span>{currentSurahMeta.name}</span>
+                  <span>{appLanguage === 'ta' ? (currentSurahMeta.nameTa || currentSurahMeta.name) : currentSurahMeta.name}</span>
                   <span className="text-primary font-bold" style={{ fontFamily: arabicFontFamily }} dir="rtl">
                     {currentSurahMeta.arabicName}
                   </span>
                 </h2>
                 <p className="text-xs text-outline">
-                  {currentSurahMeta.englishNameTranslation} • {appLanguage === 'ta' ? `இந்த அத்தியாயத்தில் உள்ள ${currentSurahMeta.numberOfAyahs} வசனங்கள்` : `Showing ${currentSurahMeta.numberOfAyahs} verses in this chapter`}
+                  {appLanguage === 'ta' ? (currentSurahMeta.englishNameTranslationTa || currentSurahMeta.englishNameTranslation) : currentSurahMeta.englishNameTranslation} • {appLanguage === 'ta' ? `இந்த அத்தியாயத்தில் உள்ள ${currentSurahMeta.numberOfAyahs} வசனங்கள்` : `Showing ${currentSurahMeta.numberOfAyahs} verses in this chapter`}
                 </p>
               </div>
 

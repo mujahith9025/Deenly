@@ -29,6 +29,8 @@ import { useReadingStore } from '../store/useReadingStore'
 import { useBookmarkStore, type BookmarkItem } from '../store/useBookmarkStore'
 import { useFavoriteStore, type FavoriteItem } from '../store/useFavoriteStore'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
+import { useI18nStore } from '../lib/i18n'
+import { SURAH_METADATA } from '../lib/quranMetadata'
 
 type ProfileSubPage = 
   | null 
@@ -50,6 +52,7 @@ export const ProfileScreen: React.FC = () => {
   const [bookmarkFilter, setBookmarkFilter] = useState<ItemFilter>('all')
   const [favoriteFilter, setFavoriteFilter] = useState<ItemFilter>('all')
 
+  const appLanguage = useI18nStore((state) => state.appLanguage)
   const { user, signOut } = useAuth()
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
   const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
@@ -237,7 +240,11 @@ export const ProfileScreen: React.FC = () => {
 
                     <span className="text-xs sm:text-sm font-bold text-on-surface">
                       {bm.type === 'quran' 
-                        ? `${bm.surahNumber}. ${bm.surahName} [Ayah ${bm.ayahNumber}]`
+                        ? (() => {
+                            const meta = bm.surahNumber ? SURAH_METADATA.find((s) => s.number === bm.surahNumber) : null
+                            const sName = appLanguage === 'ta' ? (meta?.nameTa || bm.surahName) : bm.surahName
+                            return `${bm.surahNumber}. ${sName} [${appLanguage === 'ta' ? `வசனம் ${bm.ayahNumber}` : `Ayah ${bm.ayahNumber}`}]`
+                          })()
                         : `${bm.bookName} • Hadith #${bm.hadithNumber}`
                       }
                     </span>
@@ -392,7 +399,11 @@ export const ProfileScreen: React.FC = () => {
 
                     <span className="text-xs sm:text-sm font-bold text-on-surface">
                       {fav.type === 'quran' 
-                        ? `${fav.surahNumber}. ${fav.surahName} [Ayah ${fav.ayahNumber}]`
+                        ? (() => {
+                            const meta = fav.surahNumber ? SURAH_METADATA.find((s) => s.number === fav.surahNumber) : null
+                            const sName = appLanguage === 'ta' ? (meta?.nameTa || fav.surahName) : fav.surahName
+                            return `${fav.surahNumber}. ${sName} [${appLanguage === 'ta' ? `வசனம் ${fav.ayahNumber}` : `Ayah ${fav.ayahNumber}`}]`
+                          })()
                         : `${fav.bookName} • Hadith #${fav.hadithNumber}`
                       }
                     </span>

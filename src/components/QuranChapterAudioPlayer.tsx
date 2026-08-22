@@ -21,6 +21,7 @@ import { SURAH_METADATA } from '../lib/quranMetadata'
 import { getArabicFontFamily } from '../lib/quranFonts'
 import { useAuthStore } from '../store/useAuthStore'
 import { useReadingStore } from '../store/useReadingStore'
+import { useI18nStore } from '../lib/i18n'
 
 function formatAudioTime(seconds: number): string {
   if (isNaN(seconds) || seconds < 0) return '0:00'
@@ -63,6 +64,7 @@ export const QuranChapterAudioPlayer: React.FC = () => {
 
   const progressBarRef = useRef<HTMLDivElement>(null)
 
+  const appLanguage = useI18nStore((state) => state.appLanguage)
   const user = useAuthStore((state) => state.user)
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
   const fontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
@@ -106,10 +108,10 @@ export const QuranChapterAudioPlayer: React.FC = () => {
 
             <div className="text-center">
               <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-primary font-label-caps block">
-                Now Reciting • Continuous Mode
+                {appLanguage === 'ta' ? 'தற்போது ஓதப்படுகிறது • தொடர் ஓதுதல்' : 'Now Reciting • Continuous Mode'}
               </span>
               <h2 className="text-base sm:text-lg font-bold text-on-surface">
-                {surahMeta.number}. {surahMeta.name} ({surahMeta.englishNameTranslation})
+                {surahMeta.number}. {appLanguage === 'ta' ? (surahMeta.nameTa || surahMeta.name) : surahMeta.name} ({appLanguage === 'ta' ? (surahMeta.englishNameTranslationTa || surahMeta.englishNameTranslation) : surahMeta.englishNameTranslation})
               </h2>
             </div>
 
@@ -128,9 +130,9 @@ export const QuranChapterAudioPlayer: React.FC = () => {
             <div className="p-8 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-2xl space-y-3">
               <div className="flex items-center justify-between text-xs text-outline font-semibold pb-2 border-b border-outline-variant/20">
                 <span className="text-primary font-bold">
-                  Ayah {currentAyahNumberInSurah} of {surahMeta.numberOfAyahs}
+                  {appLanguage === 'ta' ? `வசனம் ${currentAyahNumberInSurah} / ${surahMeta.numberOfAyahs}` : `Ayah ${currentAyahNumberInSurah} of ${surahMeta.numberOfAyahs}`}
                 </span>
-                <span className="text-tertiary">Mishary Rashid Alafasy</span>
+                <span className="text-tertiary">{appLanguage === 'ta' ? 'மிஷாரி ரஷீத் அலஃபாஸி' : 'Mishary Rashid Alafasy'}</span>
               </div>
 
               <p
@@ -299,16 +301,16 @@ export const QuranChapterAudioPlayer: React.FC = () => {
             <div className="truncate">
               <div className="flex items-center gap-1.5 truncate">
                 <span className="text-xs sm:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">
-                  {surahMeta.number}. {surahMeta.name}
+                  {surahMeta.number}. {appLanguage === 'ta' ? (surahMeta.nameTa || surahMeta.name) : surahMeta.name}
                 </span>
                 <span className="font-noto-serif text-xs text-primary font-bold hidden sm:inline truncate" dir="rtl">
                   ({surahMeta.arabicName})
                 </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-outline truncate flex items-center gap-1">
-                <span>Ayah {currentAyahNumberInSurah}/{surahMeta.numberOfAyahs}</span>
+                <span>{appLanguage === 'ta' ? `வசனம் ${currentAyahNumberInSurah}/${surahMeta.numberOfAyahs}` : `Ayah ${currentAyahNumberInSurah}/${surahMeta.numberOfAyahs}`}</span>
                 <span>•</span>
-                <span className="truncate">Mishary Alafasy</span>
+                <span className="truncate">{appLanguage === 'ta' ? 'மிஷாரி அலஃபாஸி' : 'Mishary Alafasy'}</span>
               </p>
             </div>
           </div>

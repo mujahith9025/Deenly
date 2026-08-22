@@ -236,22 +236,30 @@ export const quranApi = {
     for (const s of SURAH_METADATA) {
       const matchInArabic = s.arabicName.includes(cleanQuery)
       const matchInEnglish = s.englishName.toLowerCase().includes(cleanQuery) || s.englishNameTranslation.toLowerCase().includes(cleanQuery)
+      const matchInTamil = (s.nameTa && s.nameTa.toLowerCase().includes(cleanQuery)) || (s.englishNameTranslationTa && s.englishNameTranslationTa.toLowerCase().includes(cleanQuery))
       const matchInName = s.name.toLowerCase().includes(cleanQuery)
 
       if (
         (language === 'ar' && matchInArabic) ||
-        (language !== 'ar' && (matchInEnglish || matchInName)) ||
+        (language === 'ta' && (matchInTamil || matchInName || matchInEnglish)) ||
+        (language === 'en' && (matchInEnglish || matchInName)) ||
         matchInName ||
+        matchInTamil ||
         matchInArabic
       ) {
+        const isTa = language === 'ta'
+        const displayName = isTa ? (s.nameTa || s.name) : s.name
+        const displayTrans = isTa ? (s.englishNameTranslationTa || s.englishNameTranslation) : s.englishNameTranslation
         results.push({
           surahNumber: s.number,
           ayahNumber: 1,
-          surahName: `${s.number}. ${s.name} (${s.englishNameTranslation})`,
+          surahName: `${s.number}. ${displayName} (${displayTrans})`,
           arabicText: s.arabicName,
-          translationText: s.englishNameTranslation,
+          translationText: displayTrans,
           language,
-          matchSnippet: `Surah ${s.name}: ${s.englishNameTranslation} (${s.numberOfAyahs} Ayahs, ${s.revelationType})`,
+          matchSnippet: isTa 
+            ? `அத்தியாயம் ${displayName}: ${displayTrans} (${s.numberOfAyahs} வசனங்கள், ${s.revelationType === 'Meccan' ? 'மக்கீ' : 'மதனீ'})`
+            : `Surah ${s.name}: ${s.englishNameTranslation} (${s.numberOfAyahs} Ayahs, ${s.revelationType})`,
         })
       }
     }

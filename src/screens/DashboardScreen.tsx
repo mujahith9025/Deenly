@@ -423,7 +423,9 @@ export const DashboardScreen: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-h1 text-on-surface">
-            Assalamu Alaikum, {user?.name?.split(' ')[0] || 'Guest'}
+            {isTamil 
+              ? `அஸ்ஸலாமு அலைக்கும், ${user?.name?.split(' ')[0] || 'விருந்தினர்'}` 
+              : `Assalamu Alaikum, ${user?.name?.split(' ')[0] || 'Guest'}`}
           </h1>
           <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
             {isTamil 
@@ -436,7 +438,7 @@ export const DashboardScreen: React.FC = () => {
         {/* Date Pill on Desktop */}
         <div className="hidden sm:flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full glass-card border border-outline-variant/30 text-on-surface-variant self-start">
           <Calendar className="w-3.5 h-3.5 text-primary" />
-          <span>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          <span>{new Date().toLocaleDateString(isTamil ? 'ta-IN' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
         </div>
       </div>
 
@@ -481,9 +483,11 @@ export const DashboardScreen: React.FC = () => {
           <div className="space-y-2 relative z-10 pt-1">
             <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-white">
               <span>
-                {currentSurahMeta.number}. {currentSurahMeta.name} | {lastAyah}/{currentSurahMeta.numberOfAyahs}
+                {currentSurahMeta.number}. {isTamil ? (currentSurahMeta.nameTa || currentSurahMeta.name) : currentSurahMeta.name} | {lastAyah}/{currentSurahMeta.numberOfAyahs}
               </span>
-              <span className="text-xs font-medium text-white/80">{currentSurahMeta.englishNameTranslation}</span>
+              <span className="text-xs font-medium text-white/80">
+                {isTamil ? (currentSurahMeta.englishNameTranslationTa || currentSurahMeta.englishNameTranslation) : currentSurahMeta.englishNameTranslation}
+              </span>
             </div>
 
             <div className="relative w-full py-1">
@@ -542,11 +546,11 @@ export const DashboardScreen: React.FC = () => {
               </span>
               <div className="flex items-baseline gap-2 mt-2">
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {currentSurahMeta.number}. {currentSurahMeta.name}
+                  {currentSurahMeta.number}. {isTamil ? (currentSurahMeta.nameTa || currentSurahMeta.name) : currentSurahMeta.name}
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-white/90 font-medium">
-                {isTamil ? `வசனம் ${lastAyah} / ${currentSurahMeta.numberOfAyahs}` : `Ayah ${lastAyah} of ${currentSurahMeta.numberOfAyahs}`} • {currentSurahMeta.englishNameTranslation}
+                {isTamil ? `வசனம் ${lastAyah} / ${currentSurahMeta.numberOfAyahs}` : `Ayah ${lastAyah} of ${currentSurahMeta.numberOfAyahs}`} • {isTamil ? (currentSurahMeta.englishNameTranslationTa || currentSurahMeta.englishNameTranslation) : currentSurahMeta.englishNameTranslation}
               </p>
             </div>
 
