@@ -236,14 +236,14 @@ export const ReadingScreen: React.FC = () => {
   }
 
   return (
-    <div className="h-full w-full max-w-5xl mx-auto flex flex-col justify-between p-2 sm:p-4 select-none relative overflow-hidden">
+    <div className="h-[100dvh] max-h-[100dvh] w-full max-w-5xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-3 sm:px-6 py-2 sm:py-3">
       <audio ref={audioRef} src={audioUrl} preload="none" />
 
       {/* ========================================================================= */}
-      {/* 1. FIXED TOP BAR: PINNED TO TOP (DOES NOT SCROLL)                         */}
+      {/* 1. FIXED TOP BAR: PINNED TO TOP (NEVER SCROLLS)                           */}
       {/*    Includes Surah Name, Responsive Scaled Timer & Hasanat, and Audio Tools */}
       {/* ========================================================================= */}
-      <header className="w-full flex items-center justify-between gap-2 sm:gap-4 pb-2.5 pt-1 shrink-0 border-b border-outline-variant/20 z-20 bg-surface/80 backdrop-blur-md">
+      <header className="w-full flex items-center justify-between gap-2 sm:gap-4 py-2 sm:py-3 shrink-0 border-b border-outline-variant/20 z-30 bg-surface/95 backdrop-blur-lg">
         {/* Left: Surah Name & Ayah Counter */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
@@ -327,7 +327,7 @@ export const ReadingScreen: React.FC = () => {
 
       {/* Chapter Completed Transition Toast Banner */}
       {chapterCompletedBanner && (
-        <div className="my-2 p-2.5 sm:p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 animate-fade-in shadow-lg shrink-0">
+        <div className="my-1.5 p-2.5 sm:p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 animate-fade-in shadow-lg shrink-0">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{chapterCompletedBanner}</span>
         </div>
@@ -340,7 +340,7 @@ export const ReadingScreen: React.FC = () => {
       {/* ========================================================================= */}
       <main 
         onClick={handleMarkAndNext}
-        className="flex-1 overflow-y-auto w-full px-2 sm:px-6 py-4 min-h-0 flex flex-col justify-start sm:justify-center items-center cursor-pointer select-none"
+        className="flex-1 overflow-y-auto w-full px-2 sm:px-6 py-3 sm:py-4 min-h-0 flex flex-col justify-start sm:justify-center items-center cursor-pointer select-none overscroll-contain"
         title="Tap anywhere to mark read and advance to next verse"
       >
         {isLoadingSurah ? (
@@ -393,11 +393,11 @@ export const ReadingScreen: React.FC = () => {
       </main>
 
       {/* ========================================================================= */}
-      {/* 3. FIXED BOTTOM BAR: PINNED TO BOTTOM (DOES NOT SCROLL)                   */}
+      {/* 3. FIXED BOTTOM BAR: PINNED TO BOTTOM (NEVER SCROLLS)                     */}
       {/*    ( ← ) Left Pill, "I'm Done" Center Pill, ( → ) Large White Next Pill   */}
       {/*    🌟 ENLARGED BUTTONS FOR ERGONOMIC MOBILE & DESKTOP READING             */}
       {/* ========================================================================= */}
-      <footer className="w-full max-w-xl mx-auto pt-3 pb-2 shrink-0 z-20 bg-surface/80 backdrop-blur-md">
+      <footer className="w-full max-w-xl mx-auto py-2 sm:py-3 shrink-0 z-30 bg-surface/95 backdrop-blur-lg">
         <div className="flex items-center justify-between gap-3 sm:gap-4 relative">
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (
