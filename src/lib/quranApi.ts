@@ -1,5 +1,5 @@
 import type { Ayah, SurahDetail, SurahSummary, JuzDetail, JuzSummary, QuranSearchResult } from '../types/quran'
-import { SURAH_METADATA, JUZ_METADATA } from './quranMetadata'
+import { SURAH_METADATA, JUZ_METADATA, getGlobalAyahNumber } from './quranMetadata'
 import { quranCache } from './quranCache'
 
 // Primary CDN and failover URLs
@@ -150,7 +150,7 @@ export const quranApi = {
         const { juz, page } = calculateAyahJuzAndPage(surahNumber, verseNum, meta)
 
         return {
-          number: (surahNumber - 1) * 1000 + verseNum, // Unique sequential reference
+          number: getGlobalAyahNumber(surahNumber, verseNum), // Accurate global verse number (1 to 6236)
           verseNumberInSurah: verseNum,
           surahNumber,
           arabicText: arVerse.text,

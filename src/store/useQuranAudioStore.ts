@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { SURAH_METADATA } from '../lib/quranMetadata'
+import { SURAH_METADATA, getAyahAudioUrl, getGlobalAyahNumber } from '../lib/quranMetadata'
 import { quranApi } from '../lib/quranApi'
 import type { SurahDetail } from '../types/quran'
 
@@ -61,23 +61,6 @@ function getAudioElement(): HTMLAudioElement {
   return globalAudio!
 }
 
-// Helper to format 3-digit Surah/Ayah numbers for alternate audio sources
-function padZero(num: number, size = 3): string {
-  let s = num.toString()
-  while (s.length < size) s = '0' + s
-  return s
-}
-
-// Get high-reliability CDN audio url for a given global ayah number / surah-ayah
-function getAyahAudioUrl(globalAyahNumber: number, surahNumber: number, ayahNumberInSurah: number): string {
-  // Primary CDN: Islamic Network (Mishary Rashid Alafasy 128kbps)
-  if (globalAyahNumber > 0) {
-    return `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalAyahNumber}.mp3`
-  }
-  // Secondary fallback: EveryAyah CDN
-  return `https://everyayah.com/data/Alafasy_128kbps/${padZero(surahNumber)}${padZero(ayahNumberInSurah)}.mp3`
-}
-
 export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
   // Attach audio lifecycle listeners
   if (typeof window !== 'undefined') {
@@ -132,7 +115,17 @@ export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
     }
 
     audio.onerror = (e) => {
-      console.warn('Audio playback error encountered:', e)
+      console.warn('Audio playback encountered error:', e)
+      const currentSrc = audio.src
+      const state = get()
+      if (currentSrc.includes('cdn.islamic.network') && state.surahNumber > 0 && state.currentAyahNumberInSurah > 0) {
+        const s = String(state.surahNumber).padStart(3, '0')
+        const a = String(state.currentAyahNumberInSurah).padStart(3, '0')
+        const fallbackUrl = `https://everyayah.com/data/Alafasy_128kbps/${s}${a}.mp3`
+        audio.src = fallbackUrl
+        audio.play().catch(() => set({ isLoadingAudio: false, isPlaying: false }))
+        return
+      }
       set({ isLoadingAudio: false, isPlaying: false })
     }
   }
@@ -181,13 +174,14 @@ export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
 
     const safeIndex = Math.max(0, Math.min(ayahs.length - 1, index))
     const ayah = ayahs[safeIndex]
-    const audioUrl = getAyahAudioUrl(ayah.number, surahData.number, ayah.verseNumberInSurah)
+    const audioUrl = getAyahAudioUrl(surahData.number, ayah.verseNumberInSurah)
+    const globalAyahNum = getGlobalAyahNumber(surahData.number, ayah.verseNumberInSurah)
 
     set({
       surahNumber: surahData.number,
       currentAyahIndex: safeIndex,
       currentAyahNumberInSurah: ayah.verseNumberInSurah,
-      currentAyahGlobalNumber: ayah.number,
+      currentAyahGlobalNumber: globalAyahNum,
       currentAyahArabicText: ayah.arabicText,
       currentAyahText: ayah.translations.en || '',
       currentSurahData: surahData,
