@@ -1,36 +1,36 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { 
   Bell, 
   Type, 
-  User, 
-  LogOut, 
   Target, 
   Globe, 
   Loader2, 
   RefreshCw, 
   Cloud, 
-  CheckCircle2, 
-  AlertCircle, 
-  WifiOff, 
-  Smartphone, 
   Trash2, 
-  ShieldCheck, 
-  Sparkles, 
-  AlertTriangle,
-  LogIn,
-  Info,
-  BookOpen,
-  Database,
-  Moon,
-  Sun,
-  Laptop
+  Info, 
+  Moon, 
+  Sun, 
+  Laptop, 
+  ChevronRight, 
+  ArrowLeft, 
+  Check 
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthStore } from '../store/useAuthStore'
 import { useThemeStore } from '../store/useThemeStore'
 import { syncService } from '../lib/syncService'
 import { quranCache } from '../lib/quranCache'
+
+type SettingSubPage = 
+  | null 
+  | 'theme' 
+  | 'translation' 
+  | 'font' 
+  | 'target' 
+  | 'notifications' 
+  | 'sync' 
+  | 'about'
 
 function formatLastSynced(timestamp: string | null): string {
   if (!timestamp) return 'Never synced'
@@ -44,15 +44,11 @@ function formatLastSynced(timestamp: string | null): string {
 }
 
 export const SettingsScreen: React.FC = () => {
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
-  const [showResetStatsModal, setShowResetStatsModal] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [activeSubPage, setActiveSubPage] = useState<SettingSubPage>(null)
   const [isClearingCache, setIsClearingCache] = useState(false)
   const [cacheClearedSuccess, setCacheClearedSuccess] = useState(false)
 
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const theme = useThemeStore((state) => state.theme)
   const setTheme = useThemeStore((state) => state.setTheme)
 
@@ -61,21 +57,8 @@ export const SettingsScreen: React.FC = () => {
   const pendingOfflineCount = useAuthStore((state) => state.pendingOfflineCount)
   const syncNow = useAuthStore((state) => state.syncNow)
   const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
-  const resetUserStatsToZero = useAuthStore((state) => state.resetUserStatsToZero)
-  const deleteAccount = useAuthStore((state) => state.deleteAccount)
 
-  const navigate = useNavigate()
   const deviceId = syncService.getDeviceId()
-
-  const handleResetStats = async () => {
-    setIsResetting(true)
-    try {
-      await resetUserStatsToZero()
-      setShowResetStatsModal(false)
-    } finally {
-      setIsResetting(false)
-    }
-  }
 
   const currentFontSize = user?.arabicFontSize || 28
   const currentTranslation = user?.preferredTranslation || 'english'
@@ -109,27 +92,6 @@ export const SettingsScreen: React.FC = () => {
     updateUserSettings({ readingReminders: !readingAlerts })
   }
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true)
-    try {
-      await signOut()
-      navigate('/login', { replace: true })
-    } finally {
-      setIsLoggingOut(false)
-    }
-  }
-
-  const handleDeleteAccount = async () => {
-    setIsDeletingAccount(true)
-    try {
-      await deleteAccount()
-      setShowDeleteModal(false)
-      navigate('/signup', { replace: true })
-    } finally {
-      setIsDeletingAccount(false)
-    }
-  }
-
   const handleSyncNow = async () => {
     await syncNow()
   }
@@ -145,164 +107,193 @@ export const SettingsScreen: React.FC = () => {
     }
   }
 
-  return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-20">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">App Settings</h1>
-        <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-          Customize your theme, translation, Quran typography, daily goals, sync, and account.
-        </p>
+  // =========================================================================
+  // SUB-PAGE: 1. THEME & APPEARANCE
+  // =========================================================================
+  if (activeSubPage === 'theme') {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto pb-20 animate-fade-in">
+        <button
+          onClick={() => setActiveSubPage(null)}
+          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Settings</span>
+        </button>
+
+        <div>
+          <h1 className="text-2xl font-bold font-h1 text-on-surface">Theme & Appearance</h1>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Choose your preferred color theme for reading and navigation.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {/* Cosmic Dark */}
+          <div
+            onClick={() => setTheme('dark')}
+            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
+              theme === 'dark'
+                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                : 'glass-card border-outline-variant/30 hover:border-primary/40'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0">
+                <Moon className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">Cosmic Dark</span>
+                <span className="text-xs text-on-surface-variant">Deep OLED night recitation mode</span>
+              </div>
+            </div>
+            {theme === 'dark' && <Check className="w-5 h-5 text-primary" />}
+          </div>
+
+          {/* Pristine Light */}
+          <div
+            onClick={() => setTheme('light')}
+            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
+              theme === 'light'
+                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                : 'glass-card border-outline-variant/30 hover:border-primary/40'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0">
+                <Sun className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">Pristine Light</span>
+                <span className="text-xs text-on-surface-variant">Clean and crisp daylight reading</span>
+              </div>
+            </div>
+            {theme === 'light' && <Check className="w-5 h-5 text-primary" />}
+          </div>
+
+          {/* Device System Default */}
+          <div
+            onClick={() => setTheme('system')}
+            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
+              theme === 'system'
+                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                : 'glass-card border-outline-variant/30 hover:border-primary/40'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-on-surface-variant shrink-0">
+                <Laptop className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">System Default</span>
+                <span className="text-xs text-on-surface-variant">Syncs automatically with your OS theme</span>
+              </div>
+            </div>
+            {theme === 'system' && <Check className="w-5 h-5 text-primary" />}
+          </div>
+        </div>
       </div>
+    )
+  }
 
-      <div className="space-y-6">
-        {/* ========================================================================= */}
-        {/* 1. THEME & APPEARANCE (DARK / LIGHT / SYSTEM SWITCHER)                     */}
-        {/* ========================================================================= */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
-              {theme === 'dark' ? <Moon className="w-4 h-4 text-primary" /> : <Sun className="w-4 h-4 text-amber-400" />}
-              <span>Theme & Appearance</span>
-            </h2>
-            <span className="text-xs text-outline capitalize">{theme} Mode</span>
-          </div>
+  // =========================================================================
+  // SUB-PAGE: 2. QURAN TRANSLATION
+  // =========================================================================
+  if (activeSubPage === 'translation') {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto pb-20 animate-fade-in">
+        <button
+          onClick={() => setActiveSubPage(null)}
+          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Settings</span>
+        </button>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Cosmic Dark Mode */}
-            <button
-              type="button"
-              onClick={() => setTheme('dark')}
-              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center gap-3 text-left ${
-                theme === 'dark'
-                  ? 'bg-primary/15 border-primary shadow-sm ring-1 ring-primary/40'
-                  : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
-              }`}
-            >
-              <div className="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0">
-                <Moon className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Cosmic Dark</span>
-                <span className="text-[11px] text-on-surface-variant">Deep night recitation</span>
-              </div>
-            </button>
-
-            {/* Pristine Light Mode */}
-            <button
-              type="button"
-              onClick={() => setTheme('light')}
-              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center gap-3 text-left ${
-                theme === 'light'
-                  ? 'bg-primary/15 border-primary shadow-sm ring-1 ring-primary/40'
-                  : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
-              }`}
-            >
-              <div className="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-amber-500 shrink-0">
-                <Sun className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Pristine Light</span>
-                <span className="text-[11px] text-on-surface-variant">Crisp daytime reading</span>
-              </div>
-            </button>
-
-            {/* Device System Mode */}
-            <button
-              type="button"
-              onClick={() => setTheme('system')}
-              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center gap-3 text-left ${
-                theme === 'system'
-                  ? 'bg-primary/15 border-primary shadow-sm ring-1 ring-primary/40'
-                  : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
-              }`}
-            >
-              <div className="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-secondary shrink-0">
-                <Laptop className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Device System</span>
-                <span className="text-[11px] text-on-surface-variant">Syncs with OS mode</span>
-              </div>
-            </button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold font-h1 text-on-surface">Quran Translation</h1>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Select your preferred translation for Quran verses and Hadiths.
+          </p>
         </div>
 
-        {/* ========================================================================= */}
-        {/* 2. DEFAULT QURAN TRANSLATION                                              */}
-        {/* ========================================================================= */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
-              <Globe className="w-4 h-4 text-secondary" />
-              <span>Default Quran Translation</span>
-            </h2>
-            <span className="text-xs text-outline">Synced across reader</span>
+        <div className="space-y-3">
+          {/* English */}
+          <div
+            onClick={() => handleTranslationChange('english')}
+            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
+              currentTranslation === 'english'
+                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                : 'glass-card border-outline-variant/30 hover:border-primary/40'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                EN
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">English (Sahih International)</span>
+                <span className="text-xs text-on-surface-variant">Standard clear contemporary English rendering</span>
+              </div>
+            </div>
+            {currentTranslation === 'english' && <Check className="w-5 h-5 text-primary" />}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* English Option */}
-            <div
-              onClick={() => handleTranslationChange('english')}
-              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
-                currentTranslation === 'english'
-                  ? 'bg-primary/10 border-primary shadow-sm'
-                  : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
-              }`}
-            >
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-on-surface">English</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-outline font-medium">Default</span>
-                </div>
-                <p className="text-xs text-on-surface-variant">Sahih International (Umm Muhammad)</p>
+          {/* Tamil */}
+          <div
+            onClick={() => handleTranslationChange('tamil')}
+            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
+              currentTranslation === 'tamil'
+                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
+                : 'glass-card border-outline-variant/30 hover:border-primary/40'
+            }`}
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-emerald-400 font-bold text-sm shrink-0">
+                தமிழ்
               </div>
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                currentTranslation === 'english' ? 'border-primary bg-primary text-white' : 'border-outline'
-              }`}>
-                {currentTranslation === 'english' && <div className="w-2 h-2 rounded-full bg-white" />}
+              <div>
+                <span className="text-base font-bold text-on-surface block">தமிழ் (ஜான் டிரஸ்ட் / பாகவி)</span>
+                <span className="text-xs text-on-surface-variant">அங்கீகரிக்கப்பட்ட நேரடி தமிழ் மொழிபெயர்ப்பு</span>
               </div>
             </div>
-
-            {/* Tamil Option */}
-            <div
-              onClick={() => handleTranslationChange('tamil')}
-              className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
-                currentTranslation === 'tamil'
-                  ? 'bg-primary/10 border-primary shadow-sm'
-                  : 'bg-surface-container/50 border-outline-variant/30 hover:border-primary/40'
-              }`}
-            >
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-on-surface">தமிழ் (Tamil)</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-tertiary font-medium">Tamil Nadu</span>
-                </div>
-                <p className="text-xs text-on-surface-variant">Abdul Hameed Baqavi (அப்துல் ஹமீது பாகவி)</p>
-              </div>
-              <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                currentTranslation === 'tamil' ? 'border-primary bg-primary text-white' : 'border-outline'
-              }`}>
-                {currentTranslation === 'tamil' && <div className="w-2 h-2 rounded-full bg-white" />}
-              </div>
-            </div>
+            {currentTranslation === 'tamil' && <Check className="w-5 h-5 text-primary" />}
           </div>
         </div>
+      </div>
+    )
+  }
 
-        {/* ========================================================================= */}
-        {/* 3. ARABIC TYPOGRAPHY SCALE & FONT SIZE                                    */}
-        {/* ========================================================================= */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
-              <Type className="w-4 h-4 text-primary" />
-              <span>Arabic Typography Scale</span>
-            </h2>
-            <span className="font-mono text-xs font-bold text-primary">{currentFontSize}px</span>
-          </div>
+  // =========================================================================
+  // SUB-PAGE: 3. ARABIC FONT SIZE & TYPOGRAPHY
+  // =========================================================================
+  if (activeSubPage === 'font') {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto pb-20 animate-fade-in">
+        <button
+          onClick={() => setActiveSubPage(null)}
+          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Settings</span>
+        </button>
 
+        <div>
+          <h1 className="text-2xl font-bold font-h1 text-on-surface">Arabic Typography & Size</h1>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Adjust the Arabic script size to match your eyesight and screen comfortably.
+          </p>
+        </div>
+
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6 shadow-md">
           {/* Slider */}
-          <div className="space-y-2">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-outline uppercase tracking-wider">Font Size</span>
+              <span className="text-sm font-mono font-bold text-primary px-3 py-1 rounded-full bg-primary/10 border border-primary/30">
+                {currentFontSize}px
+              </span>
+            </div>
             <input
               type="range"
               min="20"
@@ -312,415 +303,417 @@ export const SettingsScreen: React.FC = () => {
               onChange={handleFontSizeChange}
               className="w-full accent-primary h-2 bg-surface-container-highest rounded-lg cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-outline font-mono">
-              <span>Small (20px)</span>
-              <span>Standard (28px)</span>
-              <span>Large (44px)</span>
+            <div className="flex justify-between text-[10px] text-outline">
+              <span>20px (Compact)</span>
+              <span>28px (Standard)</span>
+              <span>44px (Large)</span>
             </div>
           </div>
 
-          {/* Live Arabic Preview Box */}
-          <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/30 text-center space-y-1">
-            <p className="text-[10px] text-outline uppercase tracking-wider font-label-caps">Live Preview</p>
+          {/* Live Preview Card */}
+          <div className="p-6 rounded-2xl bg-surface-container/70 border border-outline-variant/40 space-y-3 text-center">
+            <span className="text-[10px] uppercase font-bold text-outline tracking-wider">Live Preview</span>
             <p
-              className="font-noto-serif text-primary-fixed-dim select-none transition-all duration-150 py-2"
+              className="font-noto-serif text-on-surface leading-loose"
               style={{ fontSize: `${currentFontSize}px` }}
               dir="rtl"
             >
               بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
             </p>
-            <p className="text-xs text-on-surface-variant font-sans">
-              {currentTranslation === 'tamil'
-                ? 'அளவற்ற அருளாளனும், நிகரற்ற அன்புடையோனுமாகிய அல்லாஹ்வின் திருப்பெயரால்'
-                : 'In the name of Allah, the Entirely Merciful, the Especially Merciful.'}
+            <p className="text-xs text-on-surface-variant italic">
+              "In the name of Allah, the Entirely Merciful, the Especially Merciful."
             </p>
           </div>
         </div>
+      </div>
+    )
+  }
 
-        {/* ========================================================================= */}
-        {/* 4. DAILY VERSE RECITATION TARGET                                          */}
-        {/* ========================================================================= */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
+  // =========================================================================
+  // SUB-PAGE: 4. DAILY VERSE TARGET
+  // =========================================================================
+  if (activeSubPage === 'target') {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto pb-20 animate-fade-in">
+        <button
+          onClick={() => setActiveSubPage(null)}
+          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Settings</span>
+        </button>
+
+        <div>
+          <h1 className="text-2xl font-bold font-h1 text-on-surface">Daily Verse Target</h1>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Set your daily Quran recitation commitment to build a consistent habit.
+          </p>
+        </div>
+
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6 shadow-md">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
-              <Target className="w-4 h-4 text-tertiary" />
-              <span>Daily Verse Target</span>
-            </h2>
-            <span className="text-xs text-tertiary font-bold">{currentGoal} Verses / Day</span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <div className="space-y-0.5 text-center sm:text-left">
-              <p className="text-xs font-semibold text-on-surface">Target verses per calendar day</p>
-              <p className="text-[11px] text-on-surface-variant">
-                Reciting at least this many verses completes your daily streak flame.
+            <div>
+              <span className="text-2xl sm:text-3xl font-extrabold text-on-surface">
+                {currentGoal} <span className="text-sm font-normal text-on-surface-variant">Ayahs / day</span>
+              </span>
+              <p className="text-xs text-outline mt-0.5">
+                ≈ {Math.max(1, Math.round(currentGoal / 15))} pages per day
               </p>
             </div>
 
             {/* Stepper Buttons */}
             <div className="flex items-center gap-2">
               <button
-                type="button"
                 onClick={() => handleGoalStep(-5)}
-                disabled={currentGoal <= 5}
-                className="w-9 h-9 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface font-bold text-base hover:border-primary disabled:opacity-40 transition flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg"
               >
                 -
               </button>
-              <span className="font-mono text-base font-bold text-on-surface w-12 text-center">
-                {currentGoal}
-              </span>
               <button
-                type="button"
                 onClick={() => handleGoalStep(5)}
-                disabled={currentGoal >= 100}
-                className="w-9 h-9 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface font-bold text-base hover:border-primary disabled:opacity-40 transition flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg"
               >
                 +
               </button>
             </div>
           </div>
 
-          {/* Quick Preset Pills */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-[10px] text-outline font-label-caps uppercase mr-1">Presets:</span>
-            {[5, 10, 15, 20, 30, 50].map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => handleGoalPreset(preset)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer ${
-                  currentGoal === preset
-                    ? 'bg-tertiary-container text-on-tertiary-container shadow-sm'
-                    : 'bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant/30'
-                }`}
-              >
-                {preset} ayahs
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 5. NOTIFICATIONS & REMINDERS                                              */}
-        {/* ========================================================================= */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
-            <Bell className="w-4 h-4 text-amber-400" />
-            <span>Notifications & Reminders</span>
-          </h2>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-amber-400" />
-                <div>
-                  <p className="text-xs font-semibold text-on-surface">Daily Prayer Athan Reminders</p>
-                  <p className="text-[11px] text-on-surface-variant">Notifications for the 5 daily prayers</p>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={prayerAlerts}
-                onChange={handleTogglePrayerNotifications}
-                className="w-4 h-4 accent-primary rounded cursor-pointer"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-              <div className="flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-tertiary" />
-                <div>
-                  <p className="text-xs font-semibold text-on-surface">Daily Quran Streak Protection</p>
-                  <p className="text-[11px] text-on-surface-variant">Evening reminders to safeguard your daily streak</p>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={readingAlerts}
-                onChange={handleToggleReadingReminders}
-                className="w-4 h-4 accent-primary rounded cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 6. MULTI-DEVICE REALTIME SYNC & CLOUD ACCOUNT                             */}
-        {/* ========================================================================= */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
-              <User className="w-4 h-4 text-primary" />
-              <span>Account & Cloud Sync</span>
-            </h2>
-
-            {/* Status Pill */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border">
-              {syncStatus === 'synced' && (
-                <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/40 border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Live Synced</span>
-                </span>
-              )}
-              {syncStatus === 'syncing' && (
-                <span className="flex items-center gap-1.5 text-secondary bg-secondary/10 border-secondary/30 px-2 py-0.5 rounded-full">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Syncing...</span>
-                </span>
-              )}
-              {syncStatus === 'offline' && (
-                <span className="flex items-center gap-1.5 text-amber-400 bg-amber-950/40 border-amber-500/30 px-2 py-0.5 rounded-full">
-                  <WifiOff className="w-3.5 h-3.5" />
-                  <span>Offline ({pendingOfflineCount} queued)</span>
-                </span>
-              )}
-              {syncStatus === 'error' && (
-                <span className="flex items-center gap-1.5 text-error bg-error-container/30 border-error/30 px-2 py-0.5 rounded-full">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>Sync Error</span>
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-full bg-surface-container-high border border-primary/40 overflow-hidden flex items-center justify-center shrink-0 shadow-md">
-                {user?.photoUrl ? (
-                  <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-6 h-6 text-on-surface-variant" />
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-bold text-on-surface">{user?.name || 'Muslim Seeker'}</p>
-                <p className="text-xs text-on-surface-variant">{user?.email || 'No email associated'}</p>
-                
-                {/* Linked Provider Badge */}
-                <div className="flex items-center gap-2 mt-1">
-                  {user?.authProvider === 'google' ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-                      <ShieldCheck className="w-3 h-3" />
-                      <span>Google Linked</span>
-                    </span>
-                  ) : user?.isGuest ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-secondary/10 text-secondary border border-secondary/20 font-medium">
-                      <span>Guest Sandbox</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
-                      <span>Email & Password</span>
-                    </span>
-                  )}
-                  <span className="text-[10px] text-outline">UID: {user?.uid?.substring(0, 10) || 'usr_demo'}...</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-              {user?.isGuest && (
+          {/* Quick Presets */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-outline uppercase tracking-wider block">Quick Presets</span>
+            <div className="grid grid-cols-4 gap-2">
+              {[5, 10, 20, 50].map((val) => (
                 <button
-                  type="button"
-                  onClick={() => navigate('/login')}
-                  className="px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md hover:scale-105"
+                  key={val}
+                  onClick={() => handleGoalPreset(val)}
+                  className={`py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer border ${
+                    currentGoal === val
+                      ? 'primary-gradient-btn text-white shadow-md'
+                      : 'bg-surface-container/60 border-outline-variant/30 text-on-surface hover:border-primary/40'
+                  }`}
                 >
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>Sign In with Google</span>
+                  {val} Ayahs
                 </button>
-              )}
-
-              <button
-                type="button"
-                onClick={handleSyncNow}
-                disabled={syncStatus === 'syncing'}
-                className="px-3.5 py-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
-                <span>Sync</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowResetStatsModal(true)}
-                disabled={isResetting}
-                className="px-3.5 py-2 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-60"
-                title="Reset stats to 0"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset Stats</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-highest border border-outline-variant/40 text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-60"
-              >
-                {isLoggingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
-                <span>Sign Out</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(true)}
-                className="px-3 py-2 rounded-full bg-error-container/20 hover:bg-error-container/40 border border-error/30 text-error text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
-                title="Delete Account & Stats"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-outline">
-            <div className="flex items-center gap-1.5">
-              <Smartphone className="w-3.5 h-3.5 text-secondary" />
-              <span>Device ID: <span className="font-mono text-secondary">{deviceId}</span></span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Cloud className="w-3.5 h-3.5 text-primary" />
-              <span>Last Synced: <span className="text-on-surface">{formatLastSynced(lastSyncedAt)}</span></span>
-            </div>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 7. ABOUT DEENLY & AUTHENTIC SOURCES                                       */}
-        {/* ========================================================================= */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-2">
-              <Info className="w-4 h-4 text-primary" />
-              <span>About Deenly</span>
-            </h2>
-            <span className="text-xs font-mono text-outline">v1.2.0 Production</span>
-          </div>
-
-          <div className="space-y-3 text-xs text-on-surface-variant">
-            <p className="leading-relaxed">
-              <strong className="text-on-surface">Deenly</strong> is an authentic Quran companion designed to make daily recitation intuitive, rewarding, and consistent with Hadith-accurate Hasanat points and multi-device cloud synchronization.
-            </p>
-
-            {/* Hadith Banner */}
-            <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/30 space-y-1.5">
-              <div className="flex items-center gap-2 text-primary font-bold text-xs">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>The Prophetic Reward (10 Hasanat per letter)</span>
-              </div>
-              <p className="italic text-on-surface leading-relaxed text-[11px]">
-                “Whoever recites a letter from the Book of Allah will be credited with a good deed, and a good deed gets a ten-fold reward. I do not say that Alif-Lam-Mim is one letter, but Alif is a letter, Lam is a letter and Mim is a letter.”
-              </p>
-              <span className="text-[10px] text-outline block">— Jami` at-Tirmidhi 2910 (Graded Hasan Sahih)</span>
-            </div>
-
-            {/* Sources & Offline Data */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="p-3.5 rounded-2xl bg-surface-container/40 border border-outline-variant/20 space-y-1">
-                <span className="font-bold text-on-surface flex items-center gap-1.5">
-                  <BookOpen className="w-3.5 h-3.5 text-primary" /> Authentic Quran Editions
-                </span>
-                <p className="text-[11px] text-outline">
-                  Arabic: Fawaz Ahmed Uthmani Academy (`ara-quranacademy`). English: Sahih International. Tamil: Abdul Hameed Baqavi. Audio: Mishary Rashid Alafasy.
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-surface-container/40 border border-outline-variant/20 flex flex-col justify-between">
-                <div className="space-y-1">
-                  <span className="font-bold text-on-surface flex items-center gap-1.5">
-                    <Database className="w-3.5 h-3.5 text-secondary" /> Offline Quran Cache
-                  </span>
-                  <p className="text-[11px] text-outline">
-                    Recited chapters are stored locally for fast offline access.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleClearOfflineCache}
-                  disabled={isClearingCache}
-                  className="mt-2 text-[10px] text-secondary hover:underline self-start font-medium cursor-pointer"
-                >
-                  {isClearingCache ? 'Clearing...' : cacheClearedSuccess ? '✓ Cache Cleared' : 'Clear Offline Cache'}
-                </button>
-              </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
+    )
+  }
 
-      {/* Reset Stats Confirmation Warning Modal */}
-      {showResetStatsModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-md w-full p-6 md:p-8 rounded-3xl glass-card border border-amber-500/40 space-y-5 shadow-2xl text-center">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/50 text-amber-400 mx-auto flex items-center justify-center shadow-lg">
-              <AlertTriangle className="w-7 h-7" />
-            </div>
+  // =========================================================================
+  // SUB-PAGE: 5. NOTIFICATIONS & REMINDERS
+  // =========================================================================
+  if (activeSubPage === 'notifications') {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto pb-20 animate-fade-in">
+        <button
+          onClick={() => setActiveSubPage(null)}
+          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Settings</span>
+        </button>
 
-            <div className="space-y-1.5">
-              <h3 className="text-xl font-bold font-h2 text-on-surface">Reset Reading Stats to Zero?</h3>
-              <p className="text-xs text-on-surface-variant leading-relaxed">
-                This will reset all your accumulated Hasanat points, verses read, reading duration, and daily streak history back to zero. Your account will remain active, but previous progress cannot be recovered.
-              </p>
-            </div>
+        <div>
+          <h1 className="text-2xl font-bold font-h1 text-on-surface">Notifications & Reminders</h1>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Stay on track with daily Quran reading notifications and prayer alerts.
+          </p>
+        </div>
 
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowResetStatsModal(false)}
-                className="flex-1 py-2.5 rounded-full bg-surface-container border border-outline-variant/40 text-xs font-semibold text-on-surface hover:border-primary transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleResetStats}
-                disabled={isResetting}
-                className="flex-1 py-2.5 rounded-full bg-amber-500 text-black font-bold text-xs shadow-lg hover:bg-amber-400 transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
-              >
-                {isResetting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                <span>Yes, Reset to 0</span>
-              </button>
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md">
+          {/* Daily Quran Reminders */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <span className="text-sm font-bold text-on-surface block">Daily Quran Reminders</span>
+              <span className="text-xs text-on-surface-variant">Gentle notification to fulfill your daily goal</span>
             </div>
+            <button
+              onClick={handleToggleReadingReminders}
+              className={`w-12 h-6.5 rounded-full transition-colors relative cursor-pointer ${
+                readingAlerts ? 'bg-primary' : 'bg-surface-container-highest'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white transition-transform absolute top-0.5 ${
+                  readingAlerts ? 'right-0.5' : 'left-0.5'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="h-px bg-outline-variant/20" />
+
+          {/* Prayer Time Alerts */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <span className="text-sm font-bold text-on-surface block">Prayer Time Alerts</span>
+              <span className="text-xs text-on-surface-variant">Notifications for Fajr, Dhuhr, Asr, Maghrib, and Isha</span>
+            </div>
+            <button
+              onClick={handleTogglePrayerNotifications}
+              className={`w-12 h-6.5 rounded-full transition-colors relative cursor-pointer ${
+                prayerAlerts ? 'bg-primary' : 'bg-surface-container-highest'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white transition-transform absolute top-0.5 ${
+                  prayerAlerts ? 'right-0.5' : 'left-0.5'
+                }`}
+              />
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    )
+  }
 
-      {/* Delete Account Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-md w-full p-6 md:p-8 rounded-3xl glass-card border border-error/40 space-y-5 shadow-2xl text-center">
-            <div className="w-14 h-14 rounded-2xl bg-error-container/30 border border-error text-error mx-auto flex items-center justify-center">
-              <AlertTriangle className="w-7 h-7" />
-            </div>
+  // =========================================================================
+  // SUB-PAGE: 6. CLOUD SYNC & OFFLINE STORAGE
+  // =========================================================================
+  if (activeSubPage === 'sync') {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto pb-20 animate-fade-in">
+        <button
+          onClick={() => setActiveSubPage(null)}
+          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Settings</span>
+        </button>
 
-            <div className="space-y-1.5">
-              <h3 className="text-xl font-bold font-h2 text-on-surface">Delete Account & Stats?</h3>
-              <p className="text-xs text-on-surface-variant leading-relaxed">
-                This action is irreversible. All of your accumulated Hasanat points, verses read, daily streaks, bookmarks, and offline reading queues will be permanently deleted and anonymized.
-              </p>
-            </div>
+        <div>
+          <h1 className="text-2xl font-bold font-h1 text-on-surface">Cloud Sync & Storage</h1>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Manage your offline cache and device synchronization.
+          </p>
+        </div>
 
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-2.5 rounded-full bg-surface-container border border-outline-variant/40 text-xs font-semibold text-on-surface hover:border-primary transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteAccount}
-                disabled={isDeletingAccount}
-                className="flex-1 py-2.5 rounded-full bg-error text-white text-xs font-bold shadow-lg hover:bg-error/90 transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
-              >
-                {isDeletingAccount ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                <span>Yes, Delete Everything</span>
-              </button>
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-bold text-on-surface block">Sync Status</span>
+              <span className="text-xs text-on-surface-variant">Last synced: {formatLastSynced(lastSyncedAt)}</span>
             </div>
+            <button
+              onClick={handleSyncNow}
+              disabled={syncStatus === 'syncing'}
+              className="px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+              <span>{syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}</span>
+            </button>
+          </div>
+
+          <div className="h-px bg-outline-variant/20" />
+
+          {/* Clear Offline Cache */}
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-bold text-on-surface block">Quran Offline Cache</span>
+              <span className="text-xs text-on-surface-variant">Clear cached Surahs and audio clips</span>
+            </div>
+            <button
+              onClick={handleClearOfflineCache}
+              disabled={isClearingCache}
+              className="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 hover:border-rose-500/40 text-rose-400 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+            >
+              {isClearingCache ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              <span>{cacheClearedSuccess ? 'Cache Cleared!' : 'Clear Cache'}</span>
+            </button>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20 text-[11px] text-outline">
+            <span>Device ID: <span className="font-mono text-on-surface">{deviceId}</span></span>
+            {pendingOfflineCount > 0 && <span className="block mt-0.5 text-amber-400">({pendingOfflineCount} actions pending upload)</span>}
           </div>
         </div>
-      )}
+      </div>
+    )
+  }
+
+  // =========================================================================
+  // SUB-PAGE: 7. INSTRUCTIONS & ABOUT DEENLY
+  // =========================================================================
+  if (activeSubPage === 'about') {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto pb-20 animate-fade-in">
+        <button
+          onClick={() => setActiveSubPage(null)}
+          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Settings</span>
+        </button>
+
+        <div>
+          <h1 className="text-2xl font-bold font-h1 text-on-surface">About Deenly</h1>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Open-source Islamic companion app and recitation engine.
+          </p>
+        </div>
+
+        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md text-xs text-on-surface-variant leading-relaxed">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center text-primary font-bold">
+              📖
+            </div>
+            <div>
+              <p className="text-sm font-bold text-on-surface">Deenly v2.0</p>
+              <p className="text-[11px] text-outline">Holy Quran & Kutub al-Sittah Hadith Companion</p>
+            </div>
+          </div>
+
+          <p>
+            Deenly is designed to make daily Quran recitation effortless and consistent. With precision Hasanat calculations (10 rewards per Arabic letter), multilingual translations (English & Tamil), audio recitations by Sheikh Mishary Rashid Alafasy, and offline PWA support.
+          </p>
+          <p>
+            All texts are sourced from verified public Islamic repositories and authentic open-source datasets.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // =========================================================================
+  // MAIN SETTINGS MENU (DRILL-DOWN DIRECTORY)
+  // =========================================================================
+  return (
+    <div className="space-y-6 max-w-3xl mx-auto pb-24 animate-fade-in">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">Settings</h1>
+        <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
+          Select a category below to customize your app preferences.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {/* 1. Theme & Appearance */}
+        <div
+          onClick={() => setActiveSubPage('theme')}
+          className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition cursor-pointer flex items-center justify-between shadow-sm group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+              {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5 text-amber-400" />}
+            </div>
+            <div>
+              <span className="text-sm sm:text-base font-bold text-on-surface block">Theme & Appearance</span>
+              <span className="text-xs text-outline capitalize">{theme} Mode</span>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-outline group-hover:text-primary transition" />
+        </div>
+
+        {/* 2. Quran Translation */}
+        <div
+          onClick={() => setActiveSubPage('translation')}
+          className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition cursor-pointer flex items-center justify-between shadow-sm group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-sm sm:text-base font-bold text-on-surface block">Quran Translation</span>
+              <span className="text-xs text-outline">
+                {currentTranslation === 'tamil' ? 'தமிழ் (பாகவி)' : 'English (Sahih International)'}
+              </span>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-outline group-hover:text-primary transition" />
+        </div>
+
+        {/* 3. Arabic Font Size & Typography */}
+        <div
+          onClick={() => setActiveSubPage('font')}
+          className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition cursor-pointer flex items-center justify-between shadow-sm group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+              <Type className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-sm sm:text-base font-bold text-on-surface block">Arabic Font Size & Script</span>
+              <span className="text-xs text-outline">{currentFontSize}px Arabic Script</span>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-outline group-hover:text-primary transition" />
+        </div>
+
+        {/* 4. Daily Verse Target */}
+        <div
+          onClick={() => setActiveSubPage('target')}
+          className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition cursor-pointer flex items-center justify-between shadow-sm group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-tertiary shrink-0 group-hover:scale-105 transition-transform">
+              <Target className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-sm sm:text-base font-bold text-on-surface block">Daily Verse Target</span>
+              <span className="text-xs text-outline">{currentGoal} Ayahs / Day</span>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-outline group-hover:text-primary transition" />
+        </div>
+
+        {/* 5. Notifications & Reminders */}
+        <div
+          onClick={() => setActiveSubPage('notifications')}
+          className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition cursor-pointer flex items-center justify-between shadow-sm group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
+              <Bell className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-sm sm:text-base font-bold text-on-surface block">Notifications & Reminders</span>
+              <span className="text-xs text-outline">
+                {readingAlerts ? 'Reminders Active' : 'Disabled'}
+              </span>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-outline group-hover:text-primary transition" />
+        </div>
+
+        {/* 6. Cloud Sync & Offline Storage */}
+        <div
+          onClick={() => setActiveSubPage('sync')}
+          className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition cursor-pointer flex items-center justify-between shadow-sm group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-secondary shrink-0 group-hover:scale-105 transition-transform">
+              <Cloud className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-sm sm:text-base font-bold text-on-surface block">Cloud Sync & Storage</span>
+              <span className="text-xs text-outline">Device ID & Offline Quran Cache</span>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-outline group-hover:text-primary transition" />
+        </div>
+
+        {/* 7. About Deenly */}
+        <div
+          onClick={() => setActiveSubPage('about')}
+          className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition cursor-pointer flex items-center justify-between shadow-sm group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-outline shrink-0 group-hover:scale-105 transition-transform">
+              <Info className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-sm sm:text-base font-bold text-on-surface block">About Deenly</span>
+              <span className="text-xs text-outline">Version 2.0 • Instructions & Sources</span>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-outline group-hover:text-primary transition" />
+        </div>
+      </div>
     </div>
   )
 }
