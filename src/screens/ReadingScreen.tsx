@@ -10,7 +10,8 @@ import {
   Check, 
   Share2, 
   CheckCircle2, 
-  Bookmark
+  Bookmark,
+  ZoomIn
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
@@ -31,11 +32,19 @@ export const ReadingScreen: React.FC = () => {
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
   const [copiedShare, setCopiedShare] = useState(false)
   const [chapterCompletedBanner, setChapterCompletedBanner] = useState<string | null>(null)
+  const [zoomFeedback, setZoomFeedback] = useState<number | null>(null)
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const mainCanvasRef = useRef<HTMLElement | null>(null)
+  const zoomFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pinchStartDistanceRef = useRef<number | null>(null)
+  const baseFontSizeRef = useRef<number>(28)
+  const isPinchingRef = useRef(false)
 
   const user = useAuthStore((state) => state.user)
+  const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
   const storeFontSize = useReadingStore((state) => state.fontSize)
+  const setFontSize = useReadingStore((state) => state.setFontSize)
   const fontSize = storeFontSize || user?.arabicFontSize || 28
 
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
@@ -56,6 +65,87 @@ export const ReadingScreen: React.FC = () => {
   const tickTimer = useReadingStore((state) => state.tickTimer)
   const markAyahRead = useReadingStore((state) => state.markAyahRead)
   const finishSession = useReadingStore((state) => state.finishSession)
+
+  // Zoom feedback indicator
+  const showZoomIndicator = useCallback((size: number) => {
+    setZoomFeedback(size)
+    if (zoomFeedbackTimer.current) clearTimeout(zoomFeedbackTimer.current)
+    zoomFeedbackTimer.current = setTimeout(() => {
+      setZoomFeedback(null)
+    }, 1400)
+  }, [])
+
+  // Apply & Persist Zoomed Font Size
+  const applyFontSizeChange = useCallback((newSize: number) => {
+    const clamped = Math.max(18, Math.min(54, Math.round(newSize / 2) * 2))
+    setFontSize(clamped)
+    updateUserSettings({ arabicFontSize: clamped })
+    showZoomIndicator(clamped)
+  }, [setFontSize, updateUserSettings, showZoomIndicator])
+
+  // Pinch-to-Zoom & Ctrl+Wheel Gestures
+  useEffect(() => {
+    const el = mainCanvasRef.current
+    if (!el) return
+
+    // 1. Wheel Zoom (Trackpad pinch or Ctrl + MouseWheel)
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault()
+        const delta = e.deltaY < 0 ? 2 : -2
+        const current = useReadingStore.getState().fontSize || 28
+        applyFontSizeChange(current + delta)
+      }
+    }
+
+    // 2. Mobile Touch Pinch-to-Zoom
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        isPinchingRef.current = true
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        )
+        pinchStartDistanceRef.current = dist
+        baseFontSizeRef.current = useReadingStore.getState().fontSize || 28
+      }
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchStartDistanceRef.current !== null) {
+        e.preventDefault() // prevent full-page browser scaling
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        )
+        const scale = currentDist / pinchStartDistanceRef.current
+        const deltaSize = (scale - 1) * 22
+        const targetSize = baseFontSizeRef.current + deltaSize
+        applyFontSizeChange(targetSize)
+      }
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        pinchStartDistanceRef.current = null
+        setTimeout(() => {
+          isPinchingRef.current = false
+        }, 150)
+      }
+    }
+
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    el.addEventListener('touchstart', handleTouchStart, { passive: true })
+    el.addEventListener('touchmove', handleTouchMove, { passive: false })
+    el.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      el.removeEventListener('wheel', handleWheel)
+      el.removeEventListener('touchstart', handleTouchStart)
+      el.removeEventListener('touchmove', handleTouchMove)
+      el.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [applyFontSizeChange])
 
   // Sync user's preferred translation on initial load
   useEffect(() => {
@@ -134,6 +224,7 @@ export const ReadingScreen: React.FC = () => {
 
   // Mark Read & Advance to Next Ayah
   const handleMarkAndNext = useCallback(() => {
+    if (isPinchingRef.current) return
     if (!currentAyah || !currentSurah) return
 
     // 1. Record Hasanat and Verses in reading store
@@ -248,6 +339,14 @@ export const ReadingScreen: React.FC = () => {
     <div className="h-[100dvh] max-h-[100dvh] w-full max-w-4xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-3 sm:px-6 py-2.5 sm:py-3.5 gap-2 sm:gap-3">
       <audio ref={audioRef} src={audioUrl} preload="none" />
 
+      {/* Floating Zoom Size Indicator Pill */}
+      {zoomFeedback && (
+        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full glass-card border border-primary/50 text-primary font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-fade-in backdrop-blur-md">
+          <ZoomIn className="w-4 h-4 text-primary animate-pulse" />
+          <span>Arabic Size: {zoomFeedback}px</span>
+        </div>
+      )}
+
       {/* ========================================================================= */}
       {/* 1. FIXED TOP BAR: PINNED TO TOP (MATCHED DIMENSIONS WITH FOOTER)          */}
       {/*    Includes Surah Name, Responsive Scaled Timer & Hasanat, and Audio Tools */}
@@ -356,14 +455,15 @@ export const ReadingScreen: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 2. PROPORTIONED CENTER: 100% VISIBILITY FOR ALL VERSES (SHORT TO LONG)     */}
-      {/*    🌟 Smooth unclipped scrolling & centered alignment for every verse      */}
+      {/* 2. PROPORTIONED CENTER: PINCH-TO-ZOOM / WHEEL-ZOOM SUPPORTED CANVAS       */}
+      {/*    🌟 Pinch in/out with 2 fingers or Ctrl+Wheel to resize Arabic text     */}
       {/*    🌟 TOUCHING/CLICKING ANYWHERE ADVANCES TO NEXT AYAH                    */}
       {/* ========================================================================= */}
       <main 
+        ref={mainCanvasRef as React.RefObject<HTMLElement>}
         onClick={handleMarkAndNext}
-        className="flex-1 overflow-y-auto w-full px-2 sm:px-4 py-2 sm:py-3 min-h-0 cursor-pointer select-none overscroll-contain"
-        title="Tap anywhere to mark read and advance to next verse"
+        className="flex-1 overflow-y-auto w-full px-2 sm:px-4 py-2 sm:py-3 min-h-0 cursor-pointer select-none overscroll-contain touch-pan-y"
+        title="Pinch to zoom text size • Tap anywhere to advance to next verse"
       >
         {isLoadingSurah ? (
           <div className="p-8 text-center space-y-2 my-auto flex flex-col items-center justify-center h-full">
@@ -381,12 +481,12 @@ export const ReadingScreen: React.FC = () => {
               </div>
             )}
 
-            {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (UNCLIPPED FULL VISIBILITY) */}
+            {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (SCALES ON PINCH/ZOOM) */}
             <div 
-              className="w-full p-5 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200 active:scale-[0.99] hover:border-primary/70 select-none flex flex-col items-center justify-center break-words"
+              className="w-full p-5 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-150 active:scale-[0.99] hover:border-primary/70 select-none flex flex-col items-center justify-center break-words"
             >
               <p
-                className="font-noto-serif text-center text-on-surface leading-[2.3] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none drop-shadow-sm font-medium break-words w-full"
+                className="font-noto-serif text-center text-on-surface leading-[2.3] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none drop-shadow-sm font-medium break-words w-full transition-all duration-150"
                 style={{ fontSize: `${fontSize}px` }}
                 dir="rtl"
               >
@@ -397,7 +497,7 @@ export const ReadingScreen: React.FC = () => {
               </p>
             </div>
 
-            {/* 🌟 2. TRANSLATION CONTAINER (FULL VISIBILITY FOR ANY LENGTH) */}
+            {/* 🌟 2. TRANSLATION CONTAINER */}
             <div 
               className="w-full p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1.5 select-none shadow-sm break-words"
             >
