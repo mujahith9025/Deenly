@@ -231,10 +231,6 @@ export const ReadingScreen: React.FC = () => {
     setTimeout(() => setCopiedShare(false), 2000)
   }
 
-  const surahProgressPercent = currentSurah
-    ? Math.round(((currentAyahNumber || 1) / currentSurah.numberOfAyahs) * 100)
-    : 0
-
   return (
     <div className="h-full w-full max-w-5xl mx-auto flex flex-col justify-between p-2 sm:p-4 select-none relative overflow-hidden">
       <audio ref={audioRef} src={audioUrl} preload="none" />
@@ -333,6 +329,7 @@ export const ReadingScreen: React.FC = () => {
       {/* ========================================================================= */}
       {/* 2. DEDICATED SCROLLABLE CENTER: ONLY THIS SECTION SCROLLS                  */}
       {/*    Contains Highlighted Arabic Card & Clean Translation Underneath        */}
+      {/*    🌟 TOUCHING / CLICKING THE CARD ADVANCES TO NEXT VERSE                 */}
       {/* ========================================================================= */}
       <main className="flex-1 overflow-y-auto w-full px-2 sm:px-6 py-4 min-h-0 flex flex-col justify-start sm:justify-center items-center">
         {isLoadingSurah ? (
@@ -351,10 +348,14 @@ export const ReadingScreen: React.FC = () => {
               </div>
             )}
 
-            {/* 🌟 ARABIC SCRIPT HIGHLIGHTED WITH BACKGROUND CARD CONTAINER */}
-            <div className="w-full p-5 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/80 shadow-2xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200">
+            {/* 🌟 ARABIC SCRIPT HIGHLIGHTED WITH BACKGROUND CARD CONTAINER (TOUCH TO ADVANCE) */}
+            <div 
+              onClick={handleMarkAndNext}
+              className="w-full p-5 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/80 shadow-2xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-200 cursor-pointer active:scale-[0.99] hover:border-primary/70 select-none group"
+              title="Tap anywhere to mark read and advance to next verse"
+            >
               <p
-                className="font-noto-serif text-center text-on-surface leading-[2.2] sm:leading-[2.5] md:leading-[2.7] tracking-wide select-text drop-shadow-sm font-medium"
+                className="font-noto-serif text-center text-on-surface leading-[2.2] sm:leading-[2.5] md:leading-[2.7] tracking-wide select-none drop-shadow-sm font-medium"
                 style={{ fontSize: `${fontSize}px` }}
                 dir="rtl"
               >
@@ -365,8 +366,12 @@ export const ReadingScreen: React.FC = () => {
               </p>
             </div>
 
-            {/* 🌟 TRANSLATION TEXT BELOW WITHOUT ANY HIGHLIGHT BACKGROUND */}
-            <div className="w-full px-4 text-center space-y-1.5 pt-1">
+            {/* 🌟 TRANSLATION TEXT BELOW WITHOUT ANY HIGHLIGHT BACKGROUND (TOUCH TO ADVANCE) */}
+            <div 
+              onClick={handleMarkAndNext}
+              className="w-full px-4 text-center space-y-1.5 pt-1 cursor-pointer select-none"
+              title="Tap to mark read and advance to next verse"
+            >
               <span className="text-[10px] sm:text-xs uppercase font-bold text-outline font-label-caps tracking-wider block">
                 {translationLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்பு (பாகவி)' : 'Sahih International'}
               </span>
@@ -375,14 +380,6 @@ export const ReadingScreen: React.FC = () => {
                   currentAyah.translations['en'] ||
                   'Translation loading...'}
               </p>
-            </div>
-
-            {/* Surah Mini Progress Indicator */}
-            <div className="w-36 sm:w-48 bg-surface-container-highest h-1.5 rounded-full overflow-hidden opacity-60">
-              <div
-                className="bg-primary h-full rounded-full transition-all duration-300"
-                style={{ width: `${surahProgressPercent}%` }}
-              />
             </div>
           </div>
         ) : null}
