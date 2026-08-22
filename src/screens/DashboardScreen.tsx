@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { 
   Flame, 
   Sparkles, 
@@ -10,9 +10,6 @@ import {
   Award,
   Compass,
   ChevronRight,
-  Pencil,
-  X,
-  Search,
   Play,
   Bookmark,
   Calendar,
@@ -30,24 +27,6 @@ import {
 } from '../lib/hasanatEngine'
 
 type TimeframeFilter = 'today' | 'week' | 'all'
-
-interface SuggestedSurah {
-  number: number
-  name: string
-  arabicName: string
-  tag: string
-  color: string
-}
-
-const SUGGESTED_SURAHS: SuggestedSurah[] = [
-  { number: 67, name: 'Al-Mulk', arabicName: 'الملك', tag: 'Nightly Protection', color: 'from-purple-900/40 to-indigo-900/40 border-purple-500/30' },
-  { number: 18, name: 'Al-Kahf', arabicName: 'الكهف', tag: 'Friday Sunnah', color: 'from-emerald-900/40 to-teal-900/40 border-emerald-500/30' },
-  { number: 36, name: 'Ya-Sin', arabicName: 'يس', tag: 'Heart of Quran', color: 'from-amber-900/40 to-orange-900/40 border-amber-500/30' },
-  { number: 55, name: 'Ar-Rahman', arabicName: 'الرحمن', tag: 'Divine Grace', color: 'from-cyan-900/40 to-blue-900/40 border-cyan-500/30' },
-  { number: 56, name: 'Al-Waqi\'ah', arabicName: 'الواقعة', tag: 'Sustenance & Barakah', color: 'from-violet-900/40 to-fuchsia-900/40 border-violet-500/30' },
-  { number: 112, name: 'Al-Ikhlas', arabicName: 'الإخلاص', tag: '1/3 of Quran', color: 'from-rose-900/40 to-pink-900/40 border-rose-500/30' },
-  { number: 2, name: 'Al-Baqarah', arabicName: 'البقرة', tag: 'Household Barakah', color: 'from-indigo-900/40 to-purple-900/40 border-indigo-500/30' },
-]
 
 const DEFAULT_HABITS = [
   { id: 'fajr', name: 'Fajr Prayer', time: '05:12 AM', category: 'prayer' },
@@ -70,15 +49,11 @@ const DAILY_VERSES = [
 
 export const DashboardScreen: React.FC = () => {
   const [timeframe, setTimeframe] = useState<TimeframeFilter>('today')
-  const [showSurahPickerModal, setShowSurahPickerModal] = useState(false)
-  const [pickerSearchQuery, setPickerSearchQuery] = useState('')
 
   const user = useAuthStore((state) => state.user)
   const dailyHistory = useAuthStore((state) => state.dailyHistory)
   const currentSurahNumber = useReadingStore((state) => state.currentSurahNumber)
   const currentAyahNumber = useReadingStore((state) => state.currentAyahNumber)
-  const setCurrentPosition = useReadingStore((state) => state.setCurrentPosition)
-  const navigate = useNavigate()
 
   const todayStr = getLocalDateString(new Date())
   const habitStorageKey = `deenly_habits_${user?.id || 'guest'}_${todayStr}`
@@ -207,7 +182,7 @@ export const DashboardScreen: React.FC = () => {
     }
   })
 
-  // 5. Position & Bookmark Calculations
+  // 5. Position & Bookmark Calculations (Always sequential from 1:1)
   const lastSurah = user?.lastReadSurah || currentSurahNumber || 1
   const lastAyah = user?.lastReadAyah || currentAyahNumber || 1
   const currentSurahMeta = SURAH_METADATA.find((s) => s.number === lastSurah) || SURAH_METADATA[0]
@@ -219,22 +194,7 @@ export const DashboardScreen: React.FC = () => {
   const dailyVerseIndex = new Date().getDate() % DAILY_VERSES.length
   const dailyVerse = DAILY_VERSES[dailyVerseIndex]
 
-  const handleQuickLaunchSurah = (surahNum: number) => {
-    navigate(`/reading?surah=${surahNum}&ayah=1`)
-  }
-
-  const handleSelectBookmarkSurah = (surahNum: number) => {
-    setCurrentPosition(surahNum, 1)
-    setShowSurahPickerModal(false)
-    navigate(`/reading?surah=${surahNum}&ayah=1`)
-  }
-
-  const filteredSurahsForPicker = SURAH_METADATA.filter(
-    (s) =>
-      s.name.toLowerCase().includes(pickerSearchQuery.toLowerCase()) ||
-      s.englishNameTranslation.toLowerCase().includes(pickerSearchQuery.toLowerCase()) ||
-      s.number.toString().includes(pickerSearchQuery)
-  )
+  const isStartingFresh = lastSurah === 1 && lastAyah === 1
 
   return (
     <div className="space-y-6 sm:space-y-8 w-full max-w-7xl mx-auto pb-24 animate-fade-in">
@@ -260,82 +220,14 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. 🌟 SPLIT 2-COLUMN HERO ROW ON DESKTOP (READING & CONSISTENCY CARDS)    */}
+      {/* 2. 🌟 HERO SECTION                                                       */}
+      {/*    MOBILE: Weekly Consistency on TOP (order-1), Continue Reading BELOW (order-2) */}
+      {/*    DESKTOP: Continue Reading (left 7 cols), Weekly Consistency (right 5 cols)  */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 items-stretch">
         
-        {/* LEFT HERO CARD: CONTINUE RECITATION (COMPACT & BALANCED) */}
-        <div className="lg:col-span-7 xl:col-span-7 rounded-3xl bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#6d28d9] p-6 sm:p-7 text-white shadow-xl relative overflow-hidden border border-white/20 flex flex-col justify-between space-y-5">
-          {/* Ambient Glow */}
-          <div className="absolute top-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
-
-          {/* Top Row: Session Tag & Surah Arabic Calligraphy */}
-          <div className="flex items-start justify-between gap-3 relative z-10">
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-white/80 font-label-caps bg-white/15 px-3 py-1 rounded-full border border-white/20 inline-block">
-                Current Reading Session
-              </span>
-              <div className="flex items-baseline gap-2 mt-2">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-                  {currentSurahMeta.number}. {currentSurahMeta.name}
-                </h2>
-              </div>
-              <p className="text-xs sm:text-sm text-white/90 font-medium">
-                Ayah {lastAyah} of {currentSurahMeta.numberOfAyahs} • {currentSurahMeta.englishNameTranslation}
-              </p>
-            </div>
-
-            <span className="font-noto-serif text-3xl sm:text-4xl text-white/90 shrink-0 font-bold">
-              {currentSurahMeta.arabicName}
-            </span>
-          </div>
-
-          {/* Middle Row: Progress Slider with Juz Marker */}
-          <div className="space-y-2 relative z-10 pt-1">
-            <div className="relative w-full py-1">
-              <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden relative">
-                <div
-                  className="bg-white h-full rounded-full transition-all duration-500 shadow-sm"
-                  style={{ width: `${Math.max(2, overallQuranProgress.percent)}%` }}
-                />
-              </div>
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.95)] border-2 border-[#6d28d9] pointer-events-none transition-all duration-500"
-                style={{ left: `calc(${Math.min(97, Math.max(2, overallQuranProgress.percent))}% - 8px)` }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-xs font-semibold text-white/95">
-              <span>Juz {juzProgress.juzNumber} of 30</span>
-              <span title={`${overallQuranProgress.cumulativeVerses} of 6,236 verses completed`}>
-                {overallQuranProgress.percent.toFixed(1)}% Whole Quran
-              </span>
-            </div>
-          </div>
-
-          {/* Bottom Action Row: Continue Button + Quick Surah Picker Button */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10 pt-1">
-            <Link
-              to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
-              className="py-3 px-4 rounded-2xl bg-white text-[#6d28d9] hover:bg-white/95 active:scale-[0.99] font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
-            >
-              <Play className="w-4 h-4 fill-[#6d28d9]" />
-              <span>Continue Reading</span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setShowSurahPickerModal(true)}
-              className="py-3 px-4 rounded-2xl bg-white/20 hover:bg-white/30 active:scale-[0.99] backdrop-blur-md border border-white/30 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
-            >
-              <Pencil className="w-4 h-4" />
-              <span>Select Chapter</span>
-            </button>
-          </div>
-        </div>
-
-        {/* RIGHT HERO CARD: WEEKLY CONSISTENCY & DAILY GOAL */}
-        <div className="lg:col-span-5 xl:col-span-5 p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-xl flex flex-col justify-between space-y-5">
+        {/* WEEKLY CONSISTENCY & DAILY GOAL (ORDER 1 ON MOBILE, RIGHT COL ON DESKTOP) */}
+        <div className="order-1 lg:order-2 lg:col-span-5 xl:col-span-5 p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-xl flex flex-col justify-between space-y-5">
           
           {/* Top Row: Daily Goal Header */}
           <div className="flex items-center justify-between">
@@ -394,6 +286,67 @@ export const DashboardScreen: React.FC = () => {
             </span>
             <Link to="/settings" className="text-primary font-bold hover:underline text-[11px]">
               Edit Goal →
+            </Link>
+          </div>
+        </div>
+
+        {/* CONTINUE READING CARD (ORDER 2 ON MOBILE, LEFT COL ON DESKTOP) */}
+        <div className="order-2 lg:order-1 lg:col-span-7 xl:col-span-7 rounded-3xl bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#6d28d9] p-6 sm:p-7 text-white shadow-xl relative overflow-hidden border border-white/20 flex flex-col justify-between space-y-5">
+          {/* Ambient Glow */}
+          <div className="absolute top-0 right-0 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+
+          {/* Top Row: Session Tag & Surah Arabic Calligraphy */}
+          <div className="flex items-start justify-between gap-3 relative z-10">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-white/80 font-label-caps bg-white/15 px-3 py-1 rounded-full border border-white/20 inline-block">
+                {isStartingFresh ? 'Start Quran Journey' : 'Current Reading Session'}
+              </span>
+              <div className="flex items-baseline gap-2 mt-2">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+                  {currentSurahMeta.number}. {currentSurahMeta.name}
+                </h2>
+              </div>
+              <p className="text-xs sm:text-sm text-white/90 font-medium">
+                Ayah {lastAyah} of {currentSurahMeta.numberOfAyahs} • {currentSurahMeta.englishNameTranslation}
+              </p>
+            </div>
+
+            <span className="font-noto-serif text-3xl sm:text-4xl text-white/90 shrink-0 font-bold">
+              {currentSurahMeta.arabicName}
+            </span>
+          </div>
+
+          {/* Middle Row: Progress Slider with Juz Marker */}
+          <div className="space-y-2 relative z-10 pt-1">
+            <div className="relative w-full py-1">
+              <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden relative">
+                <div
+                  className="bg-white h-full rounded-full transition-all duration-500 shadow-sm"
+                  style={{ width: `${Math.max(2, overallQuranProgress.percent)}%` }}
+                />
+              </div>
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.95)] border-2 border-[#6d28d9] pointer-events-none transition-all duration-500"
+                style={{ left: `calc(${Math.min(97, Math.max(2, overallQuranProgress.percent))}% - 8px)` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-xs font-semibold text-white/95">
+              <span>Juz {juzProgress.juzNumber} of 30</span>
+              <span title={`${overallQuranProgress.cumulativeVerses} of 6,236 verses completed`}>
+                {overallQuranProgress.percent.toFixed(1)}% Whole Quran
+              </span>
+            </div>
+          </div>
+
+          {/* Bottom Action: Single Direct Sequential Reading Button (NO SKIP/SELECT CHAPTERS) */}
+          <div className="relative z-10 pt-1">
+            <Link
+              to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
+              className="w-full py-3.5 px-4 rounded-2xl bg-white text-[#6d28d9] hover:bg-white/95 active:scale-[0.99] font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+            >
+              <Play className="w-4 h-4 fill-[#6d28d9]" />
+              <span>{isStartingFresh ? 'Start Reading from Chapter 1' : 'Continue Reading'}</span>
             </Link>
           </div>
         </div>
@@ -494,7 +447,7 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 4. 🌟 3-COLUMN BENTO GRID ON DESKTOP (HABITS, SUGGESTED, KHATM & VERSE)   */}
+      {/* 4. 🌟 3-COLUMN BENTO GRID (HABITS, JUZ MILESTONES, KHATM & VERSE)           */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         
@@ -545,42 +498,56 @@ export const DashboardScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* COLUMN 2: QUICK JUMP & SUGGESTED SURAHS */}
+        {/* COLUMN 2: SEQUENTIAL QURAN JOURNEY & JUZ MILESTONES */}
         <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-primary-fixed-dim uppercase tracking-wider font-label-caps flex items-center gap-1.5">
               <Compass className="w-4 h-4 text-primary" />
-              <span>Recommended Surahs</span>
+              <span>Quran Journey Milestones</span>
             </h3>
-            <Link to="/quran" className="text-[11px] text-primary font-bold hover:underline">
-              All 114 →
-            </Link>
+            <span className="text-[11px] text-primary font-bold">Sequential</span>
           </div>
 
-          <div className="space-y-2">
-            {SUGGESTED_SURAHS.map((s) => (
-              <button
-                key={s.number}
-                onClick={() => handleQuickLaunchSurah(s.number)}
-                className={`w-full p-2.5 rounded-2xl bg-gradient-to-r ${s.color} border text-left flex items-center justify-between hover:scale-[1.01] transition-all shadow-sm cursor-pointer group`}
+          <div className="space-y-2.5">
+            {[
+              { juz: 1, title: 'Juz 1 • Al-Fatihah & Al-Baqarah', range: '1:1 - 2:141', active: juzProgress.juzNumber === 1, passed: juzProgress.juzNumber > 1 },
+              { juz: 2, title: 'Juz 2 • Al-Baqarah Continued', range: '2:142 - 2:252', active: juzProgress.juzNumber === 2, passed: juzProgress.juzNumber > 2 },
+              { juz: 3, title: 'Juz 3 • Al-Baqarah & Ali \'Imran', range: '2:253 - 3:92', active: juzProgress.juzNumber === 3, passed: juzProgress.juzNumber > 3 },
+              { juz: 4, title: 'Juz 4 • Ali \'Imran & An-Nisa', range: '3:93 - 4:23', active: juzProgress.juzNumber === 4, passed: juzProgress.juzNumber > 4 },
+              { juz: 5, title: 'Juz 5 • An-Nisa Continued', range: '4:24 - 4:147', active: juzProgress.juzNumber === 5, passed: juzProgress.juzNumber > 5 },
+            ].map((m) => (
+              <div
+                key={m.juz}
+                className={`p-3 rounded-2xl border flex items-center justify-between transition ${
+                  m.active
+                    ? 'bg-primary/15 border-primary shadow-sm'
+                    : m.passed
+                    ? 'bg-surface-container/80 border-outline-variant/30 opacity-75'
+                    : 'bg-surface-container/40 border-outline-variant/15 opacity-50'
+                }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-6 h-6 rounded-lg bg-surface-container-high/80 text-[10px] font-bold text-outline flex items-center justify-center border border-outline-variant/20 shrink-0">
-                    {s.number}
+                  <span className={`w-6 h-6 rounded-lg text-[10px] font-bold flex items-center justify-center shrink-0 ${
+                    m.active
+                      ? 'bg-primary text-white'
+                      : m.passed
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-surface-container-high text-outline'
+                  }`}>
+                    {m.passed ? '✓' : m.juz}
                   </span>
                   <div className="truncate">
-                    <p className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors truncate">
-                      {s.name}
+                    <p className={`text-xs font-bold truncate ${m.active ? 'text-primary' : 'text-on-surface'}`}>
+                      {m.title}
                     </p>
-                    <p className="text-[10px] text-outline truncate">{s.tag}</p>
+                    <p className="text-[10px] text-outline truncate">{m.range}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                  <span className="font-noto-serif text-xs text-primary-fixed-dim">{s.arabicName}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-outline group-hover:text-primary transition-colors" />
-                </div>
-              </button>
+                <span className="text-[10px] font-semibold text-outline shrink-0 ml-2">
+                  {m.active ? 'Active Juz' : m.passed ? 'Completed' : 'Upcoming'}
+                </span>
+              </div>
             ))}
           </div>
         </div>
@@ -632,10 +599,10 @@ export const DashboardScreen: React.FC = () => {
 
             <div className="pt-1">
               <Link
-                to={`/reading?surah=${dailyVerse.surahNum}&ayah=${dailyVerse.ayahNum}`}
+                to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
                 className="w-full py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
               >
-                <span>Read in Context</span>
+                <span>Continue Your Reading ({currentSurahMeta.name})</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -643,61 +610,6 @@ export const DashboardScreen: React.FC = () => {
         </div>
 
       </div>
-
-      {/* ========================================================================= */}
-      {/* 5. SURAH PICKER MODAL (WHEN USER CLICKS SELECT CHAPTER)                    */}
-      {/* ========================================================================= */}
-      {showSurahPickerModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="max-w-md w-full p-6 rounded-3xl glass-card border border-outline-variant/40 space-y-4 shadow-2xl max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-2 border-b border-outline-variant/30 shrink-0">
-              <h3 className="text-base font-bold text-on-surface">Select Chapter to Read</h3>
-              <button
-                onClick={() => setShowSurahPickerModal(false)}
-                className="p-1 rounded-full hover:bg-surface-container text-outline hover:text-on-surface transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Search */}
-            <div className="relative shrink-0">
-              <Search className="w-4 h-4 text-outline absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={pickerSearchQuery}
-                onChange={(e) => setPickerSearchQuery(e.target.value)}
-                placeholder="Search 114 Surahs..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-surface-container border border-outline-variant/30 text-xs text-on-surface placeholder:text-outline focus:outline-none focus:border-primary"
-              />
-            </div>
-
-            {/* List */}
-            <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 divide-y divide-outline-variant/10">
-              {filteredSurahsForPicker.map((surah) => (
-                <div
-                  key={surah.number}
-                  onClick={() => handleSelectBookmarkSurah(surah.number)}
-                  className="p-2.5 rounded-2xl hover:bg-primary/15 hover:border-primary/40 border border-transparent flex items-center justify-between cursor-pointer transition"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-mono text-xs font-bold text-primary w-6">
-                      {surah.number}
-                    </span>
-                    <div>
-                      <p className="text-xs font-bold text-on-surface">{surah.name}</p>
-                      <p className="text-[10px] text-outline">{surah.englishNameTranslation} • {surah.numberOfAyahs} ayahs</p>
-                    </div>
-                  </div>
-                  <span className="font-noto-serif text-sm text-primary-fixed-dim">
-                    {surah.arabicName}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   )
