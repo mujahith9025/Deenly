@@ -25,8 +25,7 @@ import { useThemeStore } from '../store/useThemeStore'
 import { syncService } from '../lib/syncService'
 import { quranCache } from '../lib/quranCache'
 
-type SettingSubPage = 
-  | null 
+type SettingCategory = 
   | 'theme' 
   | 'translation' 
   | 'font' 
@@ -47,7 +46,11 @@ function formatLastSynced(timestamp: string | null): string {
 }
 
 export const SettingsScreen: React.FC = () => {
-  const [activeSubPage, setActiveSubPage] = useState<SettingSubPage>(null)
+  // Mobile drilldown state (null = list view)
+  const [activeMobileSubPage, setActiveMobileSubPage] = useState<SettingCategory | null>(null)
+  // Desktop active tab
+  const [activeDesktopTab, setActiveDesktopTab] = useState<SettingCategory>('theme')
+
   const [isClearingCache, setIsClearingCache] = useState(false)
   const [cacheClearedSuccess, setCacheClearedSuccess] = useState(false)
 
@@ -111,709 +114,639 @@ export const SettingsScreen: React.FC = () => {
   }
 
   // =========================================================================
-  // SUB-PAGE: 1. THEME & APPEARANCE
+  // MODULAR SECTION RENDERERS (REUSED ACROSS DESKTOP & MOBILE)
   // =========================================================================
-  if (activeSubPage === 'theme') {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
-        <button
-          onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+
+  // 1. Theme Section
+  const renderThemeSection = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Theme & Appearance</h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          Choose your preferred visual mode for sacred recitation and day/night reading comfort.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        {/* Cosmic Dark */}
+        <div
+          onClick={() => setTheme('dark')}
+          className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
+            theme === 'dark'
+              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+              : 'glass-card border-outline-variant/30 hover:border-primary/40'
+          }`}
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Settings</span>
-        </button>
-
-        <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Theme & Appearance</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Choose your preferred color theme for recitation and interface.
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          {/* Cosmic Dark */}
-          <div
-            onClick={() => setTheme('dark')}
-            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
-              theme === 'dark'
-                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
-                : 'glass-card border-outline-variant/30 hover:border-primary/40'
-            }`}
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0">
-                <Moon className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-base font-bold text-on-surface block">Cosmic Dark</span>
-                <span className="text-xs text-on-surface-variant">Deep OLED night recitation mode</span>
-              </div>
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary">
+              <Moon className="w-6 h-6" />
             </div>
             {theme === 'dark' && <Check className="w-5 h-5 text-primary" />}
           </div>
+          <div>
+            <span className="text-base font-bold text-on-surface block">Cosmic Dark</span>
+            <span className="text-xs text-on-surface-variant">Deep OLED night recitation mode</span>
+          </div>
+        </div>
 
-          {/* Pristine Light */}
-          <div
-            onClick={() => setTheme('light')}
-            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
-              theme === 'light'
-                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
-                : 'glass-card border-outline-variant/30 hover:border-primary/40'
-            }`}
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0">
-                <Sun className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-base font-bold text-on-surface block">Pristine Light</span>
-                <span className="text-xs text-on-surface-variant">Clean and crisp daylight reading</span>
-              </div>
+        {/* Pristine Light */}
+        <div
+          onClick={() => setTheme('light')}
+          className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
+            theme === 'light'
+              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+              : 'glass-card border-outline-variant/30 hover:border-primary/40'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+              <Sun className="w-6 h-6" />
             </div>
             {theme === 'light' && <Check className="w-5 h-5 text-primary" />}
           </div>
+          <div>
+            <span className="text-base font-bold text-on-surface block">Pristine Light</span>
+            <span className="text-xs text-on-surface-variant">Clean and crisp daylight reading</span>
+          </div>
+        </div>
 
-          {/* Device System Default */}
-          <div
-            onClick={() => setTheme('system')}
-            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
-              theme === 'system'
-                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
-                : 'glass-card border-outline-variant/30 hover:border-primary/40'
-            }`}
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-on-surface-variant shrink-0">
-                <Laptop className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-base font-bold text-on-surface block">System Default</span>
-                <span className="text-xs text-on-surface-variant">Syncs automatically with your OS theme</span>
-              </div>
+        {/* System Default */}
+        <div
+          onClick={() => setTheme('system')}
+          className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
+            theme === 'system'
+              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+              : 'glass-card border-outline-variant/30 hover:border-primary/40'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-on-surface-variant">
+              <Laptop className="w-6 h-6" />
             </div>
             {theme === 'system' && <Check className="w-5 h-5 text-primary" />}
           </div>
-        </div>
-      </div>
-    )
-  }
-
-  // =========================================================================
-  // SUB-PAGE: 2. QURAN TRANSLATION
-  // =========================================================================
-  if (activeSubPage === 'translation') {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
-        <button
-          onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Settings</span>
-        </button>
-
-        <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Quran Translation</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Select your preferred translation for Quran verses and Hadiths.
-          </p>
-        </div>
-
-        <div className="space-y-3">
-          {/* English */}
-          <div
-            onClick={() => handleTranslationChange('english')}
-            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
-              currentTranslation === 'english'
-                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
-                : 'glass-card border-outline-variant/30 hover:border-primary/40'
-            }`}
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                EN
-              </div>
-              <div>
-                <span className="text-base font-bold text-on-surface block">English (Sahih International)</span>
-                <span className="text-xs text-on-surface-variant">Standard clear contemporary English translation</span>
-              </div>
-            </div>
-            {currentTranslation === 'english' && <Check className="w-5 h-5 text-primary" />}
-          </div>
-
-          {/* Tamil */}
-          <div
-            onClick={() => handleTranslationChange('tamil')}
-            className={`p-5 rounded-3xl border transition cursor-pointer flex items-center justify-between ${
-              currentTranslation === 'tamil'
-                ? 'bg-primary/15 border-primary shadow-md ring-1 ring-primary/40'
-                : 'glass-card border-outline-variant/30 hover:border-primary/40'
-            }`}
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-emerald-400 font-bold text-sm shrink-0">
-                தமிழ்
-              </div>
-              <div>
-                <span className="text-base font-bold text-on-surface block">தமிழ் (ஜான் டிரஸ்ட் / பாகவி)</span>
-                <span className="text-xs text-on-surface-variant">அங்கீகரிக்கப்பட்ட நேரடி தமிழ் மொழிபெயர்ப்பு</span>
-              </div>
-            </div>
-            {currentTranslation === 'tamil' && <Check className="w-5 h-5 text-primary" />}
+          <div>
+            <span className="text-base font-bold text-on-surface block">System Default</span>
+            <span className="text-xs text-on-surface-variant">Syncs automatically with your OS</span>
           </div>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 
-  // =========================================================================
-  // SUB-PAGE: 3. ARABIC FONT SIZE & TYPOGRAPHY
-  // =========================================================================
-  if (activeSubPage === 'font') {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
-        <button
-          onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+  // 2. Translation Section
+  const renderTranslationSection = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Quran Translation</h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          Select your primary translation for Quran verses and authentic Hadiths.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* English */}
+        <div
+          onClick={() => handleTranslationChange('english')}
+          className={`p-5 rounded-3xl border transition cursor-pointer flex items-start justify-between ${
+            currentTranslation === 'english'
+              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+              : 'glass-card border-outline-variant/30 hover:border-primary/40'
+          }`}
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Settings</span>
-        </button>
-
-        <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Arabic Typography & Size</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Adjust the Arabic script size. Changes are automatically fixed and saved across Quran & Hadith readers.
-          </p>
-        </div>
-
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6 shadow-md">
-          {/* Header with Stepper */}
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-outline uppercase tracking-wider block">Arabic Font Size</span>
-              <span className="text-2xl sm:text-3xl font-extrabold text-primary font-mono mt-0.5 block">
-                {currentFontSize}px
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+              EN
+            </div>
+            <div className="space-y-1">
+              <span className="text-base font-bold text-on-surface block">English (Sahih International)</span>
+              <span className="text-xs text-on-surface-variant block leading-relaxed">
+                Standard contemporary English translation by Umm Muhammad. Highly acclaimed for accuracy.
               </span>
             </div>
+          </div>
+          {currentTranslation === 'english' && <Check className="w-5 h-5 text-primary shrink-0 ml-2" />}
+        </div>
 
-            {/* Stepper Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => updateUserSettings({ arabicFontSize: Math.max(18, currentFontSize - 2) })}
-                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
-              >
-                -
-              </button>
-              <button
-                type="button"
-                onClick={() => updateUserSettings({ arabicFontSize: Math.min(54, currentFontSize + 2) })}
-                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
-              >
-                +
-              </button>
+        {/* Tamil */}
+        <div
+          onClick={() => handleTranslationChange('tamil')}
+          className={`p-5 rounded-3xl border transition cursor-pointer flex items-start justify-between ${
+            currentTranslation === 'tamil'
+              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+              : 'glass-card border-outline-variant/30 hover:border-primary/40'
+          }`}
+        >
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+              தமிழ்
+            </div>
+            <div className="space-y-1">
+              <span className="text-base font-bold text-on-surface block">தமிழ் (அப்துல் ஹமீது பாகவி)</span>
+              <span className="text-xs text-on-surface-variant block leading-relaxed">
+                Classic authentic Tamil translation by Allama Baqavi / Jan Trust Foundation.
+              </span>
             </div>
           </div>
+          {currentTranslation === 'tamil' && <Check className="w-5 h-5 text-primary shrink-0 ml-2" />}
+        </div>
+      </div>
+    </div>
+  )
 
-          {/* Slider */}
-          <div className="space-y-2">
-            <input
-              type="range"
-              min="18"
-              max="54"
-              step="2"
-              value={currentFontSize}
-              onChange={handleFontSizeChange}
-              className="w-full accent-primary h-2 bg-surface-container-highest rounded-lg cursor-pointer"
+  // 3. Font Size Section
+  const renderFontSection = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Arabic Font Size & Script</h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          Adjust the typography scale from 18px up to 54px. Changes are saved and applied across all readers instantly.
+        </p>
+      </div>
+
+      {/* Live Preview Card */}
+      <div className="p-6 sm:p-8 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-lg space-y-3 text-center">
+        <span className="text-[10px] sm:text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+          Live Bismillah Preview ({currentFontSize}px)
+        </span>
+        <p
+          className="font-noto-serif text-on-surface text-center leading-relaxed transition-all duration-200"
+          style={{ fontSize: `${currentFontSize}px` }}
+          dir="rtl"
+        >
+          بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+        </p>
+        <p className="text-xs text-on-surface-variant italic">
+          "In the Name of Allah, the Most Compassionate, the Most Merciful"
+        </p>
+      </div>
+
+      {/* Controls Card */}
+      <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-sm font-bold text-on-surface block">Font Scaling</span>
+            <span className="text-xs text-on-surface-variant">Selected: <strong className="text-primary">{currentFontSize}px</strong></span>
+          </div>
+
+          {/* Stepper Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => updateUserSettings({ arabicFontSize: Math.max(18, currentFontSize - 2) })}
+              className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
+            >
+              -
+            </button>
+            <button
+              type="button"
+              onClick={() => updateUserSettings({ arabicFontSize: Math.min(54, currentFontSize + 2) })}
+              className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Slider */}
+        <div className="space-y-2">
+          <input
+            type="range"
+            min="18"
+            max="54"
+            step="2"
+            value={currentFontSize}
+            onChange={handleFontSizeChange}
+            className="w-full accent-primary h-2 bg-surface-container-highest rounded-lg cursor-pointer"
+          />
+          <div className="flex justify-between text-[10px] text-outline">
+            <span>18px (Compact)</span>
+            <span>28px (Standard)</span>
+            <span>54px (Max / 54px)</span>
+          </div>
+        </div>
+
+        {/* Quick Presets */}
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-outline uppercase tracking-wider block">Quick Presets</span>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: 'Compact', size: 22 },
+              { label: 'Standard', size: 28 },
+              { label: 'Large', size: 38 },
+              { label: 'Max', size: 54 },
+            ].map((p) => (
+              <button
+                key={p.size}
+                type="button"
+                onClick={() => updateUserSettings({ arabicFontSize: p.size })}
+                className={`py-2.5 px-1 rounded-2xl text-xs font-bold transition cursor-pointer border text-center ${
+                  currentFontSize === p.size
+                    ? 'primary-gradient-btn text-white shadow-md'
+                    : 'bg-surface-container/60 border-outline-variant/30 text-on-surface hover:border-primary/40'
+                }`}
+              >
+                <span className="block">{p.size}px</span>
+                <span className="text-[10px] opacity-75 block font-normal">{p.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // 4. Daily Target Section
+  const renderTargetSection = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Daily Recitation Target</h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          Set a daily verse milestone to build consistency and keep your spiritual streak alive.
+        </p>
+      </div>
+
+      <div className="p-6 sm:p-8 rounded-3xl glass-card border border-outline-variant/30 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold text-outline uppercase tracking-wider block">Current Target</span>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="text-3xl sm:text-4xl font-bold text-tertiary">{currentGoal}</span>
+              <span className="text-sm font-semibold text-on-surface-variant">Ayahs / Day</span>
+            </div>
+            <p className="text-xs text-outline mt-1">~{currentGoal * 100} Estimated Hasanat points daily</p>
+          </div>
+
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => handleGoalStep(-5)}
+              className="w-11 h-11 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
+            >
+              -5
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGoalStep(5)}
+              className="w-11 h-11 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg flex items-center justify-center"
+            >
+              +5
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Goal Presets */}
+        <div className="space-y-2 pt-2 border-t border-outline-variant/20">
+          <span className="text-xs font-bold text-outline uppercase tracking-wider block">Recommended Goals</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {[
+              { val: 5, label: '5 Ayahs', sub: 'Light Habit' },
+              { val: 10, label: '10 Ayahs', sub: 'Standard' },
+              { val: 20, label: '20 Ayahs', sub: 'Dedicated' },
+              { val: 50, label: '50 Ayahs', sub: '1/2 Juz Pace' },
+            ].map((preset) => (
+              <button
+                key={preset.val}
+                type="button"
+                onClick={() => handleGoalPreset(preset.val)}
+                className={`p-3 rounded-2xl border text-center transition cursor-pointer ${
+                  currentGoal === preset.val
+                    ? 'bg-tertiary-container/30 border-tertiary text-tertiary shadow-sm'
+                    : 'bg-surface-container/60 border-outline-variant/30 text-on-surface hover:border-primary/40'
+                }`}
+              >
+                <span className="text-sm font-bold block">{preset.label}</span>
+                <span className="text-[10px] text-outline block">{preset.sub}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // 5. Notifications Section
+  const renderNotificationsSection = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Notifications & Reminders</h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          Configure spiritual reminders to maintain your daily Quran habit and prayer awareness.
+        </p>
+      </div>
+
+      <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
+        {/* Daily Reading Reminder */}
+        <div className="p-5 flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <span className="text-base font-bold text-on-surface block">Daily Quran Recitation Alert</span>
+            <span className="text-xs text-on-surface-variant block">
+              Receive a gentle reminder notification at your preferred reading time
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleToggleReadingReminders}
+            className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+              readingAlerts ? 'bg-primary' : 'bg-surface-container-highest'
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform ${
+                readingAlerts ? 'translate-x-5' : 'translate-x-0'
+              }`}
             />
-            <div className="flex justify-between text-[10px] text-outline">
-              <span>18px (Compact)</span>
-              <span>28px (Standard)</span>
-              <span>54px (Max / 54px)</span>
-            </div>
-          </div>
+          </button>
+        </div>
 
-          {/* Quick Presets */}
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-outline uppercase tracking-wider block">Quick Presets</span>
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { label: 'Compact', size: 22 },
-                { label: 'Standard', size: 28 },
-                { label: 'Large', size: 38 },
-                { label: 'Max', size: 54 },
-              ].map((p) => (
-                <button
-                  key={p.size}
-                  type="button"
-                  onClick={() => updateUserSettings({ arabicFontSize: p.size })}
-                  className={`py-2.5 px-1 rounded-2xl text-xs font-bold transition cursor-pointer border text-center ${
-                    currentFontSize === p.size
-                      ? 'primary-gradient-btn text-white shadow-md'
-                      : 'bg-surface-container/60 border-outline-variant/30 text-on-surface hover:border-primary/40'
-                  }`}
-                >
-                  <span className="block">{p.size}px</span>
-                  <span className="text-[10px] opacity-75 block font-normal">{p.label}</span>
-                </button>
-              ))}
-            </div>
+        {/* Prayer Time Notifications */}
+        <div className="p-5 flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <span className="text-base font-bold text-on-surface block">Prayer & Adhan Awareness</span>
+            <span className="text-xs text-on-surface-variant block">
+              Notifications when local prayer time arrives
+            </span>
           </div>
-
-          {/* Live Preview Card */}
-          <div className="p-6 rounded-2xl bg-surface-container/70 border border-outline-variant/40 space-y-3 text-center">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-outline tracking-wider">Live Preview</span>
-              <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                <Check className="w-3.5 h-3.5" />
-                <span>Auto-saved</span>
-              </span>
-            </div>
-            <p
-              className="font-noto-serif text-on-surface leading-loose transition-all duration-200"
-              style={{ fontSize: `${currentFontSize}px` }}
-              dir="rtl"
-            >
-              بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
-            </p>
-            <p className="text-xs text-on-surface-variant italic">
-              "In the name of Allah, the Entirely Merciful, the Especially Merciful."
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={handleTogglePrayerNotifications}
+            className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+              prayerAlerts ? 'bg-primary' : 'bg-surface-container-highest'
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform ${
+                prayerAlerts ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 
-  // =========================================================================
-  // SUB-PAGE: 4. DAILY VERSE TARGET
-  // =========================================================================
-  if (activeSubPage === 'target') {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
-        <button
-          onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Settings</span>
-        </button>
+  // 6. Sync Section
+  const renderSyncSection = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Cloud Sync & Storage</h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          Realtime cloud synchronization, local offline caching, and device telemetry.
+        </p>
+      </div>
 
-        <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Daily Verse Target</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Set your daily Quran recitation commitment to build a consistent habit.
-          </p>
-        </div>
-
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6 shadow-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Sync Status Card */}
+        <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
           <div className="flex items-center justify-between">
-            <div>
-              <span className="text-2xl sm:text-3xl font-extrabold text-on-surface">
-                {currentGoal} <span className="text-sm font-normal text-on-surface-variant">Ayahs / day</span>
-              </span>
-              <p className="text-xs text-outline mt-0.5">
-                ≈ {Math.max(1, Math.round(currentGoal / 15))} pages per day
-              </p>
-            </div>
-
-            {/* Stepper Buttons */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleGoalStep(-5)}
-                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg"
-              >
-                -
-              </button>
-              <button
-                onClick={() => handleGoalStep(5)}
-                className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface font-bold hover:border-primary transition cursor-pointer text-lg"
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          {/* Quick Presets */}
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-outline uppercase tracking-wider block">Quick Presets</span>
-            <div className="grid grid-cols-4 gap-2">
-              {[5, 10, 20, 50].map((val) => (
-                <button
-                  key={val}
-                  onClick={() => handleGoalPreset(val)}
-                  className={`py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer border ${
-                    currentGoal === val
-                      ? 'primary-gradient-btn text-white shadow-md'
-                      : 'bg-surface-container/60 border-outline-variant/30 text-on-surface hover:border-primary/40'
-                  }`}
-                >
-                  {val} Ayahs
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // =========================================================================
-  // SUB-PAGE: 5. NOTIFICATIONS & REMINDERS
-  // =========================================================================
-  if (activeSubPage === 'notifications') {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
-        <button
-          onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Settings</span>
-        </button>
-
-        <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Notifications & Reminders</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Stay on track with daily Quran reading notifications and prayer alerts.
-          </p>
-        </div>
-
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md">
-          {/* Daily Quran Reminders */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <span className="text-sm font-bold text-on-surface block">Daily Quran Reminders</span>
-              <span className="text-xs text-on-surface-variant">Gentle notification to fulfill your daily goal</span>
+              <span className={`w-2.5 h-2.5 rounded-full ${
+                syncStatus === 'synced' ? 'bg-emerald-400' :
+                syncStatus === 'syncing' ? 'bg-amber-400 animate-pulse' :
+                'bg-rose-400'
+              }`} />
+              <span className="text-sm font-bold text-on-surface capitalize">
+                {syncStatus === 'synced' ? 'Cloud Synced' : syncStatus === 'syncing' ? 'Syncing Now...' : 'Offline'}
+              </span>
             </div>
             <button
-              onClick={handleToggleReadingReminders}
-              className={`w-12 h-6.5 rounded-full transition-colors relative cursor-pointer ${
-                readingAlerts ? 'bg-primary' : 'bg-surface-container-highest'
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full bg-white transition-transform absolute top-0.5 ${
-                  readingAlerts ? 'right-0.5' : 'left-0.5'
-                }`}
-              />
-            </button>
-          </div>
-
-          <div className="h-px bg-outline-variant/20" />
-
-          {/* Prayer Time Alerts */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <span className="text-sm font-bold text-on-surface block">Prayer Time Alerts</span>
-              <span className="text-xs text-on-surface-variant">Notifications for Fajr, Dhuhr, Asr, Maghrib, and Isha</span>
-            </div>
-            <button
-              onClick={handleTogglePrayerNotifications}
-              className={`w-12 h-6.5 rounded-full transition-colors relative cursor-pointer ${
-                prayerAlerts ? 'bg-primary' : 'bg-surface-container-highest'
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full bg-white transition-transform absolute top-0.5 ${
-                  prayerAlerts ? 'right-0.5' : 'left-0.5'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // =========================================================================
-  // SUB-PAGE: 6. CLOUD SYNC & OFFLINE STORAGE
-  // =========================================================================
-  if (activeSubPage === 'sync') {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
-        <button
-          onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Settings</span>
-        </button>
-
-        <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Cloud Sync & Storage</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Manage your offline cache and device synchronization.
-          </p>
-        </div>
-
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-bold text-on-surface block">Sync Status</span>
-              <span className="text-xs text-on-surface-variant">Last synced: {formatLastSynced(lastSyncedAt)}</span>
-            </div>
-            <button
+              type="button"
               onClick={handleSyncNow}
               disabled={syncStatus === 'syncing'}
-              className="px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50"
+              className="p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-primary transition cursor-pointer disabled:opacity-50"
+              title="Trigger Sync Now"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncStatus === 'syncing' ? 'animate-spin' : ''}`} />
-              <span>{syncStatus === 'syncing' ? 'Syncing...' : 'Sync Now'}</span>
+              {syncStatus === 'syncing' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
             </button>
           </div>
 
-          <div className="h-px bg-outline-variant/20" />
-
-          {/* Clear Offline Cache */}
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-sm font-bold text-on-surface block">Quran Offline Cache</span>
-              <span className="text-xs text-on-surface-variant">Clear cached Surahs and audio clips</span>
-            </div>
-            <button
-              onClick={handleClearOfflineCache}
-              disabled={isClearingCache}
-              className="px-4 py-2 rounded-full bg-surface-container border border-outline-variant/30 hover:border-rose-500/40 text-rose-400 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-sm"
-            >
-              {isClearingCache ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-              <span>{cacheClearedSuccess ? 'Cache Cleared!' : 'Clear Cache'}</span>
-            </button>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20 text-[11px] text-outline">
-            <span>Device ID: <span className="font-mono text-on-surface">{deviceId}</span></span>
-            {pendingOfflineCount > 0 && <span className="block mt-0.5 text-amber-400">({pendingOfflineCount} actions pending upload)</span>}
+          <div className="text-xs text-on-surface-variant space-y-1">
+            <p>Last cloud backup: <strong className="text-on-surface">{formatLastSynced(lastSyncedAt)}</strong></p>
+            <p>Pending offline records: <strong className="text-on-surface">{pendingOfflineCount}</strong></p>
           </div>
         </div>
+
+        {/* Device ID Card */}
+        <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-2">
+          <span className="text-xs font-bold text-outline uppercase tracking-wider block">Registered Device</span>
+          <p className="font-mono text-xs text-on-surface bg-surface-container px-3 py-2 rounded-2xl border border-outline-variant/20 truncate">
+            {deviceId}
+          </p>
+          <span className="text-[11px] text-on-surface-variant block">Unique hardware instance identifier for multi-device sync</span>
+        </div>
       </div>
-    )
-  }
+
+      {/* Clear Cache Card */}
+      <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <span className="text-sm font-bold text-on-surface block">Offline Quran Storage</span>
+          <span className="text-xs text-on-surface-variant block">
+            Clear locally stored audio recitations and IndexedDB Surah caches to free disk space
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={handleClearOfflineCache}
+          disabled={isClearingCache}
+          className="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer shrink-0 disabled:opacity-50"
+        >
+          {isClearingCache ? (
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+          ) : cacheClearedSuccess ? (
+            <Check className="w-4 h-4 text-emerald-400" />
+          ) : (
+            <Trash2 className="w-4 h-4 text-rose-400" />
+          )}
+          <span>{cacheClearedSuccess ? 'Cache Cleared!' : 'Clear Cache'}</span>
+        </button>
+      </div>
+    </div>
+  )
+
+  // 7. About Section
+  const renderAboutSection = () => (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">About Deenly</h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          Spiritual reflection platform, verified data sources, and open-source attributions.
+        </p>
+      </div>
+
+      <div className="p-6 sm:p-8 rounded-3xl glass-card border border-outline-variant/30 space-y-5">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl primary-gradient-btn flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+            د
+          </div>
+          <div>
+            <h3 className="text-lg font-bold font-h2 text-on-surface">Deenly (دينلي)</h3>
+            <p className="text-xs text-primary font-semibold">Version 2.0.0 • Progressive Web Application</p>
+          </div>
+        </div>
+
+        <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+          Deenly is designed to make daily Quran recitation effortless and consistent. With precision Hasanat calculations (10 rewards per Arabic letter), multilingual translations (English & Tamil), audio recitations by Sheikh Mishary Rashid Alafasy, and offline PWA support.
+        </p>
+
+        <div className="space-y-2 pt-2 border-t border-outline-variant/20 text-xs text-on-surface-variant">
+          <p><strong>Arabic Quran Text:</strong> King Fahd Glorious Quran Printing Complex & Tanzil.net</p>
+          <p><strong>English Translation:</strong> Sahih International (Umm Muhammad)</p>
+          <p><strong>Tamil Translation:</strong> Abdul Hameed Baqavi / Jan Trust Foundation</p>
+          <p><strong>Reciter Audio:</strong> Sheikh Mishary Rashid Alafasy</p>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Array of categories for navigation
+  const categories: Array<{ id: SettingCategory; label: string; icon: any; desc: string; badge?: string }> = [
+    { id: 'theme', label: 'Theme & Appearance', icon: theme === 'dark' ? Moon : Sun, desc: `${theme.charAt(0).toUpperCase() + theme.slice(1)} Mode` },
+    { id: 'translation', label: 'Quran Translation', icon: Globe, desc: currentTranslation === 'tamil' ? 'தமிழ் (பாகவி)' : 'English (Sahih)' },
+    { id: 'font', label: 'Arabic Typography', icon: Type, desc: `${currentFontSize}px Arabic Script` },
+    { id: 'target', label: 'Daily Verse Target', icon: Target, desc: `${currentGoal} Ayahs / Day` },
+    { id: 'notifications', label: 'Notifications & Adhan', icon: Bell, desc: readingAlerts ? 'Alerts Active' : 'Disabled' },
+    { id: 'sync', label: 'Cloud Sync & Storage', icon: Cloud, desc: syncStatus === 'synced' ? 'Synced' : 'Offline' },
+    { id: 'about', label: 'About Deenly', icon: Info, desc: 'Version 2.0 • Data Sources' },
+  ]
 
   // =========================================================================
-  // SUB-PAGE: 7. INSTRUCTIONS & ABOUT DEENLY
+  // MOBILE SUB-PAGE DRILLDOWN VIEW (ONLY ON MOBILE WHEN activeMobileSubPage IS SET)
   // =========================================================================
-  if (activeSubPage === 'about') {
+  if (activeMobileSubPage) {
     return (
-      <div className="space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
+      <div className="lg:hidden space-y-6 max-w-2xl mx-auto pb-24 animate-fade-in">
         <button
-          onClick={() => setActiveSubPage(null)}
+          onClick={() => setActiveMobileSubPage(null)}
           className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Settings</span>
         </button>
 
-        <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">About Deenly</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Open-source Islamic companion app and recitation engine.
-          </p>
-        </div>
-
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md text-xs text-on-surface-variant leading-relaxed">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center text-primary font-bold">
-              📖
-            </div>
-            <div>
-              <p className="text-sm font-bold text-on-surface">Deenly v2.0</p>
-              <p className="text-[11px] text-outline">Holy Quran & Kutub al-Sittah Hadith Companion</p>
-            </div>
-          </div>
-
-          <p>
-            Deenly is designed to make daily Quran recitation effortless and consistent. With precision Hasanat calculations (10 rewards per Arabic letter), multilingual translations (English & Tamil), audio recitations by Sheikh Mishary Rashid Alafasy, and offline PWA support.
-          </p>
-          <p>
-            All texts are sourced from verified public Islamic repositories and authentic open-source datasets.
-          </p>
-        </div>
+        {activeMobileSubPage === 'theme' && renderThemeSection()}
+        {activeMobileSubPage === 'translation' && renderTranslationSection()}
+        {activeMobileSubPage === 'font' && renderFontSection()}
+        {activeMobileSubPage === 'target' && renderTargetSection()}
+        {activeMobileSubPage === 'notifications' && renderNotificationsSection()}
+        {activeMobileSubPage === 'sync' && renderSyncSection()}
+        {activeMobileSubPage === 'about' && renderAboutSection()}
       </div>
     )
   }
 
   // =========================================================================
-  // MAIN SETTINGS MENU (ORGANIZED GROUPED DIRECTORY)
+  // DESKTOP TWO-COLUMN RESPONSIVE LAYOUT + MOBILE DIRECTORY
   // =========================================================================
   return (
-    <div className="space-y-6 max-w-3xl mx-auto pb-24 animate-fade-in">
+    <div className="w-full pb-24 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">Settings</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">App Settings</h1>
         <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-          Customize your recitation experience, preferences, and offline data.
+          Customize your recitation theme, font scale, translations, and daily targets.
         </p>
       </div>
 
-      {/* Profile Shortcut Card */}
-      <Link
-        to="/profile"
-        className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition flex items-center justify-between shadow-sm group cursor-pointer"
-      >
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-            <UserIcon className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="text-sm sm:text-base font-bold text-on-surface block">
-              {user?.name || 'Muslim Seeker'}
-            </span>
-            <span className="text-xs text-outline flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-              <span>Manage Account & Spiritual Milestones</span>
-            </span>
-          </div>
-        </div>
-        <ChevronRight className="w-5 h-5 text-outline group-hover:text-primary transition" />
-      </Link>
-
-      {/* GROUP 1: RECITATION & READING EXPERIENCE */}
-      <div className="space-y-2">
-        <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
-          Recitation & Experience
-        </h2>
-        <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
-          {/* 1. Theme & Appearance */}
-          <div
-            onClick={() => setActiveSubPage('theme')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
+      {/* 🌟 RESPONSIVE WRAPPER: 2 COLUMNS ON DESKTOP (`lg:`), SINGLE LIST ON MOBILE */}
+      <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+        
+        {/* ===================================================================== */}
+        {/* LEFT COLUMN / SIDEBAR NAV (DESKTOP & MOBILE DIRECTORY)                */}
+        {/* ===================================================================== */}
+        <div className="lg:col-span-4 xl:col-span-4 space-y-4">
+          
+          {/* Profile Shortcut Card */}
+          <Link
+            to="/profile"
+            className="p-4 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/50 transition flex items-center justify-between shadow-sm group cursor-pointer"
           >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-                {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5 text-amber-400" />}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-11 h-11 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+                <UserIcon className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Theme & Appearance</span>
-                <span className="text-xs text-outline capitalize">{theme} Mode</span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
-          </div>
-
-          {/* 2. Quran Translation */}
-          <div
-            onClick={() => setActiveSubPage('translation')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-                <Globe className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Quran Translation</span>
-                <span className="text-xs text-outline">
-                  {currentTranslation === 'tamil' ? 'தமிழ் (பாகவி)' : 'English (Sahih International)'}
+              <div className="truncate">
+                <span className="text-sm font-bold text-on-surface block truncate">
+                  {user?.name || 'Muslim Seeker'}
+                </span>
+                <span className="text-xs text-outline flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="truncate">Manage Account</span>
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
+            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition shrink-0" />
+          </Link>
+
+          {/* Settings Navigation Menu */}
+          <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
+            {categories.map((cat) => {
+              const Icon = cat.icon
+              const isSelectedOnDesktop = activeDesktopTab === cat.id
+
+              return (
+                <div
+                  key={cat.id}
+                  onClick={() => {
+                    setActiveDesktopTab(cat.id)
+                    setActiveMobileSubPage(cat.id) // For mobile
+                  }}
+                  className={`p-3.5 sm:p-4 transition cursor-pointer flex items-center justify-between group ${
+                    isSelectedOnDesktop
+                      ? 'lg:bg-primary/15 lg:border-l-4 lg:border-l-primary'
+                      : 'hover:bg-surface-container/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                      isSelectedOnDesktop 
+                        ? 'bg-primary text-white shadow-md' 
+                        : 'bg-surface-container-high border border-outline-variant/40 text-primary'
+                    }`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="truncate">
+                      <span className={`text-sm font-bold block truncate ${isSelectedOnDesktop ? 'text-primary' : 'text-on-surface'}`}>
+                        {cat.label}
+                      </span>
+                      <span className="text-xs text-outline truncate block">
+                        {cat.desc}
+                      </span>
+                    </div>
+                  </div>
+
+                  <ChevronRight className={`w-4.5 h-4.5 shrink-0 transition ${
+                    isSelectedOnDesktop ? 'text-primary' : 'text-outline group-hover:text-primary'
+                  }`} />
+                </div>
+              )
+            })}
           </div>
 
-          {/* 3. Arabic Font Size & Typography */}
-          <div
-            onClick={() => setActiveSubPage('font')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-                <Type className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Arabic Font Size & Script</span>
-                <span className="text-xs text-outline">{currentFontSize}px Arabic Script</span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
-          </div>
+          {/* Subtle Desktop Footnote */}
+          <p className="hidden lg:block text-[11px] text-outline text-center pt-2">
+            Deenly • Recitation Companion • v2.0
+          </p>
+        </div>
 
-          {/* 4. Daily Verse Target */}
-          <div
-            onClick={() => setActiveSubPage('target')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-tertiary shrink-0 group-hover:scale-105 transition-transform">
-                <Target className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Daily Verse Target</span>
-                <span className="text-xs text-outline">{currentGoal} Ayahs / Day</span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
+        {/* ===================================================================== */}
+        {/* RIGHT COLUMN (EXPANDED DETAIL PANEL ON DESKTOP)                       */}
+        {/* ===================================================================== */}
+        <div className="hidden lg:block lg:col-span-8 xl:col-span-8">
+          <div className="p-6 xl:p-8 rounded-3xl glass-card border border-outline-variant/30 shadow-md min-h-[560px]">
+            {activeDesktopTab === 'theme' && renderThemeSection()}
+            {activeDesktopTab === 'translation' && renderTranslationSection()}
+            {activeDesktopTab === 'font' && renderFontSection()}
+            {activeDesktopTab === 'target' && renderTargetSection()}
+            {activeDesktopTab === 'notifications' && renderNotificationsSection()}
+            {activeDesktopTab === 'sync' && renderSyncSection()}
+            {activeDesktopTab === 'about' && renderAboutSection()}
           </div>
         </div>
-      </div>
 
-      {/* GROUP 2: PREFERENCES & SYSTEM */}
-      <div className="space-y-2">
-        <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
-          Preferences & System
-        </h2>
-        <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
-          {/* 5. Notifications & Reminders */}
-          <div
-            onClick={() => setActiveSubPage('notifications')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
-                <Bell className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Notifications & Reminders</span>
-                <span className="text-xs text-outline">
-                  {readingAlerts ? 'Reminders Active' : 'Disabled'}
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
-          </div>
-
-          {/* 6. Cloud Sync & Offline Storage */}
-          <div
-            onClick={() => setActiveSubPage('sync')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-secondary shrink-0 group-hover:scale-105 transition-transform">
-                <Cloud className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Cloud Sync & Storage</span>
-                <span className="text-xs text-outline">Device ID & Offline Quran Cache</span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
-          </div>
-
-          {/* 7. About Deenly */}
-          <div
-            onClick={() => setActiveSubPage('about')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-outline shrink-0 group-hover:scale-105 transition-transform">
-                <Info className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">About Deenly</span>
-                <span className="text-xs text-outline">Version 2.0 • Instructions & Datasets</span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
-          </div>
-        </div>
-      </div>
-
-      {/* Subtle Footer */}
-      <div className="text-center pt-2 pb-4">
-        <p className="text-[11px] text-outline">
-          Deenly • Islamic Recitation Companion • Made with Barakah
-        </p>
       </div>
     </div>
   )

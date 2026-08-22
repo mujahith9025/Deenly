@@ -753,7 +753,7 @@ export const ProfileScreen: React.FC = () => {
   // MAIN PROFILE DIRECTORY MENU (GROUPED INSET CARDS MATCHING SETTINGS)
   // =========================================================================
   return (
-    <div className="space-y-6 max-w-3xl mx-auto pb-24 animate-fade-in">
+    <div className="space-y-6 max-w-5xl w-full mx-auto pb-24 animate-fade-in">
       {/* Top Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">My Spiritual Profile</h1>
@@ -821,153 +821,156 @@ export const ProfileScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* GROUP 1: SPIRITUAL REPOSITORY */}
-      <div className="space-y-2">
-        <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
-          Spiritual Repository
-        </h2>
-        <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
-          {/* 1. Saved Bookmarks */}
-          <div
-            onClick={() => setActiveSubPage('bookmarks')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
-                <Bookmark className="w-5 h-5 fill-amber-400" />
+      {/* 🌟 RESPONSIVE 2-COLUMN GRID ON DESKTOP */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* GROUP 1: SPIRITUAL REPOSITORY */}
+        <div className="space-y-2">
+          <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
+            Spiritual Repository
+          </h2>
+          <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
+            {/* 1. Saved Bookmarks */}
+            <div
+              onClick={() => setActiveSubPage('bookmarks')}
+              className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <Bookmark className="w-5 h-5 fill-amber-400" />
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-on-surface block">Saved Bookmarks</span>
+                  <span className="text-xs text-outline">
+                    {bookmarks.length > 0 
+                      ? `${bookmarks.length} Saved Ayahs & Hadiths`
+                      : 'No bookmarks saved yet'
+                    }
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Saved Bookmarks</span>
-                <span className="text-xs text-outline">
-                  {bookmarks.length > 0 
-                    ? `${bookmarks.length} Saved Ayahs & Hadiths`
-                    : 'No bookmarks saved yet'
-                  }
-                </span>
+              <div className="flex items-center gap-2">
+                {bookmarks.length > 0 && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary">
+                    {bookmarks.length}
+                  </span>
+                )}
+                <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {bookmarks.length > 0 && (
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary">
-                  {bookmarks.length}
-                </span>
-              )}
+
+            {/* 🌟 2. Favorite Verses & Hadiths (BELOW BOOKMARK SECTION) */}
+            <div
+              onClick={() => setActiveSubPage('favorites')}
+              className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-500 shrink-0 group-hover:scale-105 transition-transform">
+                  <Heart className="w-5 h-5 fill-rose-500" />
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-on-surface block">Favorite Verses & Hadiths</span>
+                  <span className="text-xs text-outline">
+                    {favorites.length > 0 
+                      ? `${favorites.length} Cherished Items`
+                      : 'No favorites saved yet'
+                    }
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {favorites.length > 0 && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400">
+                    {favorites.length}
+                  </span>
+                )}
+                <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-rose-400 transition" />
+              </div>
+            </div>
+
+            {/* 3. Spiritual Milestones */}
+            <div
+              onClick={() => setActiveSubPage('milestones')}
+              className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-tertiary shrink-0 group-hover:scale-105 transition-transform">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-on-surface block">Spiritual Milestones & Badges</span>
+                  <span className="text-xs text-outline">
+                    {badges.filter(b => b.progress === '100%').length} Badges Unlocked • 2 in progress
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
+            </div>
+
+            {/* 4. Recitation Analytics */}
+            <div
+              onClick={() => setActiveSubPage('stats')}
+              className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-on-surface block">Recitation Analytics</span>
+                  <span className="text-xs text-outline">
+                    {user?.currentStreak || 0}-day streak • {(user?.hasanat || 0).toLocaleString()} Hasanat
+                  </span>
+                </div>
+              </div>
               <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
             </div>
           </div>
-
-          {/* 🌟 2. Favorite Verses & Hadiths (BELOW BOOKMARK SECTION) */}
-          <div
-            onClick={() => setActiveSubPage('favorites')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-500 shrink-0 group-hover:scale-105 transition-transform">
-                <Heart className="w-5 h-5 fill-rose-500" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Favorite Verses & Hadiths</span>
-                <span className="text-xs text-outline">
-                  {favorites.length > 0 
-                    ? `${favorites.length} Cherished Items`
-                    : 'No favorites saved yet'
-                  }
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {favorites.length > 0 && (
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400">
-                  {favorites.length}
-                </span>
-              )}
-              <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-rose-400 transition" />
-            </div>
-          </div>
-
-          {/* 3. Spiritual Milestones */}
-          <div
-            onClick={() => setActiveSubPage('milestones')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-tertiary shrink-0 group-hover:scale-105 transition-transform">
-                <Award className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Spiritual Milestones & Badges</span>
-                <span className="text-xs text-outline">
-                  {badges.filter(b => b.progress === '100%').length} Badges Unlocked • 2 in progress
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
-          </div>
-
-          {/* 4. Recitation Analytics */}
-          <div
-            onClick={() => setActiveSubPage('stats')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-                <BarChart3 className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Recitation Analytics</span>
-                <span className="text-xs text-outline">
-                  {user?.currentStreak || 0}-day streak • {(user?.hasanat || 0).toLocaleString()} Hasanat
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
-          </div>
         </div>
-      </div>
 
-      {/* GROUP 2: ACCOUNT & PREFERENCES */}
-      <div className="space-y-2">
-        <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
-          Account & Preferences
-        </h2>
-        <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
-          {/* Account Management */}
-          <div
-            onClick={() => setActiveSubPage('account')}
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-                <ShieldCheck className="w-5 h-5" />
+        {/* GROUP 2: ACCOUNT & PREFERENCES */}
+        <div className="space-y-2">
+          <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
+            Account & Preferences
+          </h2>
+          <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
+            {/* Account Management */}
+            <div
+              onClick={() => setActiveSubPage('account')}
+              className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-on-surface block">Account & Security</span>
+                  <span className="text-xs text-outline">
+                    {user?.isGuest ? 'Guest Mode (Unsynced)' : 'Google Authenticated Profile'}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">Account & Security</span>
-                <span className="text-xs text-outline">
-                  {user?.isGuest ? 'Guest Mode (Unsynced)' : 'Google Authenticated Profile'}
-                </span>
-              </div>
+              <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
             </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
+
+            {/* Quick Link to Settings */}
+            <Link
+              to="/settings"
+              className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-on-surface-variant shrink-0 group-hover:scale-105 transition-transform">
+                  <SettingsIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-on-surface block">App Settings</span>
+                  <span className="text-xs text-outline">
+                    Theme, typography, translation, targets & notifications
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
+            </Link>
           </div>
-
-          {/* Quick Link to Settings */}
-          <Link
-            to="/settings"
-            className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-on-surface-variant shrink-0 group-hover:scale-105 transition-transform">
-                <SettingsIcon className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-on-surface block">App Settings</span>
-                <span className="text-xs text-outline">
-                  Theme, typography, translation, targets & notifications
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4.5 h-4.5 text-outline group-hover:text-primary transition" />
-          </Link>
         </div>
       </div>
     </div>
