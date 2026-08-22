@@ -20,6 +20,7 @@ import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   calculateJuzProgress, 
   calculateKhatmProgress,
+  calculateOverallQuranProgress,
   formatDurationHuman, 
   getLocalDateString 
 } from '../lib/hasanatEngine'
@@ -198,7 +199,7 @@ export const DashboardScreen: React.FC = () => {
   const currentSurahMeta = SURAH_METADATA.find((s) => s.number === lastSurah) || SURAH_METADATA[0]
   const juzProgress = calculateJuzProgress(lastSurah, lastAyah)
   const khatmPercent = calculateKhatmProgress(user?.pages || 0)
-  const currentVersePercent = Math.min(100, Math.max(0, (lastAyah / (currentSurahMeta.numberOfAyahs || 1)) * 100))
+  const overallQuranProgress = calculateOverallQuranProgress(lastSurah, lastAyah)
 
   const handleQuickLaunchSurah = (surahNum: number) => {
     navigate(`/reading?surah=${surahNum}&ayah=1`)
@@ -296,25 +297,27 @@ export const DashboardScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Progress Slider Track with Draggable/Glowing Dot */}
+          {/* Progress Slider Track with Draggable/Glowing Dot (Reflects Whole Quran Progress) */}
           <div className="relative w-full py-1">
             <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden relative">
               <div
                 className="bg-white h-full rounded-full transition-all duration-500 shadow-sm"
-                style={{ width: `${Math.max(3, currentVersePercent)}%` }}
+                style={{ width: `${Math.max(2, overallQuranProgress.percent)}%` }}
               />
             </div>
             {/* Glowing White Thumb Indicator */}
             <div
               className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.95)] border-2 border-[#7c3aed] pointer-events-none transition-all duration-500"
-              style={{ left: `calc(${Math.min(96, Math.max(2, currentVersePercent))}% - 8px)` }}
+              style={{ left: `calc(${Math.min(97, Math.max(2, overallQuranProgress.percent))}% - 8px)` }}
             />
           </div>
 
-          {/* Bottom of Progress: Juz Position and Percentage */}
+          {/* Bottom of Progress: Juz Position and Overall Quran Completion Percentage */}
           <div className="flex items-center justify-between text-xs font-semibold text-white/90 pt-0.5">
             <span>{juzProgress.juzNumber}/30 Juz</span>
-            <span>{currentVersePercent.toFixed(1)}%</span>
+            <span title={`${overallQuranProgress.cumulativeVerses} of 6,236 verses completed (${overallQuranProgress.remainingPercent}% remaining to finish whole Quran)`}>
+              {overallQuranProgress.percent.toFixed(1)}%
+            </span>
           </div>
         </div>
 

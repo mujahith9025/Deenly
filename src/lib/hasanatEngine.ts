@@ -94,6 +94,44 @@ export function calculateKhatmProgress(totalPagesRead: number, totalPagesInQuran
 }
 
 /**
+ * Calculates overall Quran completion progress based on current Surah and Ayah position.
+ * Total verses in the entire Quran = 6,236 across 114 Surahs.
+ */
+export function calculateOverallQuranProgress(surahNumber: number, ayahNumber: number): {
+  cumulativeVerses: number
+  totalQuranVerses: number
+  percent: number
+  remainingPercent: number
+  remainingVerses: number
+} {
+  const totalQuranVerses = 6236
+  let cumulativeVerses = 0
+
+  for (let s = 1; s < surahNumber && s <= 114; s++) {
+    const meta = SURAH_METADATA.find((sm) => sm.number === s)
+    if (meta) {
+      cumulativeVerses += meta.numberOfAyahs
+    }
+  }
+
+  const currentMeta = SURAH_METADATA.find((sm) => sm.number === surahNumber)
+  const validAyah = currentMeta ? Math.min(currentMeta.numberOfAyahs, Math.max(1, ayahNumber)) : Math.max(1, ayahNumber)
+  cumulativeVerses += validAyah
+
+  const percent = Math.min(100, Math.max(0, Math.round((cumulativeVerses / totalQuranVerses) * 1000) / 10))
+  const remainingPercent = Math.max(0, Math.round((100 - percent) * 10) / 10)
+  const remainingVerses = Math.max(0, totalQuranVerses - cumulativeVerses)
+
+  return {
+    cumulativeVerses,
+    totalQuranVerses,
+    percent,
+    remainingPercent,
+    remainingVerses,
+  }
+}
+
+/**
  * Returns the local date formatted as YYYY-MM-DD (safe against UTC midnight skew).
  */
 export function getLocalDateString(d: Date = new Date()): string {
