@@ -500,7 +500,7 @@ export const DashboardScreen: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between text-xs font-semibold text-white/95">
-              <span>Juz {juzProgress.juzNumber} of 30</span>
+              <span>{isTamil ? `ஜுஸ் ${juzProgress.juzNumber} / 30` : `Juz ${juzProgress.juzNumber} of 30`}</span>
               <span>{overallQuranProgress.percent.toFixed(1)}%</span>
             </div>
           </div>
@@ -536,7 +536,9 @@ export const DashboardScreen: React.FC = () => {
           <div className="flex items-start justify-between gap-3 relative z-10">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-white/80 font-label-caps bg-white/15 px-3 py-1 rounded-full border border-white/20 inline-block">
-                {isStartingFresh ? 'Start Quran Journey' : 'Current Reading Session'}
+                {isStartingFresh 
+                  ? (isTamil ? 'குர்ஆன் பயணத்தைத் தொடங்குங்கள்' : 'Start Quran Journey') 
+                  : (isTamil ? 'தற்போதைய ஓதும் அமர்வு' : 'Current Reading Session')}
               </span>
               <div className="flex items-baseline gap-2 mt-2">
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
@@ -544,7 +546,7 @@ export const DashboardScreen: React.FC = () => {
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-white/90 font-medium">
-                Ayah {lastAyah} of {currentSurahMeta.numberOfAyahs} • {currentSurahMeta.englishNameTranslation}
+                {isTamil ? `வசனம் ${lastAyah} / ${currentSurahMeta.numberOfAyahs}` : `Ayah ${lastAyah} of ${currentSurahMeta.numberOfAyahs}`} • {currentSurahMeta.englishNameTranslation}
               </p>
             </div>
 
@@ -572,9 +574,9 @@ export const DashboardScreen: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between text-xs font-semibold text-white/95">
-              <span>Juz {juzProgress.juzNumber} of 30</span>
+              <span>{isTamil ? `ஜுஸ் ${juzProgress.juzNumber} / 30` : `Juz ${juzProgress.juzNumber} of 30`}</span>
               <span title={`${overallQuranProgress.cumulativeVerses} of 6,236 verses completed`}>
-                {overallQuranProgress.percent.toFixed(1)}% Whole Quran
+                {overallQuranProgress.percent.toFixed(1)}% {isTamil ? 'முழு குர்ஆன்' : 'Whole Quran'}
               </span>
             </div>
           </div>
@@ -586,7 +588,11 @@ export const DashboardScreen: React.FC = () => {
               className="w-full py-3.5 px-4 rounded-2xl bg-white text-[#6d28d9] hover:bg-white/95 active:scale-[0.99] font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
             >
               <Play className="w-4 h-4 fill-[#6d28d9]" />
-              <span>{isStartingFresh ? 'Start Reading from Chapter 1' : 'Continue Reading'}</span>
+              <span>
+                {isStartingFresh 
+                  ? (isTamil ? 'அத்தியாயம் 1 இலிருந்து தொடங்கவும்' : 'Start Reading from Chapter 1') 
+                  : (isTamil ? 'தொடர்ந்து ஓதுக' : 'Continue Reading')}
+              </span>
             </Link>
           </div>
         </div>
@@ -598,13 +604,13 @@ export const DashboardScreen: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-outline font-label-caps block">
-                Daily Recitation Target
+                {isTamil ? 'தினசரி ஓதும் இலக்கு' : 'Daily Recitation Target'}
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-extrabold text-on-surface">
                   {todayVerses} <span className="text-base sm:text-lg font-normal text-on-surface-variant">/ {dailyGoalVerses}</span>
                 </span>
-                <span className="text-xs font-semibold text-tertiary">Ayahs</span>
+                <span className="text-xs font-semibold text-tertiary">{isTamil ? 'வசனங்கள்' : 'Ayahs'}</span>
               </div>
             </div>
 
@@ -620,7 +626,7 @@ export const DashboardScreen: React.FC = () => {
           {/* 7-Day Consistency Weekdays Row */}
           <div className="space-y-2">
             <span className="text-xs font-bold text-outline uppercase tracking-wider block font-label-caps">
-              Weekly Consistency
+              {isTamil ? 'வார நிலைத்தன்மை' : 'Weekly Consistency'}
             </span>
             <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
               {weekDays.map((wd, i) => renderCircle(wd, i))}
@@ -631,10 +637,14 @@ export const DashboardScreen: React.FC = () => {
           <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20 flex items-center justify-between text-xs text-on-surface-variant">
             <span className="flex items-center gap-2">
               <Flame className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
-              <span>Current streak: <strong className="text-on-surface">{user?.currentStreak || 0} days</strong></span>
+              <span>
+                {isTamil 
+                  ? <>தற்போதைய தொடர்: <strong className="text-on-surface">{user?.currentStreak || 0} நாட்கள்</strong></> 
+                  : <>Current streak: <strong className="text-on-surface">{user?.currentStreak || 0} days</strong></>}
+              </span>
             </span>
             <Link to="/settings" className="text-primary font-bold hover:underline text-[11px]">
-              Edit Goal →
+              {isTamil ? 'இலக்கை மாற்று →' : 'Edit Goal →'}
             </Link>
           </div>
         </div>
@@ -876,7 +886,7 @@ export const DashboardScreen: React.FC = () => {
                 </div>
 
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-outline border border-outline-variant/30 shrink-0 ml-2">
-                  {habit.category}
+                  {isTamil ? (habit.category === 'prayer' ? 'தொழுகை' : habit.category === 'dhikr' ? 'திக்ர்' : 'குர்ஆன்') : habit.category}
                 </span>
               </div>
             ))}

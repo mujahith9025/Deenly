@@ -1,13 +1,17 @@
 export interface HadithBook {
   id: string
   name: string
+  nameTa?: string
   arabicName: string
   author: string
+  authorTa?: string
   authorDeath: string
   totalHadiths: number
   totalChapters: number
   grade: string
+  gradeTa?: string
   description: string
+  descriptionTa?: string
   hasTamil: boolean
 }
 
@@ -15,73 +19,97 @@ export const HADITH_BOOKS: HadithBook[] = [
   {
     id: 'bukhari',
     name: 'Sahih al-Bukhari',
+    nameTa: 'ஸஹீஹுல் புகாரி',
     arabicName: 'صحيح البخاري',
     author: 'Imam Muhammad al-Bukhari',
+    authorTa: 'இமாம் முஹம்மது அல்-புகாரி',
     authorDeath: '194 – 256 AH (870 CE)',
     totalHadiths: 7563,
     totalChapters: 97,
     grade: 'Sahih (Highest Authenticity)',
+    gradeTa: 'ஸஹீஹ் (மிக உயர்ந்த நம்பகத்தன்மை)',
     description: 'Universally accepted as the most authentic collection of Prophetic traditions after the Holy Quran.',
+    descriptionTa: 'திருக்குர்ஆனுக்கு அடுத்தபடியாக உலக முஸ்லிம்களால் முழுமையாக ஏற்றுக்கொள்ளப்பட்ட மிக ஆதாரப்பூர்வமான நபிமொழித் தொகுப்பு.',
     hasTamil: true,
   },
   {
     id: 'muslim',
     name: 'Sahih Muslim',
+    nameTa: 'ஸஹீஹ் முஸ்லிம்',
     arabicName: 'صحيح مسلم',
     author: 'Imam Muslim ibn al-Hajjaj',
+    authorTa: 'இமாம் முஸ்லிம் இப்னுல் ஹஜ்ஜாஜ்',
     authorDeath: '204 – 261 AH (875 CE)',
     totalHadiths: 7500,
     totalChapters: 56,
     grade: 'Sahih (Highest Authenticity)',
+    gradeTa: 'ஸஹீஹ் (மிக உயர்ந்த நம்பகத்தன்மை)',
     description: 'Renowned for its rigorous thematic organization, chains of transmission, and strict authenticity.',
+    descriptionTa: 'துல்லியமான தலைப்பு வரிசைகளுக்கும் மிகக் கடுமையான அறிவிப்பாளர் தொடர்களுக்கும் பெயர்பெற்றது.',
     hasTamil: true,
   },
   {
     id: 'tirmidhi',
     name: 'Jami` at-Tirmidhi',
+    nameTa: 'ஜாமிஉத் திர்மிதி',
     arabicName: 'جامع الترمذي',
     author: 'Imam Abu Isa Muhammad at-Tirmidhi',
+    authorTa: 'இமாம் அபூ ஈஸா முஹம்மது அத்-திர்மிதி',
     authorDeath: '209 – 279 AH (892 CE)',
     totalHadiths: 3956,
     totalChapters: 49,
     grade: 'Sunan (Graded Traditions)',
+    gradeTa: 'ஸுனன் (தரம்பிரிக்கப்பட்ட தொகுப்பு)',
     description: 'Famous for categorizing traditions by legal jurisprudence and documenting Hadith authenticity grades.',
+    descriptionTa: 'சட்டவியல் கருத்துக்களையும் ஒவ்வொரு ஹதீஸின் நம்பகத்தன்மை தரத்தையும் பதிவுசெய்த புகழ்பெற்ற நூல்.',
     hasTamil: true,
   },
   {
     id: 'abudawud',
     name: 'Sunan Abi Dawud',
+    nameTa: 'ஸுனன் அபூ தாவூத்',
     arabicName: 'سنن أبي داود',
     author: 'Imam Abu Dawud as-Sijistani',
+    authorTa: 'இமாம் அபூ தாவூத் அஸ்-ஸிஜிஸ்தானி',
     authorDeath: '202 – 275 AH (889 CE)',
     totalHadiths: 5274,
     totalChapters: 43,
     grade: 'Sunan (Legal Traditions)',
+    gradeTa: 'ஸுனன் (சட்டவியல் நபிமொழிகள்)',
     description: 'Focuses primarily on legal rulings (Ahkam), ethical guidelines, and daily practices of the Prophet (ﷺ).',
+    descriptionTa: 'இஸ்லாமிய சட்டத் தீர்ப்புகள் மற்றும் நபிவழி நடைமுறைகளை மையமாகக் கொண்ட முதன்மை தொகுப்பு.',
     hasTamil: true,
   },
   {
     id: 'nasai',
     name: 'Sunan an-Nasa\'i',
+    nameTa: 'ஸுனன் அந்-நஸாயீ',
     arabicName: 'سنن النسائي',
     author: 'Imam Ahmad ibn Shu\'ayb an-Nasa\'i',
+    authorTa: 'இமாம் அஹ்மத் இப்னு ஷுஐப் அந்-நஸாயீ',
     authorDeath: '215 – 303 AH (915 CE)',
     totalHadiths: 5760,
     totalChapters: 52,
     grade: 'Sunan (Rigorous Scrutiny)',
+    gradeTa: 'ஸுனன் (கடுமையான ஆய்வு)',
     description: 'Contains one of the most stringent filters of narrators among the four Sunan collections.',
+    descriptionTa: 'நான்கு ஸுனன் நூல்களிலேயே அறிவிப்பாளர்களை மிகக் கடுமையாக ஆய்வு செய்து தொகுக்கப்பட்டது.',
     hasTamil: true,
   },
   {
     id: 'ibnmajah',
     name: 'Sunan Ibn Majah',
+    nameTa: 'ஸுனன் இப்னு மாஜா',
     arabicName: 'سنن ابن ماجه',
     author: 'Imam Ibn Majah al-Qazwini',
+    authorTa: 'இமாம் இப்னு மாஜா அல்-கஸ்வீனி',
     authorDeath: '209 – 273 AH (887 CE)',
     totalHadiths: 4341,
     totalChapters: 37,
     grade: 'Sunan (Comprehensive)',
+    gradeTa: 'ஸுனன் (முழுமையான தொகுப்பு)',
     description: 'Completes the Kutub al-Sittah (Six Major Books) with rare traditions and practical rulings.',
+    descriptionTa: 'ஆறு முக்கிய நபிமொழி நூல்களை நிறைவு செய்யும் அரிய நபிமொழிகளைக் கொண்ட நூல்.',
     hasTamil: true,
   },
 ]

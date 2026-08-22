@@ -47,15 +47,15 @@ type SettingCategory =
   | 'sync' 
   | 'about'
 
-function formatLastSynced(timestamp: string | null): string {
-  if (!timestamp) return 'Never synced'
+function formatLastSynced(timestamp: string | null, isTamil?: boolean): string {
+  if (!timestamp) return isTamil ? 'ஒருபோதும் ஒத்திசைக்கப்படவில்லை' : 'Never synced'
   const diffSecs = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000)
-  if (diffSecs < 10) return 'Just now'
-  if (diffSecs < 60) return `${diffSecs} seconds ago`
+  if (diffSecs < 10) return isTamil ? 'இப்போதுதான்' : 'Just now'
+  if (diffSecs < 60) return isTamil ? `${diffSecs} வினாடிகளுக்கு முன்` : `${diffSecs} seconds ago`
   const mins = Math.floor(diffSecs / 60)
-  if (mins < 60) return `${mins} min${mins > 1 ? 's' : ''} ago`
+  if (mins < 60) return isTamil ? `${mins} நிமிடங்களுக்கு முன்` : `${mins} min${mins > 1 ? 's' : ''} ago`
   const hours = Math.floor(mins / 60)
-  return `${hours} hour${hours > 1 ? 's' : ''} ago`
+  return isTamil ? `${hours} மணி நேரத்திற்கு முன்` : `${hours} hour${hours > 1 ? 's' : ''} ago`
 }
 
 export const SettingsScreen: React.FC = () => {
@@ -779,9 +779,13 @@ export const SettingsScreen: React.FC = () => {
   const renderNotificationsSection = () => (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Notifications & Reminders</h2>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+          {appLanguage === 'ta' ? 'அறிவிப்புகள் & நினைவூட்டல்கள்' : 'Notifications & Reminders'}
+        </h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-          Configure spiritual reminders to maintain your daily Quran habit and prayer awareness.
+          {appLanguage === 'ta' 
+            ? 'தினசரி குர்ஆன் ஓதும் பழக்கத்தையும் தொழுகை நேர விழிப்புணர்வையும் பேண நினைவூட்டல்களை அமைக்கவும்.' 
+            : 'Configure spiritual reminders to maintain your daily Quran habit and prayer awareness.'}
         </p>
       </div>
 
@@ -789,9 +793,13 @@ export const SettingsScreen: React.FC = () => {
         {/* Daily Reading Reminder */}
         <div className="p-5 flex items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <span className="text-base font-bold text-on-surface block">Daily Quran Recitation Alert</span>
+            <span className="text-base font-bold text-on-surface block">
+              {appLanguage === 'ta' ? 'தினசரி குர்ஆன் ஓதும் நினைவூட்டல்' : 'Daily Quran Recitation Alert'}
+            </span>
             <span className="text-xs text-on-surface-variant block">
-              Receive a gentle reminder notification at your preferred reading time
+              {appLanguage === 'ta' 
+                ? 'உங்கள் விருப்பமான வாசிப்பு நேரத்தில் மென்மையான நினைவூட்டல் அறிவிப்பைப் பெறுங்கள்' 
+                : 'Receive a gentle reminder notification at your preferred reading time'}
             </span>
           </div>
           <button
@@ -812,9 +820,13 @@ export const SettingsScreen: React.FC = () => {
         {/* Prayer Time Notifications */}
         <div className="p-5 flex items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <span className="text-base font-bold text-on-surface block">Prayer & Adhan Awareness</span>
+            <span className="text-base font-bold text-on-surface block">
+              {appLanguage === 'ta' ? 'தொழுகை நேர & பாங்கு எச்சரிக்கை' : 'Prayer & Adhan Awareness'}
+            </span>
             <span className="text-xs text-on-surface-variant block">
-              Notifications when local prayer time arrives
+              {appLanguage === 'ta' 
+                ? 'உள்ளூர் தொழுகை நேரம் வரும்போது உடனடி அறிவிப்பைப் பெறுங்கள்' 
+                : 'Notifications when local prayer time arrives'}
             </span>
           </div>
           <button
@@ -839,9 +851,13 @@ export const SettingsScreen: React.FC = () => {
   const renderSyncSection = () => (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">Cloud Sync & Storage</h2>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+          {appLanguage === 'ta' ? 'கிளவுட் ஒத்திசைவு & நினைவகம்' : 'Cloud Sync & Storage'}
+        </h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-          Realtime cloud synchronization, local offline caching, and device telemetry.
+          {appLanguage === 'ta' 
+            ? 'நிகழ்நேர கிளவுட் ஒத்திசைவு, ஆஃப்லைன் சேமிப்பு மற்றும் சாதன விவரங்கள்.' 
+            : 'Realtime cloud synchronization, local offline caching, and device telemetry.'}
         </p>
       </div>
 
@@ -856,7 +872,11 @@ export const SettingsScreen: React.FC = () => {
                 'bg-rose-400'
               }`} />
               <span className="text-sm font-bold text-on-surface capitalize">
-                {syncStatus === 'synced' ? 'Cloud Synced' : syncStatus === 'syncing' ? 'Syncing Now...' : 'Offline'}
+                {syncStatus === 'synced' 
+                  ? (appLanguage === 'ta' ? 'கிளவுடில் ஒத்திசைக்கப்பட்டது' : 'Cloud Synced') 
+                  : syncStatus === 'syncing' 
+                  ? (appLanguage === 'ta' ? 'ஒத்திசைக்கப்படுகிறது...' : 'Syncing Now...') 
+                  : (appLanguage === 'ta' ? 'ஆஃப்லைன்' : 'Offline')}
               </span>
             </div>
             <button
@@ -864,7 +884,7 @@ export const SettingsScreen: React.FC = () => {
               onClick={handleSyncNow}
               disabled={syncStatus === 'syncing'}
               className="p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-primary transition cursor-pointer disabled:opacity-50"
-              title="Trigger Sync Now"
+              title={appLanguage === 'ta' ? 'இப்போதே ஒத்திசைக்க' : 'Trigger Sync Now'}
             >
               {syncStatus === 'syncing' ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -875,27 +895,41 @@ export const SettingsScreen: React.FC = () => {
           </div>
 
           <div className="text-xs text-on-surface-variant space-y-1">
-            <p>Last cloud backup: <strong className="text-on-surface">{formatLastSynced(lastSyncedAt)}</strong></p>
-            <p>Pending offline records: <strong className="text-on-surface">{pendingOfflineCount}</strong></p>
+            <p>
+              {appLanguage === 'ta' ? 'கடைசி காப்புப்பிரதி: ' : 'Last cloud backup: '}
+              <strong className="text-on-surface">{formatLastSynced(lastSyncedAt, appLanguage === 'ta')}</strong>
+            </p>
+            <p>
+              {appLanguage === 'ta' ? 'நிலுவையிலுள்ள பதிவுகள்: ' : 'Pending offline records: '}
+              <strong className="text-on-surface">{pendingOfflineCount}</strong>
+            </p>
           </div>
         </div>
 
         {/* Device ID Card */}
         <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-2">
-          <span className="text-xs font-bold text-outline uppercase tracking-wider block">Registered Device</span>
+          <span className="text-xs font-bold text-outline uppercase tracking-wider block">
+            {appLanguage === 'ta' ? 'பதிவு செய்யப்பட்ட சாதனம்' : 'Registered Device'}
+          </span>
           <p className="font-mono text-xs text-on-surface bg-surface-container px-3 py-2 rounded-2xl border border-outline-variant/20 truncate">
             {deviceId}
           </p>
-          <span className="text-[11px] text-on-surface-variant block">Unique hardware instance identifier for multi-device sync</span>
+          <span className="text-[11px] text-on-surface-variant block">
+            {appLanguage === 'ta' ? 'பல சாதன ஒத்திசைவுக்கான தனித்துவமான அடையாள எண்' : 'Unique hardware instance identifier for multi-device sync'}
+          </span>
         </div>
       </div>
 
       {/* Clear Cache Card */}
       <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <span className="text-sm font-bold text-on-surface block">Offline Quran Storage</span>
+          <span className="text-sm font-bold text-on-surface block">
+            {appLanguage === 'ta' ? 'ஆஃப்லைன் குர்ஆன் சேமிப்பு' : 'Offline Quran Storage'}
+          </span>
           <span className="text-xs text-on-surface-variant block">
-            Clear locally stored audio recitations and IndexedDB Surah caches to free disk space
+            {appLanguage === 'ta' 
+              ? 'நினைவக இடத்தை விடுவிக்க பதிவிறக்கப்பட்ட ஆடியோ மற்றும் அத்தியாயங்களை நீக்கவும்' 
+              : 'Clear locally stored audio recitations and IndexedDB Surah caches to free disk space'}
           </span>
         </div>
         <button
@@ -911,7 +945,11 @@ export const SettingsScreen: React.FC = () => {
           ) : (
             <Trash2 className="w-4 h-4 text-rose-400" />
           )}
-          <span>{cacheClearedSuccess ? 'Cache Cleared!' : 'Clear Cache'}</span>
+          <span>
+            {cacheClearedSuccess 
+              ? (appLanguage === 'ta' ? 'நினைவகம் நீக்கப்பட்டது!' : 'Cache Cleared!') 
+              : (appLanguage === 'ta' ? 'நினைவகத்தை நீக்கு' : 'Clear Cache')}
+          </span>
         </button>
       </div>
     </div>
@@ -921,9 +959,13 @@ export const SettingsScreen: React.FC = () => {
   const renderAboutSection = () => (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">About Deenly</h2>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+          {appLanguage === 'ta' ? 'தீன்லி பற்றி' : 'About Deenly'}
+        </h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-          Spiritual reflection platform, verified data sources, and open-source attributions.
+          {appLanguage === 'ta' 
+            ? 'ஆன்மீக சிந்தனை தளம், அங்கீகரிக்கப்பட்ட தரவு மூலங்கள் மற்றும் திறந்த மூல பங்களிப்புகள்.' 
+            : 'Spiritual reflection platform, verified data sources, and open-source attributions.'}
         </p>
       </div>
 
@@ -934,19 +976,23 @@ export const SettingsScreen: React.FC = () => {
           </div>
           <div>
             <h3 className="text-lg font-bold font-h2 text-on-surface">Deenly (دينلي)</h3>
-            <p className="text-xs text-primary font-semibold">Version 2.0.0 • Progressive Web Application</p>
+            <p className="text-xs text-primary font-semibold">
+              {appLanguage === 'ta' ? 'பதிப்பு 2.0.0 • முற்போக்கு வலைச் செயலி (PWA)' : 'Version 2.0.0 • Progressive Web Application'}
+            </p>
           </div>
         </div>
 
         <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
-          Deenly is designed to make daily Quran recitation effortless and consistent. With precision Hasanat calculations (10 rewards per Arabic letter), multilingual translations (English & Tamil), audio recitations by Sheikh Mishary Rashid Alafasy, and offline PWA support.
+          {appLanguage === 'ta' 
+            ? 'தீன்லி தினசரி குர்ஆன் ஓதுதலை எளிதாகவும் தொடர்ச்சியாகவும் ஆக்குகிறது. துல்லியமான நன்மைகள் கணக்கீடு (ஓர் அரபு எழுத்துக்கு 10 நன்மைகள்), பலமொழி மொழிபெயர்ப்புகள் (ஆங்கிலம் & தமிழ்), ஷேக் மிஷாரி ராஷித் அல்-அஃபாஸியின் இனிய ஓதுதல் மற்றும் ஆஃப்லைன் பயன்பாடு.' 
+            : 'Deenly is designed to make daily Quran recitation effortless and consistent. With precision Hasanat calculations (10 rewards per Arabic letter), multilingual translations (English & Tamil), audio recitations by Sheikh Mishary Rashid Alafasy, and offline PWA support.'}
         </p>
 
         <div className="space-y-2 pt-2 border-t border-outline-variant/20 text-xs text-on-surface-variant">
-          <p><strong>Arabic Quran Text:</strong> King Fahd Glorious Quran Printing Complex & Tanzil.net</p>
-          <p><strong>English Translation:</strong> Sahih International (Umm Muhammad)</p>
-          <p><strong>Tamil Translation:</strong> Abdul Hameed Baqavi / Jan Trust Foundation</p>
-          <p><strong>Reciter Audio:</strong> Sheikh Mishary Rashid Alafasy</p>
+          <p><strong>{appLanguage === 'ta' ? 'அரபு குர்ஆன் மூலம்:' : 'Arabic Quran Text:'}</strong> King Fahd Glorious Quran Printing Complex & Tanzil.net</p>
+          <p><strong>{appLanguage === 'ta' ? 'ஆங்கில மொழிபெயர்ப்பு:' : 'English Translation:'}</strong> Sahih International (Umm Muhammad)</p>
+          <p><strong>{appLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்பு:' : 'Tamil Translation:'}</strong> Abdul Hameed Baqavi / Jan Trust Foundation</p>
+          <p><strong>{appLanguage === 'ta' ? 'காரீ ஓதுதல்:' : 'Reciter Audio:'}</strong> Sheikh Mishary Rashid Alafasy</p>
         </div>
       </div>
     </div>
@@ -1012,21 +1058,21 @@ export const SettingsScreen: React.FC = () => {
     },
     { 
       id: 'notifications', 
-      label: 'Notifications & Adhan', 
+      label: appLanguage === 'ta' ? 'அறிவிப்புகள் & பாங்கு' : 'Notifications & Adhan', 
       icon: Bell, 
-      desc: readingAlerts ? 'Alerts Active' : 'Disabled' 
+      desc: readingAlerts ? (appLanguage === 'ta' ? 'செயலில் உள்ளது' : 'Alerts Active') : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Disabled') 
     },
     { 
       id: 'sync', 
       label: t('multiDeviceSync'), 
       icon: Cloud, 
-      desc: syncStatus === 'synced' ? 'Synced' : 'Offline' 
+      desc: syncStatus === 'synced' ? (appLanguage === 'ta' ? 'ஒத்திசைக்கப்பட்டது' : 'Synced') : (appLanguage === 'ta' ? 'ஆஃப்லைன்' : 'Offline') 
     },
     { 
       id: 'about', 
       label: t('aboutDeenly'), 
       icon: Info, 
-      desc: 'Version 2.0 • Data Sources' 
+      desc: appLanguage === 'ta' ? 'பதிப்பு 2.0 • தரவு மூலங்கள்' : 'Version 2.0 • Data Sources' 
     },
   ]
 
@@ -1075,7 +1121,7 @@ export const SettingsScreen: React.FC = () => {
                   </span>
                   <span className="text-xs text-outline flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span className="truncate">Manage Account</span>
+                    <span className="truncate">{appLanguage === 'ta' ? 'கணக்கை நிர்வகி' : 'Manage Account'}</span>
                   </span>
                 </div>
               </div>

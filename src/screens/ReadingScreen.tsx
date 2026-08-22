@@ -333,7 +333,7 @@ export const ReadingScreen: React.FC = () => {
       {zoomFeedback && (
         <div className="fixed top-18 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full glass-card border border-primary/50 text-primary font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-fade-in backdrop-blur-md">
           <ZoomIn className="w-4 h-4 text-primary animate-pulse" />
-          <span>Arabic Size: {zoomFeedback}px</span>
+          <span>{appLanguage === 'ta' ? `அரபு அளவு: ${zoomFeedback}px` : `Arabic Size: ${zoomFeedback}px`}</span>
         </div>
       )}
 
@@ -455,7 +455,9 @@ export const ReadingScreen: React.FC = () => {
         {isLoadingSurah ? (
           <div className="p-8 text-center space-y-2 my-auto flex flex-col items-center justify-center h-full">
             <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-            <p className="text-xs sm:text-sm text-on-surface-variant">Loading sacred verse...</p>
+            <p className="text-xs sm:text-sm text-on-surface-variant">
+              {appLanguage === 'ta' ? 'புனித வசனம் ஏற்றப்படுகிறது...' : 'Loading sacred verse...'}
+            </p>
           </div>
         ) : currentAyah ? (
           <div className="min-h-full flex flex-col justify-center items-center space-y-3 sm:space-y-4 max-w-3xl mx-auto py-2 animate-fade-in">

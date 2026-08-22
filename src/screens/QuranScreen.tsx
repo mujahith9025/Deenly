@@ -340,11 +340,11 @@ export const QuranScreen: React.FC = () => {
                         {surah.name}
                       </span>
                       <span className="text-[10px] text-outline font-normal px-2 py-0.5 rounded-full bg-surface-container border border-outline-variant/30 shrink-0">
-                        {surah.revelationType}
+                        {surah.revelationType === 'Meccan' ? (appLanguage === 'ta' ? 'மக்கீ' : 'Meccan') : (appLanguage === 'ta' ? 'மதனீ' : 'Medinan')}
                       </span>
                     </div>
                     <p className="text-xs text-outline truncate">{surah.englishNameTranslation}</p>
-                    <p className="text-[10px] text-tertiary mt-0.5">{surah.numberOfAyahs} Verses</p>
+                    <p className="text-[10px] text-tertiary mt-0.5">{surah.numberOfAyahs} {appLanguage === 'ta' ? 'வசனங்கள்' : 'Verses'}</p>
                   </div>
                 </div>
 
@@ -365,8 +365,12 @@ export const QuranScreen: React.FC = () => {
           {filteredSurahs.length === 0 && (
             <div className="py-16 text-center space-y-2">
               <BookOpen className="w-10 h-10 text-outline mx-auto stroke-1" />
-              <p className="text-sm font-semibold text-on-surface">No chapters found</p>
-              <p className="text-xs text-outline">Try checking the spelling or resetting search filters.</p>
+              <p className="text-sm font-semibold text-on-surface">
+                {appLanguage === 'ta' ? 'அத்தியாயங்கள் எதுவும் கிடைக்கவில்லை' : 'No chapters found'}
+              </p>
+              <p className="text-xs text-outline">
+                {appLanguage === 'ta' ? 'எழுத்துப்பிழையை சரிபார்க்கவும் அல்லது தேடல் வடிப்பான்களை மாற்றவும்.' : 'Try checking the spelling or resetting search filters.'}
+              </p>
             </div>
           )}
         </div>
@@ -381,10 +385,12 @@ export const QuranScreen: React.FC = () => {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-primary font-label-caps">
-                    Chapter {currentSurahMeta.number}
+                    {appLanguage === 'ta' ? `அத்தியாயம் ${currentSurahMeta.number}` : `Chapter ${currentSurahMeta.number}`}
                   </span>
                   <span className="text-xs text-outline">•</span>
-                  <span className="text-xs text-tertiary">{currentSurahMeta.revelationType}</span>
+                  <span className="text-xs text-tertiary">
+                    {currentSurahMeta.revelationType === 'Meccan' ? (appLanguage === 'ta' ? 'மக்கீ' : 'Meccan') : (appLanguage === 'ta' ? 'மதனீ' : 'Medinan')}
+                  </span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold font-h2 text-on-surface flex items-baseline gap-2">
                   <span>{currentSurahMeta.name}</span>
@@ -393,7 +399,7 @@ export const QuranScreen: React.FC = () => {
                   </span>
                 </h2>
                 <p className="text-xs text-outline">
-                  {currentSurahMeta.englishNameTranslation} • Showing {currentSurahMeta.numberOfAyahs} verses in this chapter
+                  {currentSurahMeta.englishNameTranslation} • {appLanguage === 'ta' ? `இந்த அத்தியாயத்தில் உள்ள ${currentSurahMeta.numberOfAyahs} வசனங்கள்` : `Showing ${currentSurahMeta.numberOfAyahs} verses in this chapter`}
                 </p>
               </div>
 
@@ -414,17 +420,17 @@ export const QuranScreen: React.FC = () => {
                       ? 'bg-primary text-white ring-2 ring-primary/60 animate-pulse'
                       : 'primary-gradient-btn text-white hover:scale-105'
                   }`}
-                  title="Listen to full continuous chapter audio recitation"
+                  title={appLanguage === 'ta' ? 'முழு அத்தியாயத்தின் தொடர் ஓதுதலைக் கேளுங்கள்' : 'Listen to full continuous chapter audio recitation'}
                 >
                   {isCurrentSurahContinuousPlaying ? (
                     <>
                       <Pause className="w-4 h-4" />
-                      <span>Pause Recitation</span>
+                      <span>{appLanguage === 'ta' ? 'நிறுத்து' : 'Pause Recitation'}</span>
                     </>
                   ) : (
                     <>
                       <Play className="w-4 h-4 fill-white" />
-                      <span>Play Full Surah</span>
+                      <span>{appLanguage === 'ta' ? 'முழு அத்தியாயத்தை ஓதுக' : 'Play Full Surah'}</span>
                     </>
                   )}
                 </button>
@@ -435,7 +441,7 @@ export const QuranScreen: React.FC = () => {
                     type="number"
                     min={1}
                     max={currentSurahMeta.numberOfAyahs}
-                    placeholder="Ayah #..."
+                    placeholder={appLanguage === 'ta' ? 'வசன எண்...' : 'Ayah #...'}
                     value={verseSearchInput}
                     onChange={(e) => setVerseSearchInput(e.target.value)}
                     className="w-24 px-3 py-2 rounded-xl bg-surface-container-high border border-outline-variant/40 text-xs text-on-surface focus:outline-none focus:border-primary font-mono"
@@ -444,7 +450,7 @@ export const QuranScreen: React.FC = () => {
                     type="submit"
                     className="px-3 py-2 rounded-xl bg-surface-container-highest hover:bg-surface-container-high border border-outline-variant/30 text-on-surface text-xs font-semibold transition cursor-pointer"
                   >
-                    Jump
+                    {appLanguage === 'ta' ? 'செல்க' : 'Jump'}
                   </button>
                   {activeHighlightAyah && (
                     <button
@@ -468,8 +474,12 @@ export const QuranScreen: React.FC = () => {
           {isLoadingVerses ? (
             <div className="py-24 text-center space-y-4">
               <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-              <p className="text-sm font-semibold text-on-surface">Loading Sacred Verses...</p>
-              <p className="text-xs text-on-surface-variant">Connecting to authentic Uthmani text edition</p>
+              <p className="text-sm font-semibold text-on-surface">
+                {appLanguage === 'ta' ? 'புனித வசனங்கள் ஏற்றப்படுகின்றன...' : 'Loading Sacred Verses...'}
+              </p>
+              <p className="text-xs text-on-surface-variant">
+                {appLanguage === 'ta' ? 'உஸ்மானி மூலப் பிரதியுடன் இணைக்கப்படுகிறது' : 'Connecting to authentic Uthmani text edition'}
+              </p>
             </div>
           ) : surahData ? (
             <div className="space-y-6">
@@ -485,7 +495,9 @@ export const QuranScreen: React.FC = () => {
                     بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
                   </p>
                   <p className="text-xs text-on-surface-variant mt-2 italic">
-                    In the Name of Allah, the Most Gracious, the Most Merciful
+                    {appLanguage === 'ta' 
+                      ? 'அளவற்ற அருளாளனும், நிகரற்ற அன்புடையோனுமாகிய அல்லாஹ்வின் பெயரால்...' 
+                      : 'In the Name of Allah, the Most Gracious, the Most Merciful'}
                   </p>
                 </div>
               )}
@@ -527,7 +539,7 @@ export const QuranScreen: React.FC = () => {
                             {ayah.verseNumberInSurah}
                           </div>
                           <span className="text-xs text-outline hidden sm:inline">
-                            Surah {selectedSurahNumber}:{ayah.verseNumberInSurah}
+                            {appLanguage === 'ta' ? `அத்தியாயம் ${selectedSurahNumber}:${ayah.verseNumberInSurah}` : `Surah ${selectedSurahNumber}:${ayah.verseNumberInSurah}`}
                           </span>
                         </div>
 
@@ -535,7 +547,7 @@ export const QuranScreen: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <span className="px-2.5 py-1 rounded-full bg-tertiary-container/30 border border-tertiary/40 text-tertiary font-bold text-[11px] flex items-center gap-1">
                             <Sparkles className="w-3 h-3" />
-                            <span>+{ayah.hasanatValue} pts</span>
+                            <span>+{ayah.hasanatValue} {appLanguage === 'ta' ? 'புள்ளிகள்' : 'pts'}</span>
                           </span>
 
                           {/* 🌟 Play Single Verse Audio Button (Kept & Connected to Global Player) */}
@@ -546,7 +558,7 @@ export const QuranScreen: React.FC = () => {
                                 ? 'bg-primary text-white border-primary shadow-md animate-pulse'
                                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/40 text-on-surface'
                             }`}
-                            title={isCurrentlyReciting ? 'Pause recitation' : 'Play verse recitation by Mishary Rashid Alafasy'}
+                            title={isCurrentlyReciting ? (appLanguage === 'ta' ? 'நிறுத்து' : 'Pause recitation') : (appLanguage === 'ta' ? 'மிஷாரி ராஷித் அல்-அஃபாஸியின் ஓதுதலைக் கேளுங்கள்' : 'Play verse recitation by Mishary Rashid Alafasy')}
                           >
                             {isCurrentlyReciting ? (
                               <Pause className="w-3.5 h-3.5" />
@@ -565,7 +577,7 @@ export const QuranScreen: React.FC = () => {
                                 arabicName: currentSurahMeta.arabicName,
                                 ayahNumber: ayah.verseNumberInSurah,
                                 arabicText: ayah.arabicText,
-                                translationText: ayah.translations[translationLanguage] || ayah.translations.en || '',
+                                translationText: ayah.translations[effectiveTranslationLanguage] || ayah.translations.en || '',
                               })
                             }}
                             className={`p-2 rounded-full border transition cursor-pointer ${
@@ -573,7 +585,7 @@ export const QuranScreen: React.FC = () => {
                                 ? 'bg-rose-500/20 border-rose-500/50 text-rose-500 shadow-sm'
                                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/40 text-outline hover:text-rose-400'
                             }`}
-                            title={selectedSurahNumber && isQuranFavorite(selectedSurahNumber, ayah.verseNumberInSurah) ? 'Remove from Favorites' : 'Add to Favorites'}
+                            title={selectedSurahNumber && isQuranFavorite(selectedSurahNumber, ayah.verseNumberInSurah) ? (appLanguage === 'ta' ? 'விருப்பப்பட்டியலிலிருந்து நீக்குக' : 'Remove from Favorites') : (appLanguage === 'ta' ? 'விருப்பப்பட்டியலில் சேர்க்க' : 'Add to Favorites')}
                           >
                             <Heart className={`w-3.5 h-3.5 ${selectedSurahNumber && isQuranFavorite(selectedSurahNumber, ayah.verseNumberInSurah) ? 'fill-rose-500 text-rose-500' : ''}`} />
                           </button>
@@ -588,7 +600,7 @@ export const QuranScreen: React.FC = () => {
                                 arabicName: currentSurahMeta.arabicName,
                                 ayahNumber: ayah.verseNumberInSurah,
                                 arabicText: ayah.arabicText,
-                                translationText: ayah.translations[translationLanguage] || ayah.translations.en || '',
+                                translationText: ayah.translations[effectiveTranslationLanguage] || ayah.translations.en || '',
                               })
                             }}
                             className={`p-2 rounded-full border transition cursor-pointer ${
@@ -596,7 +608,7 @@ export const QuranScreen: React.FC = () => {
                                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 shadow-sm'
                                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/40 text-outline hover:text-amber-400'
                             }`}
-                            title={selectedSurahNumber && isQuranBookmarked(selectedSurahNumber, ayah.verseNumberInSurah) ? 'Remove Bookmark' : 'Bookmark Ayah'}
+                            title={selectedSurahNumber && isQuranBookmarked(selectedSurahNumber, ayah.verseNumberInSurah) ? (appLanguage === 'ta' ? 'புக்மார்க்கை நீக்குக' : 'Remove Bookmark') : (appLanguage === 'ta' ? 'புக்மார்க் செய்க' : 'Bookmark Ayah')}
                           >
                             <Bookmark className={`w-3.5 h-3.5 ${selectedSurahNumber && isQuranBookmarked(selectedSurahNumber, ayah.verseNumberInSurah) ? 'fill-amber-400 text-amber-400' : ''}`} />
                           </button>
@@ -608,7 +620,7 @@ export const QuranScreen: React.FC = () => {
                               handleCopyAyah(ayah.arabicText, trans, selectedSurahNumber || 1, ayah.verseNumberInSurah)
                             }}
                             className="p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-outline hover:text-on-surface transition cursor-pointer"
-                            title="Copy verse and translation"
+                            title={appLanguage === 'ta' ? 'வசனம் மற்றும் மொழிபெயர்ப்பை நகலெடுக்க' : 'Copy verse and translation'}
                           >
                             {copiedAyahId === ayah.verseNumberInSurah ? (
                               <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -621,7 +633,7 @@ export const QuranScreen: React.FC = () => {
                           <button
                             onClick={() => handleOpenFocusedReader(selectedSurahNumber, ayah.verseNumberInSurah)}
                             className="p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-primary hover:text-primary-fixed-dim transition cursor-pointer"
-                            title="Recite this verse in Focused 1-Verse Mode"
+                            title={appLanguage === 'ta' ? 'ஒருங்கிணைந்த வாசிப்பு பயன்முறையில் ஓதுக' : 'Recite this verse in Focused 1-Verse Mode'}
                           >
                             <Maximize2 className="w-3.5 h-3.5" />
                           </button>
@@ -643,18 +655,18 @@ export const QuranScreen: React.FC = () => {
                       <div className="pt-4 border-t border-outline-variant/20 space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] uppercase font-bold text-outline font-label-caps tracking-wider">
-                            {translationLanguage === 'ta' 
+                            {effectiveTranslationLanguage === 'ta' 
                               ? `தமிழ் மொழிபெயர்ப்பு (${getTranslationMeta(currentTamilTranslation).name})`
                               : getTranslationMeta(currentEnglishTranslation).name}
                           </span>
                           <span className="text-[10px] text-primary font-medium">
-                            {translationLanguage === 'ta'
+                            {effectiveTranslationLanguage === 'ta'
                               ? getTranslationMeta(currentTamilTranslation).badge
                               : getTranslationMeta(currentEnglishTranslation).badge}
                           </span>
                         </div>
                         <p className="text-sm md:text-base text-on-surface leading-relaxed font-normal">
-                          {translationLanguage === 'ta'
+                          {effectiveTranslationLanguage === 'ta'
                             ? (ayah.translations[currentTamilTranslation] || ayah.translations['ta'] || ayah.translations['ta_baqavi'] || 'மொழிபெயர்ப்பு ஏற்றப்படுகிறது...')
                             : (ayah.translations[currentEnglishTranslation] || ayah.translations['en'] || ayah.translations['en_sahih'] || 'Translation loading...')}
                         </p>
@@ -666,12 +678,14 @@ export const QuranScreen: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-sm text-outline">Unable to load Surah details.</p>
+              <p className="text-sm text-outline">
+                {appLanguage === 'ta' ? 'அத்தியாய விவரங்களை ஏற்றுவதில் பிழை ஏற்பட்டது.' : 'Unable to load Surah details.'}
+              </p>
               <button
                 onClick={handleBackToChapters}
                 className="mt-3 px-4 py-2 rounded-full primary-gradient-btn text-white text-xs font-semibold cursor-pointer"
               >
-                Return to All Chapters
+                {appLanguage === 'ta' ? 'அனைத்து அத்தியாயங்களுக்கும் திரும்புக' : 'Return to All Chapters'}
               </button>
             </div>
           )}
