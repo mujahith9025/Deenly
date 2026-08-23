@@ -34,6 +34,7 @@ interface AuthStoreActions {
   recordSessionCompletion: (metrics: SessionMetrics) => Promise<void>
   updateLastReadPosition: (surah: number, ayah: number) => Promise<void>
   applyDeltaUpdate: (delta: SessionDelta, isRemote?: boolean) => void
+  applyRemoteReset: () => void
   syncNow: () => Promise<void>
 }
 
@@ -103,8 +104,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       let history = loadStoredDailyHistory()
 
       if (initialUser) {
-        // Auto-sanitize legacy demo stats (24500 hasanat / 450 verses)
-        if (initialUser.hasanat === 24500 && initialUser.verses === 450) {
+        // Auto-sanitize legacy demo stats or remote zero reset
+        const isZeroed = (initialUser.hasanat === 0 || !initialUser.hasanat) && (initialUser.verses === 0 || !initialUser.verses) && (initialUser.time === 0 || !initialUser.time)
+        if (isZeroed || (initialUser.hasanat === 24500 && initialUser.verses === 450)) {
           initialUser.hasanat = 0
           initialUser.verses = 0
           initialUser.time = 0
@@ -112,8 +114,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           initialUser.currentStreak = 0
           initialUser.bestStreak = 0
           history = {}
-          localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
-          localStorage.setItem('deenly_auth_session', JSON.stringify(initialUser))
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
+            localStorage.removeItem('deenly_last_position')
+            localStorage.setItem('deenly_auth_session', JSON.stringify(initialUser))
+          }
         }
 
         // Re-compute streak based on history
@@ -158,6 +163,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           initialUser.uid || initialUser.id,
           (delta) => {
             get().applyDeltaUpdate(delta, true)
+          },
+          () => {
+            get().applyRemoteReset()
           }
         )
       } else {
@@ -225,15 +233,19 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
               profile.authProvider = isGoogle ? 'google' : 'email'
             }
 
-            // Auto-clean legacy demo stats if present
-            if (profile.hasanat === 24500 && profile.verses === 450) {
+            let loadedHistory = loadStoredDailyHistory()
+            const isProfileZeroed = (profile.hasanat === 0 || !profile.hasanat) && (profile.verses === 0 || !profile.verses) && (profile.time === 0 || !profile.time)
+
+            if (isProfileZeroed || (profile.hasanat === 24500 && profile.verses === 450)) {
               profile.hasanat = 0
               profile.verses = 0
               profile.time = 0
               profile.pages = 0
               profile.currentStreak = 0
               profile.bestStreak = 0
+              loadedHistory = {}
               localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
+              localStorage.removeItem('deenly_last_position')
             }
 
             localStorage.setItem('deenly_auth_session', JSON.stringify(profile))
@@ -241,22 +253,29 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             set({
               user: profile,
               session,
-              dailyHistory: loadStoredDailyHistory(),
+              dailyHistory: loadedHistory,
               isAuthenticated: true,
               isLoading: false,
               error: null,
             })
 
             if (cleanupRealtimeSync) cleanupRealtimeSync()
-            cleanupRealtimeSync = syncService.initRealtimeSync(user.id, (delta) => {
-              get().applyDeltaUpdate(delta, true)
-            })
+            cleanupRealtimeSync = syncService.initRealtimeSync(
+              user.id,
+              (delta) => {
+                get().applyDeltaUpdate(delta, true)
+              },
+              () => {
+                get().applyRemoteReset()
+              }
+            )
           } else if (event === 'SIGNED_OUT') {
             if (cleanupRealtimeSync) {
               cleanupRealtimeSync()
               cleanupRealtimeSync = null
             }
             localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
+            localStorage.removeItem('deenly_last_position')
             localStorage.removeItem('deenly_auth_session')
             set({
               user: null,
@@ -460,9 +479,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       lastReadAyah: 1,
     }
 
-    // Clear local storage
+    // 1. Clear local storage
     if (typeof window !== 'undefined') {
       localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
+      localStorage.removeItem('deenly_last_position')
+      localStorage.removeItem('deenly_offline_sync_queue')
       localStorage.setItem('deenly_auth_session', JSON.stringify(cleanedUser))
       Object.keys(localStorage).forEach((k) => {
         if (k.startsWith('deenly_habits_')) {
@@ -471,8 +492,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       })
     }
 
-    // Reset Supabase table row
-    if (isConfigured && currentUser.id) {
+    // 2. Reset Supabase table row
+    if (isConfigured && (currentUser.id || currentUser.uid)) {
       try {
         await supabase
           .from('profiles')
@@ -485,18 +506,60 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             best_streak: 0,
             last_read_surah: 1,
             last_read_ayah: 1,
+            last_read_at: new Date().toISOString(),
           } as never)
-          .eq('id', currentUser.id)
+          .eq('id', currentUser.id || currentUser.uid)
       } catch (err) {
         console.warn('Supabase reset stats error:', err)
       }
     }
 
+    // 3. Broadcast zero reset to other devices (Desktop, Tablets, Other Tabs)
+    await syncService.publishResetStats(currentUser.uid || currentUser.id)
+
+    useReadingStore.getState().setCurrentPosition(1, 1)
+
     set({
       user: cleanedUser,
       dailyHistory: {},
+      syncStatus: 'synced',
+      lastSyncedAt: new Date().toISOString(),
     })
-    logger.info('User stats and reading history reset to zero.')
+    logger.info('User stats and reading history reset to zero and broadcasted across devices.')
+  },
+
+  applyRemoteReset: () => {
+    const currentUser = get().user
+    if (!currentUser) return
+
+    const cleanedUser: UserProfile = {
+      ...currentUser,
+      hasanat: 0,
+      verses: 0,
+      time: 0,
+      pages: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      lastReadSurah: 1,
+      lastReadAyah: 1,
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
+      localStorage.removeItem('deenly_last_position')
+      localStorage.removeItem('deenly_offline_sync_queue')
+      localStorage.setItem('deenly_auth_session', JSON.stringify(cleanedUser))
+    }
+
+    useReadingStore.getState().setCurrentPosition(1, 1)
+
+    set({
+      user: cleanedUser,
+      dailyHistory: {},
+      syncStatus: 'synced',
+      lastSyncedAt: new Date().toISOString(),
+    })
+    logger.info('Applied remote zero reset from another device.')
   },
 
   deleteAccount: async () => {
@@ -736,10 +799,50 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   syncNow: async () => {
     set({ syncStatus: 'syncing' })
+    const currentUser = get().user
     try {
       const flushedCount = await syncService.flushOfflineQueue((delta) => {
         get().applyDeltaUpdate(delta, false)
       })
+
+      // Pull latest authoritative profile row from Supabase
+      if (isConfigured && (currentUser?.id || currentUser?.uid)) {
+        try {
+          const { data: profileRow } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id || currentUser.uid)
+            .single()
+
+          if (profileRow) {
+            const row = profileRow as unknown as ProfileRow
+            const isZeroed = (row.hasanat === 0 || row.hasanat == null) && (row.verses === 0 || row.verses == null)
+
+            if (isZeroed) {
+              get().applyRemoteReset()
+              return
+            }
+
+            const updatedUser: UserProfile = {
+              ...currentUser,
+              name: row.name || currentUser.name,
+              hasanat: row.hasanat ?? 0,
+              verses: row.verses ?? 0,
+              time: row.time ?? 0,
+              pages: row.pages ?? 0,
+              currentStreak: row.current_streak ?? 0,
+              bestStreak: row.best_streak ?? 0,
+              lastReadSurah: row.last_read_surah ?? 1,
+              lastReadAyah: row.last_read_ayah ?? 1,
+            }
+
+            localStorage.setItem('deenly_auth_session', JSON.stringify(updatedUser))
+            set({ user: updatedUser })
+          }
+        } catch (dbErr) {
+          logger.warn('Could not fetch latest profile during syncNow:', { error: dbErr })
+        }
+      }
 
       const nowIso = new Date().toISOString()
       localStorage.setItem(LAST_SYNCED_KEY, nowIso)

@@ -44,7 +44,8 @@ export const syncService = {
 
   initRealtimeSync(
     userId: string,
-    onRemoteDelta: (delta: SessionDelta) => void
+    onRemoteDelta: (delta: SessionDelta) => void,
+    onRemoteReset?: () => void
   ): () => void {
     const currentDeviceId = getDeviceId()
 
@@ -53,7 +54,14 @@ export const syncService = {
       try {
         broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME)
         broadcastChannel.onmessage = (event) => {
-          const delta = event.data as SessionDelta
+          const data = event.data
+          if (!data) return
+          if (data.type === 'reset_stats' && data.userId === userId && data.deviceId !== currentDeviceId) {
+            console.log('🔄 Received remote reset_stats via BroadcastChannel')
+            onRemoteReset?.()
+            return
+          }
+          const delta = data as SessionDelta
           if (delta && delta.userId === userId && delta.deviceId !== currentDeviceId) {
             console.log('🔄 Received remote session delta via BroadcastChannel:', delta)
             onRemoteDelta(delta)
@@ -78,6 +86,33 @@ export const syncService = {
               if (delta && delta.deviceId !== currentDeviceId) {
                 console.log('📡 Received remote delta via Supabase Realtime:', delta)
                 onRemoteDelta(delta)
+              }
+            }
+          )
+          .on(
+            'broadcast',
+            { event: 'reset_stats' },
+            (payload) => {
+              const data = payload.payload as { deviceId?: string }
+              if (data && data.deviceId !== currentDeviceId) {
+                console.log('📡 Received remote reset_stats via Supabase Realtime')
+                onRemoteReset?.()
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'profiles',
+              filter: `id=eq.${userId}`,
+            },
+            (payload) => {
+              const newRow = payload.new as { hasanat?: number; verses?: number }
+              if (newRow && (newRow.hasanat === 0 || newRow.hasanat == null) && (newRow.verses === 0 || newRow.verses == null)) {
+                console.log('📡 Detected zeroed stats in profiles row via Postgres Changes')
+                onRemoteReset?.()
               }
             }
           )
@@ -109,6 +144,42 @@ export const syncService = {
         window.removeEventListener('online', handleOnline)
       }
     }
+  },
+
+  async publishResetStats(userId: string): Promise<boolean> {
+    const payload = {
+      type: 'reset_stats',
+      userId,
+      deviceId: getDeviceId(),
+      timestamp: Date.now(),
+    }
+
+    // 1. Local BroadcastChannel
+    if (broadcastChannel) {
+      try {
+        broadcastChannel.postMessage(payload)
+      } catch (err) {
+        console.warn('BroadcastChannel reset message failed:', err)
+      }
+    }
+
+    // 2. Supabase Realtime Broadcast
+    if (isConfigured && userId) {
+      try {
+        const channel = supabase.channel(`reading_sync_${userId}`)
+        await channel.send({
+          type: 'broadcast',
+          event: 'reset_stats',
+          payload,
+        })
+      } catch (err) {
+        console.warn('Supabase reset stats broadcast failed:', err)
+      }
+    }
+
+    // Clear any pending offline queue
+    saveOfflineQueue([])
+    return true
   },
 
   async publishSessionDelta(
