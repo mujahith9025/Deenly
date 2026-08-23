@@ -31,6 +31,8 @@ import {
   DEFAULT_TAMIL_TRANSLATION
 } from '../lib/quranTranslations'
 import { useI18nStore } from '../lib/i18n'
+import { TajweedArabicText } from '../components/TajweedArabicText'
+import { TajweedLegendModal } from '../components/TajweedLegendModal'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -42,6 +44,7 @@ export const ReadingScreen: React.FC = () => {
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
   const [chapterCompletedBanner, setChapterCompletedBanner] = useState<string | null>(null)
   const [zoomFeedback, setZoomFeedback] = useState<number | null>(null)
+  const [isLegendOpen, setIsLegendOpen] = useState<boolean>(false)
 
   const mainCanvasRef = useRef<HTMLElement | null>(null)
   const zoomFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -55,6 +58,9 @@ export const ReadingScreen: React.FC = () => {
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
   const storeEnglishTranslation = useReadingStore((state) => state.englishTranslation)
   const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
+  const isTajweedEnabled = useReadingStore((state) => state.isTajweedEnabled)
+  const setIsTajweedEnabled = useReadingStore((state) => state.setIsTajweedEnabled)
+  const surahTajweedMap = useReadingStore((state) => state.surahTajweedMap)
   const setFontSize = useReadingStore((state) => state.setFontSize)
   const fontSize = storeFontSize || user?.arabicFontSize || 28
   const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
@@ -419,8 +425,29 @@ export const ReadingScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Language Switcher, Bookmark & Favorite */}
+        {/* Right: Language Switcher, Tajweed Toggle, Bookmark & Favorite */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Tajweed Toggle Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsTajweedEnabled(!isTajweedEnabled)
+            }}
+            className={`h-9 sm:h-10 px-2.5 sm:px-3 rounded-full border transition cursor-pointer shadow-sm flex items-center gap-1 text-xs font-bold ${
+              isTajweedEnabled
+                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 ring-1 ring-emerald-500/30'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline'
+            }`}
+            title={
+              isTajweedEnabled
+                ? (appLanguage === 'ta' ? 'தஜ்வீத் வண்ணங்கள் இயக்கப்பட்டுள்ளது' : 'Tajweed Colors Active')
+                : (appLanguage === 'ta' ? 'தஜ்வீத் வண்ணங்களை இயக்கு' : 'Enable Tajweed Colors')
+            }
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{appLanguage === 'ta' ? 'தஜ்வீத்' : 'Tajweed'}</span>
+          </button>
+
           {/* Language Toggle */}
           {appLanguage === 'en' ? (
             <button
@@ -564,7 +591,11 @@ export const ReadingScreen: React.FC = () => {
                 style={{ fontSize: `${fontSize}px`, fontFamily: arabicFontFamily }}
                 dir="rtl"
               >
-                {currentAyah.arabicText}{' '}
+                <TajweedArabicText
+                  rawTajweedText={surahTajweedMap[currentAyah.verseNumberInSurah]}
+                  fallbackText={currentAyah.arabicText}
+                  isEnabled={isTajweedEnabled}
+                />{' '}
                 <span className="text-primary font-serif text-xl sm:text-2xl md:text-3xl inline-block px-1 select-none whitespace-nowrap">
                   ﴿{currentAyah.verseNumberInSurah}﴾
                 </span>
@@ -640,6 +671,14 @@ export const ReadingScreen: React.FC = () => {
           </button>
         </div>
       </footer>
+
+      {/* Tajweed Legend Interactive Modal */}
+      <TajweedLegendModal
+        isOpen={isLegendOpen}
+        onClose={() => setIsLegendOpen(false)}
+        isEnabled={isTajweedEnabled}
+        onToggleEnabled={setIsTajweedEnabled}
+      />
     </div>
   )
 }

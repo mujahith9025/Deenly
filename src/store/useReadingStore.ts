@@ -9,6 +9,7 @@ import type { ArabicFontStyle } from '../lib/quranFonts'
 import { DEFAULT_ARABIC_FONT } from '../lib/quranFonts'
 import type { EnglishTranslationKey, TamilTranslationKey } from '../lib/quranTranslations'
 import { getStoredEnglishTranslation, getStoredTamilTranslation } from '../lib/quranTranslations'
+import { getStoredTajweedPreference, setStoredTajweedPreference, fetchSurahTajweedText } from '../lib/tajweed'
 
 interface ReadingStoreActions {
   setCurrentPosition: (surah: number, ayah: number, page?: number, juz?: number) => void
@@ -17,6 +18,7 @@ interface ReadingStoreActions {
   setTranslationLanguage: (lang: 'en' | 'ta') => void
   setEnglishTranslation: (trans: EnglishTranslationKey) => void
   setTamilTranslation: (trans: TamilTranslationKey) => void
+  setIsTajweedEnabled: (enabled: boolean) => void
   setIsPlayingAudio: (isPlaying: boolean) => void
   toggleAudioMute: () => void
   loadSurah: (surahNumber: number) => Promise<void>
@@ -91,6 +93,8 @@ const initialReadingState: ReadingSessionState = {
   isPlayingAudio: false,
   isAudioMuted: false,
   currentSurah: null,
+  surahTajweedMap: {},
+  isTajweedEnabled: getStoredTajweedPreference(),
   isLoadingSurah: false,
   error: null,
   activeSession: initialActiveSession,
@@ -140,6 +144,10 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
     set({ tamilTranslation })
     useAuthStore.getState().updateUserSettings({ tamilTranslation })
   },
+  setIsTajweedEnabled: (isTajweedEnabled) => {
+    setStoredTajweedPreference(isTajweedEnabled)
+    set({ isTajweedEnabled })
+  },
   setIsPlayingAudio: (isPlayingAudio) => set({ isPlayingAudio }),
   toggleAudioMute: () => set((state) => ({ isAudioMuted: !state.isAudioMuted })),
 
@@ -147,9 +155,14 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
     set({ isLoadingSurah: true, error: null, currentSurahNumber: surahNumber })
     try {
       const state = get()
-      const surahData = await quranApi.getSurah(surahNumber, ['en', 'ta', state.englishTranslation, state.tamilTranslation])
+      const [surahData, tajweedMap] = await Promise.all([
+        quranApi.getSurah(surahNumber, ['en', 'ta', state.englishTranslation, state.tamilTranslation]),
+        fetchSurahTajweedText(surahNumber),
+      ])
+
       set({
         currentSurah: surahData,
+        surahTajweedMap: tajweedMap,
         currentSurahNumber: surahNumber,
         currentPageNumber: surahData.startPage,
         currentJuzNumber: surahData.startJuz,

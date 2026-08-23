@@ -18,6 +18,22 @@
   - 🇮🇳 **தமிழ் (`ta`) — Pure Tamil Mode**: The entire user interface (Navigation, Dashboard, Quran Explorer, Reader, Hadith collections, and Settings) translates completely into pure, authentic Tamil.
   - 🔒 **Pure Tamil Mode Lock**: When Tamil is chosen as the App Language, English Quran translations are disabled and locked exclusively to authentic Tamil editions (*Abdul Hameed Baqavi* & *Jan Trust*), ensuring a distraction-free, 100% Tamil Islamic reading experience alongside original Arabic scriptures.
 
+### 🎨 Scholarly Tajweed Color Rules Engine & Interactive Guide
+- **Dynamic Tajweed Color Coding**: Authentic phonetic color-coding across the Quran Reader, Quran Explorer, and Settings:
+  - 🔴 **Obligatory Prolongation (Madd Lazim - 6 Harakat)** (`#ef4444`)
+  - 🌺 **Mandatory Connected Madd (Madd Muttasil - 4-5 Harakat)** (`#f43f5e`)
+  - 🟠 **Permissible Prolongation (Madd Ja'iz / Munfasil / Arid)** (`#f59e0b`)
+  - 🟡 **Natural Prolongation (Madd Tabee'i - 2 Harakat)** (`#fbbf24`)
+  - 🔵 **Qalqalah (Echoing Sound: ق, ط, ب, ج, د)** (`#38bdf8`)
+  - 🟢 **Ghunnah (Nasalization / 2 Harakat: نّ, مّ)** (`#34d399`)
+  - 🩵 **Ikhfa (Nasal Concealment / Hiding before 15 letters)** (`#2dd4bf`)
+  - 🟣 **Idgham with Ghunnah (Merging with Nasalization)** (`#a78bfa`)
+  - ⚪ **Idgham without Ghunnah & Silent / Wasl Letters** (`#94a3b8`)
+  - 🌸 **Iqlab (Conversion of Noon/Tanween to Meem before Baa)** (`#f472b6`)
+- **One-Tap Quick Toggle**: Header button (`Sparkles`) allowing readers to toggle Tajweed color mode on/off instantly.
+- **Interactive Tap-to-Learn Tooltips**: Tapping any colored Arabic segment in the recitation card reveals a micro-popover with the exact Tajweed rule name and explanation.
+- **Comprehensive Bilingual Legend Modal & Settings Guide**: Detailed reference card with Arabic examples, rule classifications, and complete descriptions in English and pure Tamil.
+
 ### 📖 Authentic Quran Reading Experience
 - **Official Quran Font Styles**: 5 authentic calligraphic traditions with regional badges, live previews, and instant multi-screen persistence:
   - 🏛️ **Madani Uthmani** (*Amiri Quran* / King Fahd Complex standard)

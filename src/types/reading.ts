@@ -46,6 +46,8 @@ export interface ReadingSessionState {
   isPlayingAudio: boolean
   isAudioMuted: boolean
   currentSurah: SurahDetail | null
+  surahTajweedMap: Record<number, string>
+  isTajweedEnabled: boolean
   isLoadingSurah: boolean
   error: string | null
   activeSession: ActiveReadingSession

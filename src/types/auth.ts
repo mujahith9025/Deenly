@@ -42,6 +42,7 @@ export interface UserProfile {
   bestStreak: number
   arabicFontSize?: number
   arabicFontStyle?: ArabicFontStyle
+  tajweedRulesEnabled?: boolean
   prayerNotifications?: boolean
   readingReminders?: boolean
   authProvider?: 'google' | 'email' | 'guest'

@@ -36,12 +36,15 @@ import {
   DEFAULT_TAMIL_TRANSLATION
 } from '../lib/quranTranslations'
 import { useI18nStore, type AppLanguage } from '../lib/i18n'
+import { TAJWEED_RULES } from '../lib/tajweed'
+import { TajweedArabicText } from '../components/TajweedArabicText'
 
 type SettingCategory = 
   | 'language'
   | 'theme' 
   | 'translation' 
   | 'font' 
+  | 'tajweed'
   | 'target' 
   | 'notifications' 
   | 'sync' 
@@ -85,6 +88,8 @@ export const SettingsScreen: React.FC = () => {
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
   const storeEnglishTranslation = useReadingStore((state) => state.englishTranslation)
   const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
+  const isTajweedEnabled = useReadingStore((state) => state.isTajweedEnabled)
+  const setIsTajweedEnabled = useReadingStore((state) => state.setIsTajweedEnabled)
   const setFontSize = useReadingStore((state) => state.setFontSize)
   const setFontStyle = useReadingStore((state) => state.setFontStyle)
   const setEnglishTranslation = useReadingStore((state) => state.setEnglishTranslation)
@@ -706,6 +711,144 @@ export const SettingsScreen: React.FC = () => {
     )
   }
 
+  // Tajweed Color Rules Section
+  const renderTajweedSection = () => {
+    const distinctRules = [
+      TAJWEED_RULES.m,
+      TAJWEED_RULES.o,
+      TAJWEED_RULES.p,
+      TAJWEED_RULES.n,
+      TAJWEED_RULES.g,
+      TAJWEED_RULES.q,
+      TAJWEED_RULES.f,
+      TAJWEED_RULES.w,
+      TAJWEED_RULES.a,
+      TAJWEED_RULES.b,
+      TAJWEED_RULES.h,
+    ]
+
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+            {appLanguage === 'ta' ? 'தஜ்வீத் வண்ண விதிகள்' : 'Tajweed Color Rules'}
+          </h2>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+            {appLanguage === 'ta'
+              ? 'குர்ஆனை சரியான உச்சரிப்பு மற்றும் நீட்டல் விதிகளுடன் ஓத வண்ணக் குறியீடுகளைப் பயன்படுத்தவும்.'
+              : 'Scholarly color-coding system to help you recite the Holy Quran with precise phonetic and prolongation rules.'}
+          </p>
+        </div>
+
+        {/* Global Master Toggle Card */}
+        <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-sm space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-base font-bold text-on-surface block">
+                {appLanguage === 'ta' ? 'தஜ்வீத் வண்ணக் குறியீடுகளை இயக்கு' : 'Enable Tajweed Color Codes'}
+              </span>
+              <p className="text-xs text-on-surface-variant">
+                {appLanguage === 'ta'
+                  ? 'இயக்கப்பட்டால், ஓதும் திரையிலும் குர்ஆன் ஆய்வுக் கூடத்திலும் அரபு எழுத்துகள் தஜ்வீத் விதிகளுக்கு ஏற்ப வண்ணமயமாகக் காட்டும்.'
+                  : 'Highlights Madd, Ghunnah, Qalqalah, Ikhfa, Idgham, and Iqlab in distinct colors across all 114 Surahs.'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const nextVal = !isTajweedEnabled
+                setIsTajweedEnabled(nextVal)
+                updateUserSettings({ tajweedRulesEnabled: nextVal })
+              }}
+              className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                isTajweedEnabled ? 'bg-primary' : 'bg-surface-container-highest'
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform ${
+                  isTajweedEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Live Interactive Tajweed Preview */}
+        <div className="p-5 sm:p-6 rounded-3xl glass-card border border-primary/30 shadow-md space-y-3 bg-surface-container-low/80">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+              {appLanguage === 'ta' ? 'நேரடி முன்னோட்டம் (அல்-ஃபாத்திஹா)' : 'Live Interactive Preview (Al-Fatihah)'}
+            </span>
+            <span className="text-[11px] text-primary font-bold">
+              {isTajweedEnabled ? (appLanguage === 'ta' ? 'வண்ணங்கள் செயலில் உள்ளன' : 'Colors Active') : (appLanguage === 'ta' ? 'இயல்பு நிலை' : 'Plain Text')}
+            </span>
+          </div>
+
+          <div
+            className="p-4 sm:p-6 rounded-2xl bg-surface-container-high/40 border border-outline-variant/30 text-center select-none"
+            dir="rtl"
+            style={{ fontFamily: getArabicFontFamily(currentFontStyle) }}
+          >
+            <p className="text-xl sm:text-2xl md:text-3xl leading-[2.5] font-medium text-on-surface">
+              <TajweedArabicText
+                rawTajweedText="بِسْمِ [h:1[ٱ]للَّهِ [h:2[ٱ][l[ل]رَّحْمَ[n[ـٰ]نِ [h:3[ٱ][l[ل]رَّح[p[ِي]مِ ﴿١﴾ [h:4[ٱ]لْحَمْدُ لِلَّهِ رَبِّ [h:5[ٱ]لْعَ[n[ـٰ]لَم[p[ِي]نَ ﴿٢﴾"
+                fallbackText="بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ﴿١﴾ ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ ﴿٢﴾"
+                isEnabled={isTajweedEnabled}
+              />
+            </p>
+          </div>
+          <p className="text-[11px] text-outline text-center">
+            {appLanguage === 'ta' ? '💡 தஜ்வீத் விதியை அறிய வண்ண எழுத்தைத் தொடவும்' : '💡 Tap any colored word above to view its specific Tajweed rule & meaning'}
+          </p>
+        </div>
+
+        {/* Tajweed Rules Comprehensive Legend Cards */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps">
+            {appLanguage === 'ta' ? 'தஜ்வீத் விதிகள் வழிகாட்டி & வண்ணங்கள்' : 'Color Rules & Phonetic Guide'}
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {distinctRules.map((rule, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-2xl glass-card border border-outline-variant/30 hover:border-outline-variant/60 shadow-sm space-y-2 flex flex-col justify-between"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm"
+                        style={{ backgroundColor: rule.hexColor }}
+                      />
+                      <h4 className="text-xs sm:text-sm font-bold text-on-surface">
+                        {appLanguage === 'ta' ? rule.nameTa : rule.nameEn}
+                      </h4>
+                    </div>
+                  </div>
+                  <p className="text-xs text-on-surface-variant leading-relaxed">
+                    {appLanguage === 'ta' ? rule.descriptionTa : rule.descriptionEn}
+                  </p>
+                </div>
+
+                <div
+                  className="self-end px-3 py-1 rounded-xl border border-outline-variant/30 bg-surface-container-low mt-2 text-right"
+                  style={{ fontFamily: getArabicFontFamily(currentFontStyle) }}
+                  dir="rtl"
+                >
+                  <span className="text-base font-bold" style={{ color: rule.hexColor }}>
+                    {rule.example}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // 4. Daily Target Section
   const renderTargetSection = () => (
     <div className="space-y-6 animate-fade-in">
@@ -1009,6 +1152,8 @@ export const SettingsScreen: React.FC = () => {
         return renderTranslationSection()
       case 'font':
         return renderFontSection()
+      case 'tajweed':
+        return renderTajweedSection()
       case 'target':
         return renderTargetSection()
       case 'notifications':
@@ -1049,6 +1194,12 @@ export const SettingsScreen: React.FC = () => {
       label: t('arabicTypography'), 
       icon: Type, 
       desc: `${activeFontMeta.name} • ${currentFontSize}px` 
+    },
+    { 
+      id: 'tajweed', 
+      label: appLanguage === 'ta' ? 'தஜ்வீத் வண்ண விதிகள்' : 'Tajweed Color Rules', 
+      icon: Sparkles, 
+      desc: isTajweedEnabled ? (appLanguage === 'ta' ? 'செயலில் உள்ளது' : 'Active') : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Disabled') 
     },
     { 
       id: 'target', 
