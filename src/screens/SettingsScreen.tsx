@@ -38,6 +38,7 @@ import {
 import { useI18nStore, type AppLanguage } from '../lib/i18n'
 import { TAJWEED_RULES } from '../lib/tajweed'
 import { TajweedArabicText } from '../components/TajweedArabicText'
+import { MUSHAF_THEMES, type MushafThemeId } from '../lib/mushafThemes'
 
 type SettingCategory = 
   | 'language'
@@ -90,6 +91,8 @@ export const SettingsScreen: React.FC = () => {
   const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
   const isTajweedEnabled = useReadingStore((state) => state.isTajweedEnabled)
   const setIsTajweedEnabled = useReadingStore((state) => state.setIsTajweedEnabled)
+  const storeMushafTheme = useReadingStore((state) => state.mushafTheme)
+  const setMushafTheme = useReadingStore((state) => state.setMushafTheme)
   const setFontSize = useReadingStore((state) => state.setFontSize)
   const setFontStyle = useReadingStore((state) => state.setFontStyle)
   const setEnglishTranslation = useReadingStore((state) => state.setEnglishTranslation)
@@ -100,6 +103,7 @@ export const SettingsScreen: React.FC = () => {
 
   const currentFontSize = user?.arabicFontSize || storeFontSize || 28
   const currentFontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
+  const currentMushafTheme: MushafThemeId = user?.mushafTheme || storeMushafTheme || 'cosmic'
   const currentTranslation = user?.preferredTranslation || 'english'
   const currentEnglishTranslation: EnglishTranslationKey = user?.englishTranslation || storeEnglishTranslation || DEFAULT_ENGLISH_TRANSLATION
   const currentTamilTranslation: TamilTranslationKey = user?.tamilTranslation || storeTamilTranslation || DEFAULT_TAMIL_TRANSLATION
@@ -249,81 +253,214 @@ export const SettingsScreen: React.FC = () => {
   )
 
   // 1. Theme Section
-  const renderThemeSection = () => (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">{t('themeAppearance')}</h2>
-        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
-          {t('themeAppearanceDesc')}
-        </p>
+  const renderThemeSection = () => {
+    const activeThemeMeta = MUSHAF_THEMES[currentMushafTheme] || MUSHAF_THEMES.cosmic
+    const themeList = Object.values(MUSHAF_THEMES)
+
+    return (
+      <div className="space-y-8 animate-fade-in">
+        {/* App Global Mode */}
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">{t('themeAppearance')}</h2>
+            <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+              {t('themeAppearanceDesc')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            {/* Cosmic Dark */}
+            <div
+              onClick={() => setTheme('dark')}
+              className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
+                theme === 'dark'
+                  ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+                  : 'glass-card border-outline-variant/30 hover:border-primary/40'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary">
+                  <Moon className="w-6 h-6" />
+                </div>
+                {theme === 'dark' && <Check className="w-5 h-5 text-primary" />}
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">{t('darkTheme')}</span>
+                <span className="text-xs text-on-surface-variant">{t('darkThemeSub')}</span>
+              </div>
+            </div>
+
+            {/* Pristine Light */}
+            <div
+              onClick={() => setTheme('light')}
+              className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
+                theme === 'light'
+                  ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+                  : 'glass-card border-outline-variant/30 hover:border-primary/40'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+                  <Sun className="w-6 h-6" />
+                </div>
+                {theme === 'light' && <Check className="w-5 h-5 text-primary" />}
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">{t('lightTheme')}</span>
+                <span className="text-xs text-on-surface-variant">{t('lightThemeSub')}</span>
+              </div>
+            </div>
+
+            {/* System Default */}
+            <div
+              onClick={() => setTheme('system')}
+              className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
+                theme === 'system'
+                  ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
+                  : 'glass-card border-outline-variant/30 hover:border-primary/40'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-on-surface-variant">
+                  <Laptop className="w-6 h-6" />
+                </div>
+                {theme === 'system' && <Check className="w-5 h-5 text-primary" />}
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">{t('systemTheme')}</span>
+                <span className="text-xs text-on-surface-variant">{t('systemThemeSub')}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 🌟 2. Dedicated Mushaf Eye-Comfort Themes Section */}
+        <div className="space-y-4 pt-6 border-t border-outline-variant/20">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📖</span>
+              <h3 className="text-lg sm:text-xl font-bold text-on-surface font-h1">
+                {appLanguage === 'ta' ? 'முஸ்ஹஃப் கண்-சௌகரிய தீம்கள்' : 'Mushaf Eye-Comfort Reading Themes'}
+              </h3>
+            </div>
+            <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+              {appLanguage === 'ta'
+                ? 'ஓதும் திரையில் கண்களின் சோர்வைத் தவிர்க்கவும், பேட்டரியைச் சேமிக்கவும் பிரத்யேக வண்ணத் தட்டுகள்.'
+                : 'Custom-calibrated reading palettes engineered for zero eye fatigue and AMOLED battery efficiency.'}
+            </p>
+          </div>
+
+          {/* Theme Options Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {themeList.map((tItem) => {
+              const isSelected = currentMushafTheme === tItem.id
+
+              return (
+                <div
+                  key={tItem.id}
+                  onClick={() => {
+                    setMushafTheme(tItem.id)
+                    updateUserSettings({ mushafTheme: tItem.id })
+                  }}
+                  className={`p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 relative overflow-hidden ${
+                    isSelected
+                      ? 'border-primary ring-2 ring-primary/40 shadow-xl bg-surface-container-high/80'
+                      : 'glass-card border-outline-variant/30 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-inner border"
+                      style={{
+                        backgroundColor: tItem.previewColors.bg,
+                        borderColor: tItem.previewColors.border,
+                      }}
+                    >
+                      <span>{tItem.icon}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {/* Swatch dots */}
+                      <div
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg border"
+                        style={{
+                          backgroundColor: tItem.previewColors.bg,
+                          borderColor: tItem.previewColors.border,
+                        }}
+                      >
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: tItem.previewColors.card }}
+                        />
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: tItem.previewColors.accent }}
+                        />
+                        <span
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: tItem.previewColors.text }}
+                        />
+                      </div>
+
+                      {isSelected && <Check className="w-5 h-5 text-primary ml-1" />}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm sm:text-base font-bold text-on-surface">
+                        {appLanguage === 'ta' ? tItem.nameTa : tItem.nameEn}
+                      </span>
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                        style={{
+                          backgroundColor: tItem.previewColors.card,
+                          color: tItem.previewColors.accent,
+                          borderColor: tItem.previewColors.border,
+                        }}
+                      >
+                        {appLanguage === 'ta' ? tItem.badgeTa : tItem.badgeEn}
+                      </span>
+                    </div>
+                    <p className="text-xs text-on-surface-variant mt-1 line-clamp-2 leading-relaxed">
+                      {appLanguage === 'ta' ? tItem.descTa : tItem.descEn}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Live Interactive Preview Box */}
+          <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-3">
+            <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+              {appLanguage === 'ta' ? 'தேர்ந்தெடுக்கப்பட்ட தீம் நேரடி முன்னோட்டம்' : 'Active Mushaf Theme Live Preview'}
+            </span>
+
+            <div
+              className={`p-6 sm:p-8 rounded-2xl border transition-all duration-300 ${activeThemeMeta.classes.container}`}
+              style={{ minHeight: '140px' }}
+            >
+              <div className={`p-5 rounded-2xl text-center space-y-2 ${activeThemeMeta.classes.card}`}>
+                <p
+                  className={`text-xl sm:text-2xl leading-[2.4] font-medium ${activeThemeMeta.classes.textArabic}`}
+                  style={{ fontFamily: getArabicFontFamily(currentFontStyle) }}
+                  dir="rtl"
+                >
+                  بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ﴿١﴾
+                </p>
+                <p className={`text-xs sm:text-sm font-sans ${activeThemeMeta.classes.textTranslation}`}>
+                  {appLanguage === 'ta'
+                    ? 'அளவற்ற அருளாளனும், நிகரற்ற அன்புடையோனுமாகிய அல்லாஹ்வின் பெயரால்...'
+                    : 'In the Name of Allah, the Most Gracious, the Most Merciful.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-        {/* Cosmic Dark */}
-        <div
-          onClick={() => setTheme('dark')}
-          className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
-            theme === 'dark'
-              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
-              : 'glass-card border-outline-variant/30 hover:border-primary/40'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary">
-              <Moon className="w-6 h-6" />
-            </div>
-            {theme === 'dark' && <Check className="w-5 h-5 text-primary" />}
-          </div>
-          <div>
-            <span className="text-base font-bold text-on-surface block">{t('darkTheme')}</span>
-            <span className="text-xs text-on-surface-variant">{t('darkThemeSub')}</span>
-          </div>
-        </div>
-
-        {/* Pristine Light */}
-        <div
-          onClick={() => setTheme('light')}
-          className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
-            theme === 'light'
-              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
-              : 'glass-card border-outline-variant/30 hover:border-primary/40'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
-              <Sun className="w-6 h-6" />
-            </div>
-            {theme === 'light' && <Check className="w-5 h-5 text-primary" />}
-          </div>
-          <div>
-            <span className="text-base font-bold text-on-surface block">{t('lightTheme')}</span>
-            <span className="text-xs text-on-surface-variant">{t('lightThemeSub')}</span>
-          </div>
-        </div>
-
-        {/* System Default */}
-        <div
-          onClick={() => setTheme('system')}
-          className={`p-5 rounded-3xl border transition cursor-pointer flex flex-col justify-between space-y-3 ${
-            theme === 'system'
-              ? 'bg-primary/15 border-primary shadow-lg ring-1 ring-primary/40'
-              : 'glass-card border-outline-variant/30 hover:border-primary/40'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-on-surface-variant">
-              <Laptop className="w-6 h-6" />
-            </div>
-            {theme === 'system' && <Check className="w-5 h-5 text-primary" />}
-          </div>
-          <div>
-            <span className="text-base font-bold text-on-surface block">{t('systemTheme')}</span>
-            <span className="text-xs text-on-surface-variant">{t('systemThemeSub')}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+    )
+  }
 
   // 2. Translation Section
   const renderTranslationSection = () => {
@@ -1181,7 +1318,7 @@ export const SettingsScreen: React.FC = () => {
       id: 'theme', 
       label: t('themeAppearance'), 
       icon: theme === 'dark' ? Moon : Sun, 
-      desc: `${theme.charAt(0).toUpperCase() + theme.slice(1)} Mode` 
+      desc: `${theme.charAt(0).toUpperCase() + theme.slice(1)} • ${appLanguage === 'ta' ? (MUSHAF_THEMES[currentMushafTheme]?.nameTa || 'முஸ்ஹஃப்') : (MUSHAF_THEMES[currentMushafTheme]?.nameEn || 'Mushaf')}` 
     },
     { 
       id: 'translation', 

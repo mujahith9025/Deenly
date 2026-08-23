@@ -33,6 +33,8 @@ export interface ActiveReadingSession {
 
 import type { EnglishTranslationKey, TamilTranslationKey } from '../lib/quranTranslations'
 
+import type { MushafThemeId } from '../lib/mushafThemes'
+
 export interface ReadingSessionState {
   currentSurahNumber: number
   currentAyahNumber: number
@@ -40,6 +42,7 @@ export interface ReadingSessionState {
   currentPageNumber: number
   fontSize: number
   fontStyle: ArabicFontStyle
+  mushafTheme: MushafThemeId
   translationLanguage: 'en' | 'ta'
   englishTranslation: EnglishTranslationKey
   tamilTranslation: TamilTranslationKey

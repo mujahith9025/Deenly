@@ -18,6 +18,16 @@
   - 🇮🇳 **தமிழ் (`ta`) — Pure Tamil Mode**: The entire user interface (Navigation, Dashboard, Quran Explorer, Reader, Hadith collections, and Settings) translates completely into pure, authentic Tamil.
   - 🔒 **Pure Tamil Mode Lock**: When Tamil is chosen as the App Language, English Quran translations are disabled and locked exclusively to authentic Tamil editions (*Abdul Hameed Baqavi* & *Jan Trust*), ensuring a distraction-free, 100% Tamil Islamic reading experience alongside original Arabic scriptures.
 
+### 🌙 Mushaf Eye-Comfort Reading Themes (OLED, Sepia, Emerald)
+- **Engineered Recitation Palettes**: 5 specially calibrated visual themes for zero eye strain and optimized lighting conditions:
+  - 🌙 **Midnight OLED Pure Black**: True 100% pure black canvas with obsidian cards, zero AMOLED battery drain, and crisp high-contrast text for dark rooms and late-night Tahajjud recitation.
+  - 📜 **Warm Sepia Parchment**: Soft paper-like ivory and warm espresso tones filtering harsh blue light for effortless prolonged daytime reading.
+  - 🍃 **Classic Royal Emerald**: Sacred Islamic royal emerald green inspired by traditional Madinah & Istanbul Mushaf bindings.
+  - 🌌 **Cosmic Obsidian**: Sleek modern dark mode with violet/celestial accents and glassmorphism.
+  - ☀️ **Soft Dawn Light**: Crisp, airy daylight mode with gentle contrast and clear typography.
+- **One-Tap Quick Switcher**: Palette icon button on the Quran Reader and Explorer headers for instantaneous on-the-fly theme switching.
+- **Interactive Theme Gallery & Settings Live Preview**: Visual theme selection cards with color swatches and live Arabic verse rendering in Settings.
+
 ### 🎨 Scholarly Tajweed Color Rules Engine & Interactive Guide
 - **Dynamic Tajweed Color Coding**: Authentic phonetic color-coding across the Quran Reader, Quran Explorer, and Settings:
   - 🔴 **Obligatory Prolongation (Madd Lazim - 6 Harakat)** (`#ef4444`)

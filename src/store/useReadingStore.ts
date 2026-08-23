@@ -10,6 +10,7 @@ import { DEFAULT_ARABIC_FONT } from '../lib/quranFonts'
 import type { EnglishTranslationKey, TamilTranslationKey } from '../lib/quranTranslations'
 import { getStoredEnglishTranslation, getStoredTamilTranslation } from '../lib/quranTranslations'
 import { getStoredTajweedPreference, setStoredTajweedPreference, fetchSurahTajweedText } from '../lib/tajweed'
+import { getStoredMushafTheme, setStoredMushafTheme, type MushafThemeId } from '../lib/mushafThemes'
 
 interface ReadingStoreActions {
   setCurrentPosition: (surah: number, ayah: number, page?: number, juz?: number) => void
@@ -18,6 +19,7 @@ interface ReadingStoreActions {
   setTranslationLanguage: (lang: 'en' | 'ta') => void
   setEnglishTranslation: (trans: EnglishTranslationKey) => void
   setTamilTranslation: (trans: TamilTranslationKey) => void
+  setMushafTheme: (theme: MushafThemeId) => void
   setIsTajweedEnabled: (enabled: boolean) => void
   setIsPlayingAudio: (isPlaying: boolean) => void
   toggleAudioMute: () => void
@@ -87,6 +89,7 @@ const initialReadingState: ReadingSessionState = {
   currentPageNumber: 1,
   fontSize: getStoredFontSize(),
   fontStyle: getStoredFontStyle(),
+  mushafTheme: getStoredMushafTheme(),
   translationLanguage: 'en',
   englishTranslation: getStoredEnglishTranslation(),
   tamilTranslation: getStoredTamilTranslation(),
@@ -128,6 +131,11 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
     } catch {}
     set({ fontStyle })
     useAuthStore.getState().updateUserSettings({ arabicFontStyle: fontStyle })
+  },
+  setMushafTheme: (mushafTheme) => {
+    setStoredMushafTheme(mushafTheme)
+    set({ mushafTheme })
+    useAuthStore.getState().updateUserSettings({ mushafTheme })
   },
   setTranslationLanguage: (translationLanguage) => set({ translationLanguage }),
   setEnglishTranslation: (englishTranslation) => {

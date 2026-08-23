@@ -9,7 +9,8 @@ import {
   Bookmark,
   Heart,
   ZoomIn,
-  Target
+  Target,
+  Palette
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
@@ -33,6 +34,8 @@ import {
 import { useI18nStore } from '../lib/i18n'
 import { TajweedArabicText } from '../components/TajweedArabicText'
 import { TajweedLegendModal } from '../components/TajweedLegendModal'
+import { MUSHAF_THEMES, type MushafThemeId } from '../lib/mushafThemes'
+import { MushafThemeModal } from '../components/MushafThemeModal'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -45,6 +48,7 @@ export const ReadingScreen: React.FC = () => {
   const [chapterCompletedBanner, setChapterCompletedBanner] = useState<string | null>(null)
   const [zoomFeedback, setZoomFeedback] = useState<number | null>(null)
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(false)
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState<boolean>(false)
 
   const mainCanvasRef = useRef<HTMLElement | null>(null)
   const zoomFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -56,6 +60,11 @@ export const ReadingScreen: React.FC = () => {
   const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
   const storeFontSize = useReadingStore((state) => state.fontSize)
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
+  const storeMushafTheme = useReadingStore((state) => state.mushafTheme)
+  const setMushafTheme = useReadingStore((state) => state.setMushafTheme)
+  const activeMushafTheme: MushafThemeId = user?.mushafTheme || storeMushafTheme || 'cosmic'
+  const themeMeta = MUSHAF_THEMES[activeMushafTheme] || MUSHAF_THEMES.cosmic
+
   const storeEnglishTranslation = useReadingStore((state) => state.englishTranslation)
   const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
   const isTajweedEnabled = useReadingStore((state) => state.isTajweedEnabled)
@@ -368,7 +377,7 @@ export const ReadingScreen: React.FC = () => {
   }
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full max-w-4xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-3 sm:px-6 py-2.5 sm:py-3.5 gap-2 sm:gap-3">
+    <div className={`h-[100dvh] max-h-[100dvh] w-full max-w-4xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-3 sm:px-6 py-2.5 sm:py-3.5 gap-2 sm:gap-3 transition-colors duration-300 ${themeMeta.classes.container}`}>
       {/* Floating Zoom Size Indicator Pill */}
       {zoomFeedback && (
         <div className="fixed top-18 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full glass-card border border-primary/50 text-primary font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-fade-in backdrop-blur-md">
@@ -381,7 +390,7 @@ export const ReadingScreen: React.FC = () => {
       {/* 1. FIXED TOP BAR: PINNED TO TOP (MATCHED DIMENSIONS WITH FOOTER)          */}
       {/*    Includes Surah Name, Responsive Scaled Timer & Hasanat, Language Switch */}
       {/* ========================================================================= */}
-      <header className="w-full flex items-center justify-between gap-2.5 sm:gap-4 px-3.5 sm:px-5 py-3 sm:py-3.5 shrink-0 rounded-2xl sm:rounded-3xl glass-card border border-outline-variant/30 shadow-md z-30 bg-surface/95 backdrop-blur-lg">
+      <header className={`w-full flex items-center justify-between gap-2.5 sm:gap-4 px-3.5 sm:px-5 py-3 sm:py-3.5 shrink-0 rounded-2xl sm:rounded-3xl border shadow-md z-30 transition-colors duration-300 ${themeMeta.classes.header}`}>
         {/* Left: Surah Name & Ayah Counter */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
@@ -394,14 +403,14 @@ export const ReadingScreen: React.FC = () => {
 
           <div className="truncate">
             <div className="flex items-center gap-1.5 sm:gap-2.5">
-              <span className="font-bold text-sm sm:text-base md:text-lg text-on-surface truncate">
+              <span className="font-bold text-sm sm:text-base md:text-lg truncate">
                 {appLanguage === 'ta' ? (currentSurah?.nameTa || currentSurah?.name || 'அத்தியாயம்') : (currentSurah?.name || 'Surah')}
               </span>
               <span className="font-noto-serif text-sm sm:text-base md:text-xl text-primary-fixed-dim shrink-0">
                 {currentSurah?.arabicName}
               </span>
             </div>
-            <p className="text-[10px] sm:text-xs text-outline">
+            <p className="text-[10px] sm:text-xs opacity-75">
               {t('ayahOfTotal')} {currentAyahNumber || 1} {t('of')} {totalAyahs} • {t('juzNumber')} {juzProgress.juzNumber}
             </p>
           </div>
@@ -410,12 +419,12 @@ export const ReadingScreen: React.FC = () => {
         {/* Center: RESPONSIVELY SCALED TIME & HASANAT EARNED */}
         <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-surface-container-high/90 border border-outline-variant/40 shrink-0 shadow-sm">
           {/* Timer */}
-          <div className="flex items-center gap-1.5 text-on-surface font-mono text-xs sm:text-sm md:text-base font-bold">
+          <div className="flex items-center gap-1.5 font-mono text-xs sm:text-sm md:text-base font-bold">
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
             <span>{formatTimer(activeSession.elapsedSeconds)}</span>
           </div>
 
-          <span className="text-outline text-xs">•</span>
+          <span className="opacity-50 text-xs">•</span>
 
           {/* Hasanat Badge */}
           <div className="flex items-center gap-1.5 text-tertiary font-bold text-xs sm:text-sm md:text-base">
@@ -425,8 +434,21 @@ export const ReadingScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Language Switcher, Tajweed Toggle, Bookmark & Favorite */}
+        {/* Right: Theme Switcher, Tajweed Toggle, Language Switcher, Favorite & Bookmark */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* 🌟 Mushaf Eye-Comfort Theme Switcher */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsThemeModalOpen(true)
+            }}
+            className="h-9 sm:h-10 px-2.5 sm:px-3 rounded-full border border-outline-variant/40 bg-surface-container hover:bg-surface-container-high transition cursor-pointer shadow-sm flex items-center gap-1 text-xs font-bold"
+            title={appLanguage === 'ta' ? `முஸ்ஹஃப் தீம்: ${themeMeta.nameTa}` : `Mushaf Theme: ${themeMeta.nameEn}`}
+          >
+            <Palette className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden md:inline text-[11px]">{themeMeta.icon}</span>
+          </button>
+
           {/* Tajweed Toggle Button */}
           <button
             onClick={(e) => {
@@ -582,12 +604,12 @@ export const ReadingScreen: React.FC = () => {
               </div>
             )}
 
-            {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (SCALES ON PINCH/ZOOM & USES SELECTED FONT) */}
+            {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (SCALES ON PINCH/ZOOM & USES SELECTED FONT & THEME) */}
             <div 
-              className="w-full p-5 sm:p-8 md:p-10 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/85 shadow-xl space-y-2 ring-1 ring-primary/20 text-center transition-all duration-150 active:scale-[0.99] hover:border-primary/70 select-none flex flex-col items-center justify-center break-words"
+              className={`w-full p-5 sm:p-8 md:p-10 rounded-3xl space-y-2 text-center transition-all duration-200 active:scale-[0.99] select-none flex flex-col items-center justify-center break-words ${themeMeta.classes.card}`}
             >
               <p
-                className="text-center text-on-surface leading-[2.3] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none drop-shadow-sm font-medium break-words w-full transition-all duration-150"
+                className={`text-center leading-[2.3] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none font-medium break-words w-full transition-all duration-150 ${themeMeta.classes.textArabic}`}
                 style={{ fontSize: `${fontSize}px`, fontFamily: arabicFontFamily }}
                 dir="rtl"
               >
@@ -604,14 +626,14 @@ export const ReadingScreen: React.FC = () => {
 
             {/* 🌟 2. TRANSLATION CONTAINER */}
             <div 
-              className="w-full p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1.5 select-none shadow-sm break-words"
+              className={`w-full p-4 sm:p-5 rounded-2xl sm:rounded-3xl border text-center space-y-1.5 select-none shadow-sm break-words transition-colors duration-200 ${themeMeta.classes.card}`}
             >
-              <span className="text-[10px] sm:text-xs uppercase font-bold text-outline font-label-caps tracking-wider block">
+              <span className={`text-[10px] sm:text-xs uppercase font-bold font-label-caps tracking-wider block ${themeMeta.classes.textMuted}`}>
                 {effectiveTranslationLanguage === 'ta' 
                   ? `தமிழ் மொழிபெயர்ப்பு (${getTranslationMeta(currentTamilTranslation).name})`
                   : getTranslationMeta(currentEnglishTranslation).name}
               </span>
-              <p className="font-sans text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed font-normal max-w-2xl mx-auto break-words">
+              <p className={`font-sans text-sm sm:text-base md:text-lg leading-relaxed font-normal max-w-2xl mx-auto break-words ${themeMeta.classes.textTranslation}`}>
                 {effectiveTranslationLanguage === 'ta'
                   ? (currentAyah.translations[currentTamilTranslation] || currentAyah.translations['ta'] || currentAyah.translations['ta_baqavi'] || 'மொழிபெயர்ப்பு ஏற்றப்படுகிறது...')
                   : (currentAyah.translations[currentEnglishTranslation] || currentAyah.translations['en'] || currentAyah.translations['en_sahih'] || 'Translation loading...')}
@@ -624,9 +646,8 @@ export const ReadingScreen: React.FC = () => {
       {/* ========================================================================= */}
       {/* 3. FIXED BOTTOM BAR: MATCHED HEIGHT & WIDTH TO HEADER                     */}
       {/*    ( ← ) Previous Ayah, "I'm Done" Center Pill, ( → ) Next Ayah           */}
-      {/*    🌟 ENLARGED BUTTONS FOR ERGONOMIC TOUCH                                */}
       {/* ========================================================================= */}
-      <footer className="w-full px-3.5 sm:px-5 py-3 sm:py-3.5 shrink-0 z-30 rounded-2xl sm:rounded-3xl glass-card border border-outline-variant/30 shadow-md bg-surface/95 backdrop-blur-lg">
+      <footer className={`w-full px-3.5 sm:px-5 py-3 sm:py-3.5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-md transition-colors duration-300 ${themeMeta.classes.footer}`}>
         <div className="flex items-center justify-between gap-3 sm:gap-4 relative">
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (
@@ -642,17 +663,17 @@ export const ReadingScreen: React.FC = () => {
             type="button"
             onClick={(e) => handlePrevAyah(e)}
             disabled={currentSurahNumber === 1 && currentAyahNumber === 1}
-            className="w-24 sm:w-32 md:w-36 h-13 sm:h-15 md:h-16 rounded-full bg-surface-container-high border border-outline-variant/40 text-on-surface flex items-center justify-center hover:border-primary transition cursor-pointer shadow-md disabled:opacity-40 active:scale-95"
+            className={`w-24 sm:w-32 md:w-36 h-13 sm:h-15 md:h-16 rounded-full border flex items-center justify-center transition cursor-pointer shadow-md disabled:opacity-40 active:scale-95 ${themeMeta.classes.buttonSecondary}`}
             title="Previous Ayah"
           >
-            <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7 stroke-[2.5] text-on-surface" />
+            <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7 stroke-[2.5]" />
           </button>
 
           {/* Center Button: "I'm Done" */}
           <button
             type="button"
             onClick={(e) => handleFinishSession(e)}
-            className="flex-1 h-13 sm:h-15 md:h-16 rounded-full bg-surface-container-high border border-outline-variant/40 hover:border-primary text-on-surface text-sm sm:text-base md:text-lg font-bold flex items-center justify-center transition cursor-pointer shadow-md active:scale-98"
+            className={`flex-1 h-13 sm:h-15 md:h-16 rounded-full border text-sm sm:text-base md:text-lg font-bold flex items-center justify-center transition cursor-pointer shadow-md active:scale-98 ${themeMeta.classes.buttonSecondary}`}
           >
             {t('imDone')}
           </button>
@@ -664,7 +685,7 @@ export const ReadingScreen: React.FC = () => {
               e.stopPropagation()
               handleMarkAndNext()
             }}
-            className="w-24 sm:w-32 md:w-36 h-13 sm:h-15 md:h-16 rounded-full bg-white text-gray-900 flex items-center justify-center transition cursor-pointer shadow-xl hover:bg-gray-100 active:scale-95"
+            className={`w-24 sm:w-32 md:w-36 h-13 sm:h-15 md:h-16 rounded-full font-bold flex items-center justify-center transition cursor-pointer shadow-xl active:scale-95 ${themeMeta.classes.buttonPrimary}`}
             title={currentAyah && currentAyah.verseNumberInSurah === totalAyahs ? 'Complete Chapter & Next Surah' : 'Mark Read & Next Ayah'}
           >
             <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 stroke-[3]" />
@@ -678,6 +699,14 @@ export const ReadingScreen: React.FC = () => {
         onClose={() => setIsLegendOpen(false)}
         isEnabled={isTajweedEnabled}
         onToggleEnabled={setIsTajweedEnabled}
+      />
+
+      {/* 🌟 Mushaf Eye-Comfort Theme Selector Modal */}
+      <MushafThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        currentTheme={activeMushafTheme}
+        onSelectTheme={(selectedTheme) => setMushafTheme(selectedTheme)}
       />
     </div>
   )

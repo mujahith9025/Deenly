@@ -12,7 +12,8 @@ import {
   Maximize2, 
   Loader2,
   Bookmark,
-  Heart
+  Heart,
+  Palette
 } from 'lucide-react'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { quranApi } from '../lib/quranApi'
@@ -34,6 +35,8 @@ import {
 import { useI18nStore } from '../lib/i18n'
 import { TajweedArabicText } from '../components/TajweedArabicText'
 import { TajweedLegendModal } from '../components/TajweedLegendModal'
+import { MUSHAF_THEMES, type MushafThemeId } from '../lib/mushafThemes'
+import { MushafThemeModal } from '../components/MushafThemeModal'
 
 type FilterType = 'all' | 'meccan' | 'medinan'
 
@@ -47,10 +50,15 @@ export const QuranScreen: React.FC = () => {
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
   const storeEnglishTranslation = useReadingStore((state) => state.englishTranslation)
   const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
+  const storeMushafTheme = useReadingStore((state) => state.mushafTheme)
+  const setMushafTheme = useReadingStore((state) => state.setMushafTheme)
+  const activeMushafTheme: MushafThemeId = user?.mushafTheme || storeMushafTheme || 'cosmic'
+  const themeMeta = MUSHAF_THEMES[activeMushafTheme] || MUSHAF_THEMES.cosmic
   const isTajweedEnabled = useReadingStore((state) => state.isTajweedEnabled)
   const setIsTajweedEnabled = useReadingStore((state) => state.setIsTajweedEnabled)
   const surahTajweedMap = useReadingStore((state) => state.surahTajweedMap)
   const [isLegendOpen, setIsLegendOpen] = useState(false)
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
   const fontSize = storeFontSize || user?.arabicFontSize || 28
   const fontStyle: ArabicFontStyle = user?.arabicFontStyle || storeFontStyle || 'madani'
   const arabicFontFamily = getArabicFontFamily(fontStyle)
@@ -263,8 +271,19 @@ export const QuranScreen: React.FC = () => {
           </p>
         </div>
 
-        {/* Translation Language Toggle & Tajweed Mode Controls */}
+        {/* Translation Language Toggle & Mode Controls */}
         <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+          {/* 🌟 Mushaf Theme Switcher */}
+          <button
+            onClick={() => setIsThemeModalOpen(true)}
+            className="px-3 py-1.5 rounded-full glass-card border border-outline-variant/40 text-xs font-bold text-on-surface hover:border-primary transition cursor-pointer shadow-sm flex items-center gap-1.5"
+            title={appLanguage === 'ta' ? `முஸ்ஹஃப் தீம்: ${themeMeta.nameTa}` : `Mushaf Theme: ${themeMeta.nameEn}`}
+          >
+            <Palette className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden sm:inline">{appLanguage === 'ta' ? themeMeta.nameTa : themeMeta.nameEn}</span>
+            <span>{themeMeta.icon}</span>
+          </button>
+
           {/* Tajweed Toggle Button */}
           <button
             onClick={() => setIsTajweedEnabled(!isTajweedEnabled)}
@@ -747,6 +766,14 @@ export const QuranScreen: React.FC = () => {
         onClose={() => setIsLegendOpen(false)}
         isEnabled={isTajweedEnabled}
         onToggleEnabled={setIsTajweedEnabled}
+      />
+
+      {/* 🌟 Mushaf Eye-Comfort Theme Selector Modal */}
+      <MushafThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        currentTheme={activeMushafTheme}
+        onSelectTheme={(selectedTheme) => setMushafTheme(selectedTheme)}
       />
     </div>
   )

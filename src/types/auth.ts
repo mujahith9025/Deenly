@@ -42,6 +42,7 @@ export interface UserProfile {
   bestStreak: number
   arabicFontSize?: number
   arabicFontStyle?: ArabicFontStyle
+  mushafTheme?: import('../lib/mushafThemes').MushafThemeId
   tajweedRulesEnabled?: boolean
   prayerNotifications?: boolean
   readingReminders?: boolean
