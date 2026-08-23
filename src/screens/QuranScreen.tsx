@@ -185,6 +185,7 @@ export const QuranScreen: React.FC = () => {
 
   const handleOpenFocusedReader = (surahNum: number, ayahNum: number) => {
     setCurrentPosition(surahNum, ayahNum)
+    useAuthStore.getState().updateLastReadPosition(surahNum, ayahNum)
     navigate(`/reading?surah=${surahNum}&ayah=${ayahNum}`)
   }
 

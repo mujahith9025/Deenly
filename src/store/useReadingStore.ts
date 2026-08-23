@@ -59,9 +59,28 @@ const getStoredFontStyle = (): ArabicFontStyle => {
   }
 }
 
+const getStoredLastPosition = (): { surah: number; ayah: number } => {
+  if (typeof window === 'undefined') return { surah: 1, ayah: 1 }
+  try {
+    const rawPos = localStorage.getItem('deenly_last_position')
+    if (rawPos) {
+      const parsed = JSON.parse(rawPos)
+      if (parsed.surah && parsed.ayah) return { surah: parsed.surah, ayah: parsed.ayah }
+    }
+    const rawAuth = localStorage.getItem('deenly_auth_session')
+    if (rawAuth) {
+      const parsed = JSON.parse(rawAuth)
+      if (parsed.lastReadSurah) return { surah: parsed.lastReadSurah, ayah: parsed.lastReadAyah || 1 }
+    }
+  } catch {}
+  return { surah: 1, ayah: 1 }
+}
+
+const lastPos = getStoredLastPosition()
+
 const initialReadingState: ReadingSessionState = {
-  currentSurahNumber: 1, // Al-Fatihah
-  currentAyahNumber: 1,
+  currentSurahNumber: lastPos.surah,
+  currentAyahNumber: lastPos.ayah,
   currentJuzNumber: 1,
   currentPageNumber: 1,
   fontSize: getStoredFontSize(),
@@ -80,13 +99,18 @@ const initialReadingState: ReadingSessionState = {
 export const useReadingStore = create<ReadingStore>((set, get) => ({
   ...initialReadingState,
 
-  setCurrentPosition: (surah, ayah, page = 1, juz = 1) =>
+  setCurrentPosition: (surah, ayah, page = 1, juz = 1) => {
     set({
       currentSurahNumber: surah,
       currentAyahNumber: ayah,
       currentPageNumber: page,
       currentJuzNumber: juz,
-    }),
+    })
+    try {
+      localStorage.setItem('deenly_last_position', JSON.stringify({ surah, ayah, page, juz, timestamp: Date.now() }))
+    } catch {}
+    useAuthStore.getState().updateLastReadPosition(surah, ayah)
+  },
 
   setFontSize: (fontSize) => {
     try {
@@ -191,6 +215,17 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
       activeSession: updatedSession,
     })
 
+    try {
+      localStorage.setItem('deenly_last_position', JSON.stringify({
+        surah: state.currentSurahNumber,
+        ayah: ayah.verseNumberInSurah,
+        page: ayah.page,
+        juz: ayah.juz,
+        timestamp: Date.now()
+      }))
+    } catch {}
+    useAuthStore.getState().updateLastReadPosition(state.currentSurahNumber, ayah.verseNumberInSurah)
+
     return hasanatGain
   },
 
@@ -198,14 +233,8 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
     const state = get()
     const session = state.activeSession
 
-    if (session.sessionVersesRead === 0 && session.elapsedSeconds < 5) {
-      // Too short to record
-      set({ activeSession: initialActiveSession })
-      return null
-    }
-
     const pagesRead = Math.max(
-      1,
+      session.sessionVersesRead > 0 ? 1 : 0,
       Math.ceil(session.sessionVersesRead / 15) // Rough heuristic or based on distinct pages
     )
 
@@ -220,8 +249,11 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
       lastJuz: state.currentJuzNumber,
     }
 
-    // Persist to user profile and daily history
+    // Persist to user profile, daily history, and Supabase cloud
     useAuthStore.getState().recordSessionCompletion(metrics)
+
+    // Explicitly guarantee position is saved
+    useAuthStore.getState().updateLastReadPosition(state.currentSurahNumber, state.currentAyahNumber)
 
     // Reset session
     set({

@@ -182,8 +182,24 @@ export const ReadingScreen: React.FC = () => {
       if (sNum >= 1 && sNum <= 114) {
         setCurrentPosition(sNum, aNum)
       }
+    } else {
+      // If user directly opened /reading without query params, resume from exact last saved position!
+      const resumeSurah = user?.lastReadSurah || currentSurahNumber || 1
+      const resumeAyah = user?.lastReadAyah || currentAyahNumber || 1
+      setCurrentPosition(resumeSurah, resumeAyah)
+      setSearchParams({ surah: resumeSurah.toString(), ayah: resumeAyah.toString() }, { replace: true })
     }
-  }, [searchParams, setCurrentPosition])
+  }, [searchParams, setCurrentPosition, user?.lastReadSurah, user?.lastReadAyah])
+
+  // Save current position when unmounting or navigating away
+  useEffect(() => {
+    return () => {
+      const state = useReadingStore.getState()
+      if (state.currentSurahNumber && state.currentAyahNumber) {
+        useAuthStore.getState().updateLastReadPosition(state.currentSurahNumber, state.currentAyahNumber)
+      }
+    }
+  }, [])
 
   // Start reading session timer
   useEffect(() => {
@@ -226,6 +242,7 @@ export const ReadingScreen: React.FC = () => {
       const nextAyahNum = currentAyahNumber + 1
       setCurrentPosition(currentSurahNumber, nextAyahNum)
       setSearchParams({ surah: currentSurahNumber.toString(), ayah: nextAyahNum.toString() })
+      useAuthStore.getState().updateLastReadPosition(currentSurahNumber, nextAyahNum)
     } else {
       // Completed current Surah!
       const completedName = currentSurah.name
@@ -236,6 +253,7 @@ export const ReadingScreen: React.FC = () => {
         const nextSurahNum = currentSurahNumber + 1
         setCurrentPosition(nextSurahNum, 1)
         setSearchParams({ surah: nextSurahNum.toString(), ayah: '1' })
+        useAuthStore.getState().updateLastReadPosition(nextSurahNum, 1)
       } else {
         // Full Quran Khatam!
         navigate('/dashboard')
@@ -260,18 +278,23 @@ export const ReadingScreen: React.FC = () => {
       const prevAyahNum = currentAyahNumber - 1
       setCurrentPosition(currentSurahNumber, prevAyahNum)
       setSearchParams({ surah: currentSurahNumber.toString(), ayah: prevAyahNum.toString() })
+      useAuthStore.getState().updateLastReadPosition(currentSurahNumber, prevAyahNum)
     } else if (currentSurahNumber > 1) {
       const prevSurahNum = currentSurahNumber - 1
       const prevMeta = SURAH_METADATA.find((s) => s.number === prevSurahNum)
       const prevTotalAyahs = prevMeta?.numberOfAyahs || 7
       setCurrentPosition(prevSurahNum, prevTotalAyahs)
       setSearchParams({ surah: prevSurahNum.toString(), ayah: prevTotalAyahs.toString() })
+      useAuthStore.getState().updateLastReadPosition(prevSurahNum, prevTotalAyahs)
     }
   }
 
   // Finish Reading Session -> Go to Dashboard
   const handleFinishSession = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
+    if (currentSurahNumber && currentAyahNumber) {
+      useAuthStore.getState().updateLastReadPosition(currentSurahNumber, currentAyahNumber)
+    }
     finishSession()
     navigate('/dashboard')
   }

@@ -375,7 +375,7 @@ export const DashboardScreen: React.FC = () => {
   const dailyVerse = DAILY_VERSES[dayOfYear % DAILY_VERSES.length]
   const dailyHadith = DAILY_HADITHS[dayOfYear % DAILY_HADITHS.length]
 
-  const isStartingFresh = lastSurah === 1 && lastAyah === 1
+  const isStartingFresh = lastSurah === 1 && lastAyah === 1 && (user?.verses || 0) === 0
 
   // Helper to render consistency circle
   const renderCircle = (wd: typeof weekDays[0], i: number) => {

@@ -32,6 +32,7 @@ interface AuthStoreActions {
   resetUserStatsToZero: () => Promise<void>
   deleteAccount: () => Promise<void>
   recordSessionCompletion: (metrics: SessionMetrics) => Promise<void>
+  updateLastReadPosition: (surah: number, ayah: number) => Promise<void>
   applyDeltaUpdate: (delta: SessionDelta, isRemote?: boolean) => void
   syncNow: () => Promise<void>
 }
@@ -634,7 +635,29 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     // 1. Apply local delta merge immediately
     state.applyDeltaUpdate(delta, false)
 
-    // 2. Publish delta to Realtime Cloud & BroadcastChannel
+    // 2. Direct Supabase Postgres profiles table update for logged-in user
+    if (isConfigured && (currentUser.id || currentUser.uid)) {
+      try {
+        const updated = get().user
+        await supabase
+          .from('profiles')
+          .update({
+            total_hasanat: updated?.hasanat || 0,
+            total_verses_read: updated?.verses || 0,
+            reading_time_seconds: updated?.time || 0,
+            pages_read: updated?.pages || 0,
+            streak_count: updated?.currentStreak || 0,
+            last_read_surah: metrics.lastSurah,
+            last_read_ayah: metrics.lastAyah,
+            last_read_at: new Date().toISOString(),
+          } as never)
+          .eq('id', currentUser.id || currentUser.uid)
+      } catch (dbErr) {
+        logger.warn('Supabase direct profile sync error in recordSessionCompletion', { error: dbErr })
+      }
+    }
+
+    // 3. Publish delta to Realtime Cloud & BroadcastChannel
     set({ syncStatus: 'syncing' })
     try {
       const result = await syncService.publishSessionDelta(delta)
@@ -653,6 +676,62 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         pendingOfflineCount: syncService.getPendingCount(),
       })
     }
+  },
+
+  updateLastReadPosition: async (surah: number, ayah: number) => {
+    const state = get()
+    const currentUser = state.user
+    if (!currentUser) return
+
+    const nowIso = new Date().toISOString()
+    const updatedUser: UserProfile = {
+      ...currentUser,
+      lastReadSurah: surah,
+      lastReadAyah: ayah,
+      lastReadAt: nowIso,
+    }
+
+    try {
+      localStorage.setItem('deenly_auth_session', JSON.stringify(updatedUser))
+      localStorage.setItem('deenly_last_position', JSON.stringify({ surah, ayah, timestamp: Date.now() }))
+    } catch (e) {
+      logger.warn('Failed to save last position to localStorage', { error: e })
+    }
+
+    set({ user: updatedUser })
+
+    // Update in Supabase profiles row if configured
+    if (isConfigured && (currentUser.id || currentUser.uid)) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({
+            last_read_surah: surah,
+            last_read_ayah: ayah,
+            last_read_at: nowIso,
+          } as never)
+          .eq('id', currentUser.id || currentUser.uid)
+      } catch (err) {
+        logger.warn('Supabase last read position update failed:', { error: err })
+      }
+    }
+
+    // Broadcast position update to other tabs/windows
+    syncService.publishSessionDelta({
+      id: `pos_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      userId: currentUser.uid || currentUser.id,
+      deviceId: getDeviceId(),
+      deltaHasanat: 0,
+      deltaVerses: 0,
+      deltaTimeSeconds: 0,
+      deltaPages: 0,
+      lastSurah: surah,
+      lastAyah: ayah,
+      lastPage: Math.max(1, Math.ceil(ayah / 15)),
+      lastJuz: 1,
+      timestamp: Date.now(),
+      dateStr: getLocalDateString(new Date()),
+    })
   },
 
   syncNow: async () => {
