@@ -23,6 +23,7 @@ import {
 } from '../lib/hasanatEngine'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useI18nStore } from '../lib/i18n'
+import { DigitalTasbihEngine } from '../components/DigitalTasbihEngine'
 
 type TimeframeFilter = 'today' | 'week' | 'all'
 
@@ -789,6 +790,11 @@ export const DashboardScreen: React.FC = () => {
         </div>
 
       </div>
+
+      {/* ========================================================================= */}
+      {/* 5. 📿 INTERACTIVE DIGITAL TASBIH & DAILY DHIKR ENGINE                     */}
+      {/* ========================================================================= */}
+      <DigitalTasbihEngine />
 
     </div>
   )

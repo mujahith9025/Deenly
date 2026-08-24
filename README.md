@@ -81,6 +81,13 @@
 - **Floating Hasanat Badges**: Real-time visual reward feedback (`+770 Hasanat`) popping up as verses are recited and marked complete.
 - **Dynamic Juz Progress**: Live calculation of active Juz completion percentages and remaining verses.
 
+### 📿 Interactive Digital Tasbih & Daily Dhikr Engine
+- **Tactile Circular Dial**: SVG progress ring with responsive tap counter, smooth gradient fill, and subtle haptic/sound feedback.
+- **Authentic Sunnah Presets**: Pre-configured with *SubhanAllah* (33x), *Alhamdulillah* (33x), *Allahu Akbar* (34x), *Astaghfirullah* (100x), *La ilaha illallah*, *Salawat*, and *La hawla*.
+- **Virtues & Citations**: Scholarly citations from *Sahih al-Bukhari*, *Sahih Muslim*, and *Jami` at-Tirmidhi* in English and Tamil.
+- **Sunnah Post-Prayer Loop**: Automatic 33-33-34 cycle progression for post-Salah remembrance.
+- **Daily Persistence & Targets**: Tracks total daily Dhikrs recited with customizable target presets (33, 100, 300, or Free count).
+
 ### 👤 Modern Profile & Spiritual Repository
 - **Favorite Verses & Hadiths**: Dedicated collection sub-page with categorized filtering (`All`, `Quran`, `Hadiths`) and 1-tap reader navigation.
 - **Saved Bookmarks**: Full bookmark management with quick removal and search.
