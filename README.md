@@ -130,12 +130,50 @@ deenly/
 
 ---
 
-## 📜 Quran Data Source & Attribution
+---
 
-- **Arabic Quran Text**: Verified Uthmani script sourced from Tanzil / King Fahd Glorious Quran Printing Complex via `fawazahmed0/quran-api` (`ara-quranacademy`).
-- **English Translation**: Sahih International (*Umm Muhammad*), distributed under Creative Commons Attribution.
-- **Tamil Translation (தமிழ்)**: Jan Trust Foundation / Abdul Hameed Baqavi (*அப்துல் ஹமீது பாகவி*).
-- **Attribution License**: Quran texts and translations are utilized in accordance with the open licenses provided by Tanzil.net and the respective translation contributors.
+## 🌟 Inspiration & Reference Attribution
+
+### 📱 Quranly App (Google Play Store & Apple App Store)
+Deenly draws profound inspiration and architectural reference from the pioneering **[Quranly](https://play.google.com/store/apps/details?id=com.quranly.app)** app (by Muslim Tech Incubator / Quranly App team). 
+- **1-Verse Recitation Engine**: Focused verse-by-verse presentation reducing overwhelm and cultivating mindful contemplation (*Tadabbur*).
+- **Gamified Letter-Count Hasanat Accumulation**: Direct realization of the Prophetic Hadith (*Sunan at-Tirmidhi 2910*) allocating 10 rewards per Arabic letter recited.
+- **Consistency & Daily Streaks**: Habit-forming momentum metrics that motivate believers toward daily engagement with Allah's Book.
+- We extend our sincere gratitude and prayers to the Quranly team for revolutionizing digital Quran habit-building for the global Ummah.
+
+---
+
+## 📜 Scholarly Quran & Hadith Resource Credits
+
+### 🏛️ Official Arabic Quran Text & Script
+- **King Fahd Glorious Quran Printing Complex (مجمع الملك فهد لطباعة المصحف الشريف - Madinah Al-Munawwarah, KSA)**: Standard authentic Hafs 'an 'Asim Uthmani scripture and verse divisions.
+- **Tanzil.net Project** (*Dr. Hamid Zarrabi-Zadeh / Sharif University of Technology*): Highly verified, error-free Unicode Quran text engine with full diacritics, sukun, and pause markings.
+- **Quran.com API v4 & QuranCDN**: The world's leading open digital Quran initiative providing fast, dependable Surah/Ayah datasets and API infrastructure.
+- **Tajweed Color Rules Engine**: Standard phonetic notation covering Obligatory Madd (🔴), Connected Madd (🌺), Permissible Madd (🟠), Natural Madd (🟡), Qalqalah (🔵), Ghunnah (🟢), Ikhfa (🩵), Idgham (🟣/⚪), and Iqlab (🌸).
+
+### 🇬🇧 Scholarly English Translations
+1. **Sahih International**: Translated by *Umm Muhammad* (Aminah Assami, Amatullah Bantley) — Published by Dar Abul-Qasim (Riyadh/Jeddah, Saudi Arabia). Standard Sunni word-for-word accuracy.
+2. **The Clear Quran**: Translated by *Dr. Mustafa Khattab* — Approved by the Islamic Research Academy at Al-Azhar University (Cairo). Thematic, eloquent, and modern.
+3. **The Noble Quran**: Translated by *Dr. Muhammad Taqi-ud-Din Al-Hilali & Dr. Muhammad Muhsin Khan* — Published by King Fahd Glorious Quran Printing Complex (Madinah). Integrates commentary from Tafsir Ibn Kathir and Sahih Al-Bukhari.
+4. **Oxford World's Classics**: Translated by *Prof. M.A.S. Abdel Haleem* (SOAS University of London) — Published by Oxford University Press. High literary standard English.
+
+### 🇮🇳 / 🇱🇰 Authentic Tamil Quran Translations (தமிழ் திருக்குர்ஆன்)
+1. **மௌலானா ஏ.கே. அப்துல் ஹமீது பாகவி** (*Allama A.K. Abdul Hameed Baqavi*): Historical 1st classical Tamil translation (1929–1940s), published by Thawbah Publications (Baqaviyath). Revered by scholars for its rich literary Tamil and orthodox precision.
+2. **ஜான் டிரஸ்ட் பதிப்பு - மதீனா கிங் ஃபஹத் அச்சகம்** (*Jan Trust Foundation / King Fahd Complex*): The official Tamil translation printed and distributed worldwide by King Fahd Glorious Quran Printing Complex (Madinah Al-Munawwarah, Saudi Arabia).
+
+### 📜 The Six Canonical Hadith Collections (Kutub al-Sittah)
+- **Sahih al-Bukhari** (*Imam Muhammad al-Bukhari*)
+- **Sahih Muslim** (*Imam Muslim ibn al-Hajjaj*)
+- **Sunan an-Nasa'i** (*Imam Ahmad an-Nasa'i*)
+- **Sunan Abi Dawud** (*Imam Abu Dawud al-Sijistani*)
+- **Jami` at-Tirmidhi** (*Imam Abu 'Isa at-Tirmidhi*)
+- **Sunan Ibn Majah** (*Imam Ibn Majah*)
+- **Al-Arba'in an-Nawawiyyah** (*Imam Yahya ibn Sharaf an-Nawawi*)
+- *Hadith Data Source*: Sunnah.com API & verified open Hadith databases with English and authentic Tamil translations.
+
+### 🎙️ Audio Recitation & Calligraphy Fonts
+- **Reciter**: *Sheikh Mishary Rashid Alafasy* (الشيخ مشاري بن راشد العفاسي) — Crystal-clear verse-by-verse and full-chapter recitations hosted via EveryAyah.com & QuranCDN.
+- **Sacred Fonts**: King Fahd Complex Uthmanic Script, *Amiri & Amiri Quran* (Dr. Khaled Hosny / Google Fonts), *Scheherazade New* (SIL International), *Lateef* (SIL International), *Noto Naskh Arabic & Noto Kufi Arabic* (Google Fonts), and *Noto Sans Tamil* (Google Fonts).
 
 ---
 
