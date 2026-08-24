@@ -100,22 +100,6 @@ export const syncService = {
               }
             }
           )
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'profiles',
-              filter: `id=eq.${userId}`,
-            },
-            (payload) => {
-              const newRow = payload.new as { hasanat?: number; verses?: number }
-              if (newRow && (newRow.hasanat === 0 || newRow.hasanat == null) && (newRow.verses === 0 || newRow.verses == null)) {
-                console.log('📡 Detected zeroed stats in profiles row via Postgres Changes')
-                onRemoteReset?.()
-              }
-            }
-          )
           .subscribe()
       } catch (err) {
         console.warn('Supabase realtime subscription failed:', err)

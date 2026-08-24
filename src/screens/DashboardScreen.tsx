@@ -289,7 +289,7 @@ export const DashboardScreen: React.FC = () => {
   for (let i = 0; i < 7; i++) {
     const d = new Date()
     d.setDate(now.getDate() - i)
-    const key = d.toISOString().split('T')[0]
+    const key = getLocalDateString(d)
     const entry = dailyHistory[key]
     if (entry) {
       weekHasanat += entry.hasanat || 0
@@ -339,7 +339,7 @@ export const DashboardScreen: React.FC = () => {
 
     const targetDate = new Date()
     targetDate.setDate(curr.getDate() + diff)
-    const dateKey = targetDate.toISOString().split('T')[0]
+    const dateKey = getLocalDateString(targetDate)
     const rec = dailyHistory[dateKey]
     const versesReadOnDay = rec ? rec.verses : 0
     const isGoalMetOnDay = versesReadOnDay >= dailyGoalVerses || versesReadOnDay > 0

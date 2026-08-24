@@ -198,16 +198,20 @@ export const ReadingScreen: React.FC = () => {
       const sNum = parseInt(surahParam, 10)
       const aNum = ayahParam ? parseInt(ayahParam, 10) : 1
       if (sNum >= 1 && sNum <= 114) {
-        setCurrentPosition(sNum, aNum)
+        if (currentSurahNumber !== sNum || currentAyahNumber !== aNum) {
+          setCurrentPosition(sNum, aNum)
+        }
       }
     } else {
       // If user directly opened /reading without query params, resume from exact last saved position!
       const resumeSurah = user?.lastReadSurah || currentSurahNumber || 1
       const resumeAyah = user?.lastReadAyah || currentAyahNumber || 1
-      setCurrentPosition(resumeSurah, resumeAyah)
+      if (currentSurahNumber !== resumeSurah || currentAyahNumber !== resumeAyah) {
+        setCurrentPosition(resumeSurah, resumeAyah)
+      }
       setSearchParams({ surah: resumeSurah.toString(), ayah: resumeAyah.toString() }, { replace: true })
     }
-  }, [searchParams, setCurrentPosition, user?.lastReadSurah, user?.lastReadAyah])
+  }, [searchParams, setCurrentPosition])
 
   // Save current position and finalize reading session metrics when unmounting or navigating away
   useEffect(() => {

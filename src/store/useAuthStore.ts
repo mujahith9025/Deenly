@@ -814,6 +814,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           if (profileRow) {
             const row = profileRow as unknown as ProfileRow
 
+            const isLocalNewer = !row.last_read_at || (currentUser.lastReadAt && new Date(currentUser.lastReadAt).getTime() >= new Date(row.last_read_at).getTime())
+
             const updatedUser: UserProfile = {
               ...currentUser,
               name: row.name || currentUser.name,
@@ -823,8 +825,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
               pages: Math.max(row.pages ?? 0, currentUser.pages ?? 0),
               currentStreak: Math.max(row.current_streak ?? 0, currentUser.currentStreak ?? 0),
               bestStreak: Math.max(row.best_streak ?? 0, currentUser.bestStreak ?? 0),
-              lastReadSurah: row.last_read_surah ?? currentUser.lastReadSurah ?? 1,
-              lastReadAyah: row.last_read_ayah ?? currentUser.lastReadAyah ?? 1,
+              lastReadSurah: isLocalNewer ? (currentUser.lastReadSurah ?? row.last_read_surah ?? 1) : (row.last_read_surah ?? currentUser.lastReadSurah ?? 1),
+              lastReadAyah: isLocalNewer ? (currentUser.lastReadAyah ?? row.last_read_ayah ?? 1) : (row.last_read_ayah ?? currentUser.lastReadAyah ?? 1),
+              lastReadAt: isLocalNewer ? (currentUser.lastReadAt || row.last_read_at || new Date().toISOString()) : (row.last_read_at || currentUser.lastReadAt || new Date().toISOString()),
             }
 
             localStorage.setItem('deenly_auth_session', JSON.stringify(updatedUser))
