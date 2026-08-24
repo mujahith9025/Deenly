@@ -208,11 +208,13 @@ export const ReadingScreen: React.FC = () => {
     }
   }, [searchParams, setCurrentPosition, user?.lastReadSurah, user?.lastReadAyah])
 
-  // Save current position when unmounting or navigating away
+  // Save current position and finalize reading session metrics when unmounting or navigating away
   useEffect(() => {
     return () => {
       const state = useReadingStore.getState()
-      if (state.currentSurahNumber && state.currentAyahNumber) {
+      if (state.activeSession.sessionVersesRead > 0 || state.activeSession.elapsedSeconds >= 3) {
+        state.finishSession()
+      } else if (state.currentSurahNumber && state.currentAyahNumber) {
         useAuthStore.getState().updateLastReadPosition(state.currentSurahNumber, state.currentAyahNumber)
       }
     }

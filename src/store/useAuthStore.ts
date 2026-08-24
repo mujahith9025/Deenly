@@ -104,9 +104,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       let history = loadStoredDailyHistory()
 
       if (initialUser) {
-        // Auto-sanitize legacy demo stats or remote zero reset
-        const isZeroed = (initialUser.hasanat === 0 || !initialUser.hasanat) && (initialUser.verses === 0 || !initialUser.verses) && (initialUser.time === 0 || !initialUser.time)
-        if (isZeroed || (initialUser.hasanat === 24500 && initialUser.verses === 450)) {
+        // Auto-sanitize legacy demo stats if user had the old placeholder values
+        if (initialUser.hasanat === 24500 && initialUser.verses === 450) {
           initialUser.hasanat = 0
           initialUser.verses = 0
           initialUser.time = 0
@@ -116,7 +115,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           history = {}
           if (typeof window !== 'undefined') {
             localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
-            localStorage.removeItem('deenly_last_position')
             localStorage.setItem('deenly_auth_session', JSON.stringify(initialUser))
           }
         }
@@ -234,9 +232,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
             }
 
             let loadedHistory = loadStoredDailyHistory()
-            const isProfileZeroed = (profile.hasanat === 0 || !profile.hasanat) && (profile.verses === 0 || !profile.verses) && (profile.time === 0 || !profile.time)
 
-            if (isProfileZeroed || (profile.hasanat === 24500 && profile.verses === 450)) {
+            if (profile.hasanat === 24500 && profile.verses === 450) {
               profile.hasanat = 0
               profile.verses = 0
               profile.time = 0
@@ -245,7 +242,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
               profile.bestStreak = 0
               loadedHistory = {}
               localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
-              localStorage.removeItem('deenly_last_position')
             }
 
             localStorage.setItem('deenly_auth_session', JSON.stringify(profile))
@@ -705,11 +701,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         await supabase
           .from('profiles')
           .update({
-            total_hasanat: updated?.hasanat || 0,
-            total_verses_read: updated?.verses || 0,
-            reading_time_seconds: updated?.time || 0,
-            pages_read: updated?.pages || 0,
-            streak_count: updated?.currentStreak || 0,
+            hasanat: updated?.hasanat || 0,
+            verses: updated?.verses || 0,
+            time: updated?.time || 0,
+            pages: updated?.pages || 0,
+            current_streak: updated?.currentStreak || 0,
+            best_streak: updated?.bestStreak || 0,
             last_read_surah: metrics.lastSurah,
             last_read_ayah: metrics.lastAyah,
             last_read_at: new Date().toISOString(),
@@ -816,24 +813,18 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
           if (profileRow) {
             const row = profileRow as unknown as ProfileRow
-            const isZeroed = (row.hasanat === 0 || row.hasanat == null) && (row.verses === 0 || row.verses == null)
-
-            if (isZeroed) {
-              get().applyRemoteReset()
-              return
-            }
 
             const updatedUser: UserProfile = {
               ...currentUser,
               name: row.name || currentUser.name,
-              hasanat: row.hasanat ?? 0,
-              verses: row.verses ?? 0,
-              time: row.time ?? 0,
-              pages: row.pages ?? 0,
-              currentStreak: row.current_streak ?? 0,
-              bestStreak: row.best_streak ?? 0,
-              lastReadSurah: row.last_read_surah ?? 1,
-              lastReadAyah: row.last_read_ayah ?? 1,
+              hasanat: Math.max(row.hasanat ?? 0, currentUser.hasanat ?? 0),
+              verses: Math.max(row.verses ?? 0, currentUser.verses ?? 0),
+              time: Math.max(row.time ?? 0, currentUser.time ?? 0),
+              pages: Math.max(row.pages ?? 0, currentUser.pages ?? 0),
+              currentStreak: Math.max(row.current_streak ?? 0, currentUser.currentStreak ?? 0),
+              bestStreak: Math.max(row.best_streak ?? 0, currentUser.bestStreak ?? 0),
+              lastReadSurah: row.last_read_surah ?? currentUser.lastReadSurah ?? 1,
+              lastReadAyah: row.last_read_ayah ?? currentUser.lastReadAyah ?? 1,
             }
 
             localStorage.setItem('deenly_auth_session', JSON.stringify(updatedUser))
