@@ -704,17 +704,13 @@ export const ReadingScreen: React.FC = () => {
         onSelectTheme={(selectedTheme) => setMushafTheme(selectedTheme)}
       />
 
-      {/* 🎉 Celebratory Chapter Khatam Milestone Modal with Golden Confetti & Star Burst */}
+      {/* 🎉 Celebratory Chapter Completion Modal with Golden Confetti & Star Burst */}
       <ChapterCompletionModal
         isOpen={isCompletionModalOpen}
         surahNumber={currentSurahNumber}
         surahName={currentSurah?.name || ''}
         surahNameTa={currentSurah?.nameTa || currentSurah?.name || ''}
         arabicName={currentSurah?.arabicName || ''}
-        totalAyahs={totalAyahs}
-        sessionHasanat={activeSession.sessionHasanat}
-        sessionDurationSeconds={activeSession.elapsedSeconds}
-        juzProgress={juzProgress}
         onContinueNextChapter={handleContinueNextChapter}
         onFinishSession={() => {
           setIsCompletionModalOpen(false)
