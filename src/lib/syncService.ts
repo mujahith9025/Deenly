@@ -6,6 +6,7 @@ const DEVICE_ID_KEY = 'deenly_device_id'
 const BROADCAST_CHANNEL_NAME = 'deenly_sync_channel'
 
 let broadcastChannel: BroadcastChannel | null = null
+let activeSupabaseChannel: ReturnType<typeof supabase.channel> | null = null
 
 export function getDeviceId(): string {
   if (typeof window === 'undefined') return 'server_node'
@@ -45,13 +46,17 @@ export const syncService = {
   initRealtimeSync(
     userId: string,
     onRemoteDelta: (delta: SessionDelta) => void,
-    onRemoteReset?: () => void
+    onRemoteReset?: () => void,
+    onRemoteProfileUpdate?: (profileRow: Record<string, unknown>) => void
   ): () => void {
     const currentDeviceId = getDeviceId()
 
     // 1. Setup Browser BroadcastChannel for instant multi-tab & multi-window sync
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
+        if (broadcastChannel) {
+          broadcastChannel.close()
+        }
         broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME)
         broadcastChannel.onmessage = (event) => {
           const data = event.data
@@ -73,11 +78,23 @@ export const syncService = {
     }
 
     // 2. Setup Supabase Realtime Channel if configured
-    let supabaseChannel: ReturnType<typeof supabase.channel> | null = null
     if (isConfigured && userId) {
       try {
-        supabaseChannel = supabase
-          .channel(`reading_sync_${userId}`)
+        if (activeSupabaseChannel) {
+          supabase.removeChannel(activeSupabaseChannel)
+          activeSupabaseChannel = null
+        }
+
+        const channel = supabase.channel(`reading_sync_${userId}`, {
+          config: {
+            broadcast: {
+              self: false,
+              ack: true,
+            },
+          },
+        })
+
+        channel
           .on(
             'broadcast',
             { event: 'session_delta' },
@@ -100,7 +117,31 @@ export const syncService = {
               }
             }
           )
-          .subscribe()
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'profiles',
+              filter: `id=eq.${userId}`,
+            },
+            (payload) => {
+              const newRow = payload.new as Record<string, unknown>
+              if (newRow && Object.keys(newRow).length > 0) {
+                console.log('📡 Received real-time Postgres profile change:', newRow)
+                onRemoteProfileUpdate?.(newRow)
+              }
+            }
+          )
+          .subscribe((status, err) => {
+            if (status === 'SUBSCRIBED') {
+              console.log(`✅ Supabase Realtime connected for user: ${userId} on device: ${currentDeviceId}`)
+            } else if (status === 'CHANNEL_ERROR') {
+              console.warn('⚠️ Supabase Realtime Channel error:', err)
+            }
+          })
+
+        activeSupabaseChannel = channel
       } catch (err) {
         console.warn('Supabase realtime subscription failed:', err)
       }
@@ -121,8 +162,9 @@ export const syncService = {
         broadcastChannel.close()
         broadcastChannel = null
       }
-      if (supabaseChannel) {
-        supabase.removeChannel(supabaseChannel)
+      if (activeSupabaseChannel) {
+        supabase.removeChannel(activeSupabaseChannel)
+        activeSupabaseChannel = null
       }
       if (typeof window !== 'undefined') {
         window.removeEventListener('online', handleOnline)
@@ -148,10 +190,9 @@ export const syncService = {
     }
 
     // 2. Supabase Realtime Broadcast
-    if (isConfigured && userId) {
+    if (isConfigured && activeSupabaseChannel) {
       try {
-        const channel = supabase.channel(`reading_sync_${userId}`)
-        await channel.send({
+        await activeSupabaseChannel.send({
           type: 'broadcast',
           event: 'reset_stats',
           payload,
@@ -189,17 +230,16 @@ export const syncService = {
       }
     }
 
-    // 2. Send via Supabase Realtime Broadcast & Postgres if configured
-    if (isConfigured) {
+    // 2. Send via Supabase Realtime Broadcast if configured
+    if (isConfigured && activeSupabaseChannel) {
       try {
-        const channel = supabase.channel(`reading_sync_${delta.userId}`)
-        await channel.send({
+        await activeSupabaseChannel.send({
           type: 'broadcast',
           event: 'session_delta',
           payload: delta,
         })
       } catch (err) {
-        console.warn('Failed to publish delta via Supabase, saving to queue:', err)
+        console.warn('Failed to broadcast delta via Supabase, queuing locally:', err)
         const queue = getOfflineQueue()
         queue.push(delta)
         saveOfflineQueue(queue)
@@ -220,10 +260,20 @@ export const syncService = {
     let flushedCount = 0
 
     for (const delta of queue) {
-      // Broadcast flushed delta
       if (broadcastChannel) {
         try {
           broadcastChannel.postMessage(delta)
+        } catch {
+          // ignore
+        }
+      }
+      if (isConfigured && activeSupabaseChannel) {
+        try {
+          await activeSupabaseChannel.send({
+            type: 'broadcast',
+            event: 'session_delta',
+            payload: delta,
+          })
         } catch {
           // ignore
         }
@@ -234,7 +284,6 @@ export const syncService = {
       flushedCount++
     }
 
-    // Clear queue after successful flush
     saveOfflineQueue([])
     return flushedCount
   },

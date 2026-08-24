@@ -22,6 +22,23 @@ export const App: React.FC = () => {
   useEffect(() => {
     initTheme()
     initAuth()
+
+    const handleWindowFocus = () => {
+      if (document.visibilityState === 'visible') {
+        const auth = useAuthStore.getState()
+        if (auth.isAuthenticated && auth.user) {
+          auth.syncNow()
+        }
+      }
+    }
+
+    window.addEventListener('focus', handleWindowFocus)
+    document.addEventListener('visibilitychange', handleWindowFocus)
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus)
+      document.removeEventListener('visibilitychange', handleWindowFocus)
+    }
   }, [initAuth, initTheme])
 
   return (

@@ -34,11 +34,31 @@ interface AuthStoreActions {
   recordSessionCompletion: (metrics: SessionMetrics) => Promise<void>
   updateLastReadPosition: (surah: number, ayah: number) => Promise<void>
   applyDeltaUpdate: (delta: SessionDelta, isRemote?: boolean) => void
+  applyRemoteProfileUpdate: (row: Record<string, unknown>) => void
   applyRemoteReset: () => void
   syncNow: () => Promise<void>
 }
 
 export type AuthStore = AuthState & AuthStoreActions
+
+function setupRealtimeSyncForUser(userId: string) {
+  if (cleanupRealtimeSync) {
+    cleanupRealtimeSync()
+    cleanupRealtimeSync = null
+  }
+  cleanupRealtimeSync = syncService.initRealtimeSync(
+    userId,
+    (delta) => {
+      useAuthStore.getState().applyDeltaUpdate(delta, true)
+    },
+    () => {
+      useAuthStore.getState().applyRemoteReset()
+    },
+    (profileRow) => {
+      useAuthStore.getState().applyRemoteProfileUpdate(profileRow)
+    }
+  )
+}
 
 // Clean initial guest profile with zero stats
 const initialGuestUser: UserProfile = {
@@ -156,16 +176,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         })
 
         // Setup Realtime Cross-Device Synchronization
-        if (cleanupRealtimeSync) cleanupRealtimeSync()
-        cleanupRealtimeSync = syncService.initRealtimeSync(
-          initialUser.uid || initialUser.id,
-          (delta) => {
-            get().applyDeltaUpdate(delta, true)
-          },
-          () => {
-            get().applyRemoteReset()
-          }
-        )
+        setupRealtimeSyncForUser(initialUser.uid || initialUser.id)
       } else {
         set({
           user: null,
@@ -255,16 +266,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
               error: null,
             })
 
-            if (cleanupRealtimeSync) cleanupRealtimeSync()
-            cleanupRealtimeSync = syncService.initRealtimeSync(
-              user.id,
-              (delta) => {
-                get().applyDeltaUpdate(delta, true)
-              },
-              () => {
-                get().applyRemoteReset()
-              }
-            )
+            setupRealtimeSyncForUser(user.id)
           } else if (event === 'SIGNED_OUT') {
             if (cleanupRealtimeSync) {
               cleanupRealtimeSync()
@@ -306,10 +308,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         isLoading: false,
         error: null,
       })
-      if (cleanupRealtimeSync) cleanupRealtimeSync()
-      cleanupRealtimeSync = syncService.initRealtimeSync(profile.uid, (delta) => {
-        get().applyDeltaUpdate(delta, true)
-      })
+      setupRealtimeSyncForUser(profile.uid || profile.id)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Sign in failed.'
       set({ error: msg, isLoading: false })
@@ -329,10 +328,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         isLoading: false,
         error: null,
       })
-      if (cleanupRealtimeSync) cleanupRealtimeSync()
-      cleanupRealtimeSync = syncService.initRealtimeSync(profile.uid, (delta) => {
-        get().applyDeltaUpdate(delta, true)
-      })
+      setupRealtimeSyncForUser(profile.uid || profile.id)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Sign up failed.'
       set({ error: msg, isLoading: false })
@@ -353,10 +349,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           isLoading: false,
           error: null,
         })
-        if (cleanupRealtimeSync) cleanupRealtimeSync()
-        cleanupRealtimeSync = syncService.initRealtimeSync(profile.uid, (delta) => {
-          get().applyDeltaUpdate(delta, true)
-        })
+        setupRealtimeSyncForUser(profile.uid || profile.id)
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Google sign-in failed.'
@@ -375,10 +368,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       isLoading: false,
       error: null,
     })
-    if (cleanupRealtimeSync) cleanupRealtimeSync()
-    cleanupRealtimeSync = syncService.initRealtimeSync(initialGuestUser.uid, (delta) => {
-      get().applyDeltaUpdate(delta, true)
-    })
+    setupRealtimeSyncForUser(initialGuestUser.uid || initialGuestUser.id)
   },
 
   signOut: async () => {
@@ -661,6 +651,75 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     if (isRemote) {
       logger.info('Applied remote delta merge from another device', { delta })
     }
+  },
+
+  applyRemoteProfileUpdate: (row: Record<string, unknown>) => {
+    const state = get()
+    const currentUser = state.user
+    if (!currentUser) return
+
+    // If stats were reset to 0 remotely
+    if (row.hasanat === 0 && row.verses === 0 && row.time === 0 && ((currentUser.hasanat || 0) > 0 || (currentUser.verses || 0) > 0)) {
+      get().applyRemoteReset()
+      return
+    }
+
+    const rowLastReadAt = row.last_read_at as string | undefined
+    const isRemoteNewer = Boolean(
+      rowLastReadAt &&
+      (!currentUser.lastReadAt || new Date(rowLastReadAt).getTime() >= new Date(currentUser.lastReadAt).getTime())
+    )
+
+    const newHasanat = row.hasanat != null ? Number(row.hasanat) : (currentUser.hasanat || 0)
+    const newVerses = row.verses != null ? Number(row.verses) : (currentUser.verses || 0)
+    const newTime = row.time != null ? Number(row.time) : (currentUser.time || 0)
+    const newPages = row.pages != null ? Number(row.pages) : (currentUser.pages || 0)
+    const newCurrentStreak = row.current_streak != null ? Number(row.current_streak) : (currentUser.currentStreak || 0)
+    const newBestStreak = row.best_streak != null ? Number(row.best_streak) : (currentUser.bestStreak || 0)
+    const newLastReadSurah = isRemoteNewer && row.last_read_surah != null ? Number(row.last_read_surah) : (currentUser.lastReadSurah || 1)
+    const newLastReadAyah = isRemoteNewer && row.last_read_ayah != null ? Number(row.last_read_ayah) : (currentUser.lastReadAyah || 1)
+    const newLastReadAt = isRemoteNewer && rowLastReadAt ? rowLastReadAt : (currentUser.lastReadAt || new Date().toISOString())
+
+    const updatedUser: UserProfile = {
+      ...currentUser,
+      hasanat: newHasanat,
+      verses: newVerses,
+      time: newTime,
+      pages: newPages,
+      currentStreak: newCurrentStreak,
+      bestStreak: Math.max(newBestStreak, newCurrentStreak),
+      lastReadSurah: newLastReadSurah,
+      lastReadAyah: newLastReadAyah,
+      lastReadAt: newLastReadAt,
+      preferredTranslation: (row.preferred_translation as string) || currentUser.preferredTranslation,
+      dailyGoalVerses: row.daily_goal_verses != null ? Number(row.daily_goal_verses) : currentUser.dailyGoalVerses,
+    }
+
+    const nowIso = new Date().toISOString()
+    try {
+      localStorage.setItem('deenly_auth_session', JSON.stringify(updatedUser))
+      if (newLastReadSurah && newLastReadAyah) {
+        localStorage.setItem('deenly_last_position', JSON.stringify({
+          surah: newLastReadSurah,
+          ayah: newLastReadAyah,
+          timestamp: Date.now(),
+        }))
+      }
+      localStorage.setItem(LAST_SYNCED_KEY, nowIso)
+    } catch (e) {
+      console.warn('Storage save failed in applyRemoteProfileUpdate:', e)
+    }
+
+    if (newLastReadSurah && newLastReadAyah) {
+      useReadingStore.getState().setCurrentPosition(newLastReadSurah, newLastReadAyah)
+    }
+
+    set({
+      user: updatedUser,
+      syncStatus: 'synced',
+      lastSyncedAt: nowIso,
+    })
+    console.log('🔄 Simultaneously synchronized profile state across devices:', updatedUser)
   },
 
   recordSessionCompletion: async (metrics: SessionMetrics) => {
