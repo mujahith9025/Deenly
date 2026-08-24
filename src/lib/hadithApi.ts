@@ -66,17 +66,20 @@ export const hadithApi = {
             .map(([num, title]) => {
               const cNum = parseInt(num, 10)
               const detail = bookData.section_details?.[num]
+              const rawFirst = detail?.hadithnumber_first ?? detail?.arabicnumber_first
+              const rawLast = detail?.hadithnumber_last ?? detail?.arabicnumber_last
+              const first = rawFirst != null ? Math.floor(Number(rawFirst)) : undefined
+              const last = rawLast != null ? Math.floor(Number(rawLast)) : undefined
+              const count = first != null && last != null && last >= first ? last - first + 1 : undefined
+
               return {
                 id: `${bookId}_${cNum}`,
                 chapterNumber: cNum,
                 title: (title as string).replace(/\(.*\)/, '').trim() || (title as string),
                 arabicTitle: (title as string).match(/\((.*?)\)/)?.[1] || '',
-                firstHadith: detail?.hadithnumber_first,
-                lastHadith: detail?.hadithnumber_last,
-                hadithCount:
-                  detail?.hadithnumber_first && detail?.hadithnumber_last
-                    ? detail.hadithnumber_last - detail.hadithnumber_first + 1
-                    : undefined,
+                firstHadith: first,
+                lastHadith: last,
+                hadithCount: count,
               }
             })
 

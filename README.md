@@ -68,6 +68,13 @@
 - **Mini Floating Dynamic Island Quran Audio Player**: A sleek Apple Dynamic Island / Spotify-style floating capsule hovering gracefully over all pages with live animated sound waves, continuous verse-by-verse recitation by Sheikh Mishary Rashid Alafasy, integrated bottom scrubber track, quick skip/play touch controls, MediaSession background lock screen controls, and an expandable fullscreen immersive recitation modal.
 - **Offline-First Storage**: IndexedDB caching layer (`deenly_quran_cache`) ensuring chapters load instantly even without an internet connection.
 
+### 📜 The Six Canonical Hadith Collections (Kutub al-Sittah)
+- **All 6 Major Hadith Books**: Complete access to *Sahih al-Bukhari*, *Sahih Muslim*, *Jami` at-Tirmidhi*, *Sunan Abi Dawud*, *Sunan an-Nasa'i*, and *Sunan Ibn Majah*.
+- **🔢 Chapter Hadith Interval Ranges**: Each chapter across all 6 collections clearly shows its exact Hadith number interval (e.g. `Hadiths 1 – 7`, `Hadiths 8 – 58`, `Hadiths 93 – 533`) along with tradition count for rapid scholarly referencing.
+- **⚡ Smart Interval Search**: Typing any Hadith number (e.g. `250`) into the chapter search bar instantly matches and filters the exact chapter containing that tradition.
+- **Quick Jump by Hadith Number**: Dedicated in-chapter jump form auto-scoped to the chapter's valid interval range with smooth scrolling and instant gold highlighting.
+- **Bilingual & Dual Translations**: Instant switching between Arabic text, verified English translations, and authentic Tamil translations (including dual side-by-side mode).
+
 ### ⏱️ Reading Session & Realtime Metrics
 - **🎉 Celebratory Surah Khatam Milestone & Golden Confetti Burst**: Completing the final verse of any Surah triggers a radiant dual-cannon Golden & Emerald starburst explosion (`canvas-confetti`) alongside an animated Islamic golden medallion modal, displaying session Hasanat roll-up, recitation duration, active streak, Sunnah completion Du'a, and 1-tap next chapter navigation.
 - **Live Session Timer**: Tracks active recitation duration down to the second.

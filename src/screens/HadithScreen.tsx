@@ -151,16 +151,24 @@ export const HadithScreen: React.FC = () => {
     )
   }, [bookSearchQuery])
 
-  // Filtered Chapters
+  // Filtered Chapters (Supports Chapter Title, Arabic Title, Chapter Number, or Hadith Number in Interval)
   const filteredChapters = useMemo(() => {
     if (!chapterSearchQuery.trim()) return chapters
-    const q = chapterSearchQuery.toLowerCase()
-    return chapters.filter(
-      (c) =>
-        c.chapterNumber.toString().includes(q) ||
-        c.title.toLowerCase().includes(q) ||
-        (c.arabicTitle && c.arabicTitle.includes(q))
-    )
+    const q = chapterSearchQuery.toLowerCase().trim()
+    const numQ = parseInt(q, 10)
+
+    return chapters.filter((c) => {
+      // 1. Match Chapter number
+      if (c.chapterNumber.toString() === q) return true
+      // 2. Match English or Arabic title
+      if (c.title.toLowerCase().includes(q)) return true
+      if (c.arabicTitle && c.arabicTitle.includes(q)) return true
+      // 3. Match Hadith number within chapter interval
+      if (!isNaN(numQ) && c.firstHadith != null && c.lastHadith != null) {
+        if (numQ >= c.firstHadith && numQ <= c.lastHadith) return true
+      }
+      return false
+    })
   }, [chapters, chapterSearchQuery])
 
   // Jump to specific Hadith within chapter
@@ -384,12 +392,29 @@ export const HadithScreen: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    {ch.hadithCount && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container-high text-outline font-mono">
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    {ch.firstHadith != null && ch.lastHadith != null ? (
+                      <div className="flex flex-col items-end">
+                        <span className="text-[11px] px-2.5 py-1 rounded-xl bg-primary/10 border border-primary/25 text-primary font-mono font-bold group-hover:bg-primary group-hover:text-white transition-colors shadow-sm">
+                          {appLanguage === 'ta'
+                            ? ch.firstHadith === ch.lastHadith
+                              ? `ஹதீஸ் #${ch.firstHadith}`
+                              : `ஹதீஸ் ${ch.firstHadith} – ${ch.lastHadith}`
+                            : ch.firstHadith === ch.lastHadith
+                              ? `Hadith #${ch.firstHadith}`
+                              : `Hadiths ${ch.firstHadith} – ${ch.lastHadith}`}
+                        </span>
+                        {ch.hadithCount && ch.hadithCount > 1 && (
+                          <span className="text-[10px] text-outline mt-0.5 font-mono hidden sm:inline">
+                            {ch.hadithCount} {appLanguage === 'ta' ? 'நபிமொழிகள்' : 'traditions'}
+                          </span>
+                        )}
+                      </div>
+                    ) : ch.hadithCount ? (
+                      <span className="text-[10px] px-2.5 py-1 rounded-xl bg-surface-container-high text-outline font-mono font-bold">
                         {ch.hadithCount} {appLanguage === 'ta' ? 'ஹதீஸ்கள்' : 'hadiths'}
                       </span>
-                    )}
+                    ) : null}
                     <ChevronRight className="w-4 h-4 text-outline group-hover:text-primary group-hover:translate-x-0.5 transition" />
                   </div>
                 </div>
@@ -465,19 +490,37 @@ export const HadithScreen: React.FC = () => {
 
           {/* Chapter Header Banner */}
           <div className="p-6 rounded-3xl cosmic-gradient border border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
-            <div className="space-y-1">
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-bold uppercase font-label-caps">
-                {appLanguage === 'ta' 
-                  ? `${selectedBook.nameTa || selectedBook.name} • அத்தியாயம் ${selectedChapter.chapterNumber}` 
-                  : `${selectedBook.name} • Chapter ${selectedChapter.chapterNumber}`}
-              </span>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-bold uppercase font-label-caps">
+                  {appLanguage === 'ta' 
+                    ? `${selectedBook.nameTa || selectedBook.name} • அத்தியாயம் ${selectedChapter.chapterNumber}` 
+                    : `${selectedBook.name} • Chapter ${selectedChapter.chapterNumber}`}
+                </span>
+                {selectedChapter.firstHadith != null && selectedChapter.lastHadith != null && (
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-mono font-bold">
+                    {appLanguage === 'ta'
+                      ? selectedChapter.firstHadith === selectedChapter.lastHadith
+                        ? `ஹதீஸ் #${selectedChapter.firstHadith}`
+                        : `ஹதீஸ் ${selectedChapter.firstHadith} – ${selectedChapter.lastHadith}`
+                      : selectedChapter.firstHadith === selectedChapter.lastHadith
+                        ? `Hadith #${selectedChapter.firstHadith}`
+                        : `Hadiths ${selectedChapter.firstHadith} – ${selectedChapter.lastHadith}`}
+                  </span>
+                )}
+              </div>
               <h2 className="text-xl sm:text-2xl font-bold font-h2 text-on-surface mt-1">
                 {selectedChapter.title}
               </h2>
+              {selectedChapter.arabicTitle && (
+                <p className="font-noto-serif text-sm text-primary-fixed-dim" dir="rtl">
+                  {selectedChapter.arabicTitle}
+                </p>
+              )}
               <p className="text-xs text-outline">
                 {appLanguage === 'ta' 
-                  ? `இந்த அத்தியாயத்தில் உள்ள ${hadiths.length} நபிமொழிகள்` 
-                  : `Showing ${hadiths.length} traditions in this chapter`}
+                  ? `இந்த அத்தியாயத்தில் உள்ள ${hadiths.length || selectedChapter.hadithCount || 0} நபிமொழிகள்` 
+                  : `Showing ${hadiths.length || selectedChapter.hadithCount || 0} traditions in this chapter`}
               </p>
             </div>
 
@@ -485,10 +528,20 @@ export const HadithScreen: React.FC = () => {
             <form onSubmit={handleJumpToHadith} className="flex items-center gap-2 shrink-0">
               <input
                 type="number"
-                placeholder={appLanguage === 'ta' ? 'ஹதீஸ் எண்...' : 'Hadith #...'}
+                min={selectedChapter.firstHadith || 1}
+                max={selectedChapter.lastHadith || selectedBook.totalHadiths}
+                placeholder={
+                  selectedChapter.firstHadith != null && selectedChapter.lastHadith != null
+                    ? appLanguage === 'ta'
+                      ? `ஹதீஸ் (${selectedChapter.firstHadith}-${selectedChapter.lastHadith})...`
+                      : `Hadith (${selectedChapter.firstHadith}-${selectedChapter.lastHadith})...`
+                    : appLanguage === 'ta'
+                    ? 'ஹதீஸ் எண்...'
+                    : 'Hadith #...'
+                }
                 value={hadithJumpQuery}
                 onChange={(e) => setHadithJumpQuery(e.target.value)}
-                className="w-28 px-3 py-2 rounded-xl bg-surface-container-high border border-outline-variant/40 text-xs text-on-surface focus:outline-none focus:border-primary font-mono"
+                className="w-36 sm:w-44 px-3 py-2 rounded-xl bg-surface-container-high border border-outline-variant/40 text-xs text-on-surface focus:outline-none focus:border-primary font-mono"
               />
               <button
                 type="submit"
