@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Flame, 
   Sparkles, 
   BookOpen, 
-  CheckCircle2, 
-  Circle, 
   Clock, 
-  Award, 
   ChevronRight, 
   Play, 
   Bookmark, 
@@ -20,7 +17,6 @@ import { useReadingStore } from '../store/useReadingStore'
 import { SURAH_METADATA } from '../lib/quranMetadata'
 import { 
   calculateJuzProgress, 
-  calculateKhatmProgress, 
   calculateOverallQuranProgress, 
   formatDurationHuman, 
   getLocalDateString 
@@ -29,17 +25,6 @@ import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useI18nStore } from '../lib/i18n'
 
 type TimeframeFilter = 'today' | 'week' | 'all'
-
-const DEFAULT_HABITS = [
-  { id: 'fajr', name: 'Fajr Prayer', nameTa: 'ஃபஜ்ர் தொழுகை', time: '05:12 AM', category: 'prayer' },
-  { id: 'adhkar_morning', name: 'Morning Adhkar', nameTa: 'காலை திக்ருகள்', time: '06:00 AM', category: 'dhikr' },
-  { id: 'dhuhr', name: 'Dhuhr Prayer', nameTa: 'ளுஹர் தொழுகை', time: '12:30 PM', category: 'prayer' },
-  { id: 'quran', name: 'Read Daily Quran', nameTa: 'தினசரி குர்ஆன் ஓதுதல்', time: 'Daily Target', category: 'quran' },
-  { id: 'asr', name: 'Asr Prayer', nameTa: 'அஸர் தொழுகை', time: '03:45 PM', category: 'prayer' },
-  { id: 'maghrib', name: 'Maghrib Prayer', nameTa: 'மஃரிப் தொழுகை', time: '06:15 PM', category: 'prayer' },
-  { id: 'isha', name: 'Isha Prayer', nameTa: 'இஷா தொழுகை', time: '07:30 PM', category: 'prayer' },
-  { id: 'adhkar_evening', name: 'Evening Adhkar', nameTa: 'மாலை திக்ருகள்', time: '08:00 PM', category: 'dhikr' },
-]
 
 // 🌟 Daily Rotating Quran Verses (with Arabic, English, and Authentic Tamil Translations)
 const DAILY_VERSES = [
@@ -226,45 +211,6 @@ export const DashboardScreen: React.FC = () => {
   const isTamilTranslation = appLanguage === 'ta' || user?.preferredTranslation === 'tamil'
 
   const todayStr = getLocalDateString(new Date())
-  const habitStorageKey = `deenly_habits_${user?.id || 'guest'}_${todayStr}`
-
-  // Daily Habits State
-  const [completedHabitIds, setCompletedHabitIds] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return []
-    try {
-      const stored = localStorage.getItem(habitStorageKey)
-      return stored ? JSON.parse(stored) : []
-    } catch {
-      return []
-    }
-  })
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      const stored = localStorage.getItem(habitStorageKey)
-      setCompletedHabitIds(stored ? JSON.parse(stored) : [])
-    } catch {
-      setCompletedHabitIds([])
-    }
-  }, [habitStorageKey])
-
-  const toggleHabit = (id: string) => {
-    setCompletedHabitIds((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-      try {
-        localStorage.setItem(habitStorageKey, JSON.stringify(next))
-      } catch (err) {
-        console.warn('Failed to save habits to localStorage:', err)
-      }
-      return next
-    })
-  }
-
-  const habits = DEFAULT_HABITS.map((h) => ({
-    ...h,
-    completed: completedHabitIds.includes(h.id),
-  }))
 
   // 1. Goal Calculations
   const dailyGoalVerses = user?.dailyGoalVerses || 10
@@ -363,7 +309,6 @@ export const DashboardScreen: React.FC = () => {
   const lastAyah = user?.lastReadAyah || currentAyahNumber || 1
   const currentSurahMeta = SURAH_METADATA.find((s) => s.number === lastSurah) || SURAH_METADATA[0]
   const juzProgress = calculateJuzProgress(lastSurah, lastAyah)
-  const khatmPercent = calculateKhatmProgress(user?.pages || 0)
   const overallQuranProgress = calculateOverallQuranProgress(lastSurah, lastAyah)
 
   // 🌟 AUTOMATIC DAILY ROTATION AT MIDNIGHT (DAY OF YEAR DETERMINISTIC INDEX)
@@ -841,92 +786,6 @@ export const DashboardScreen: React.FC = () => {
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-        </div>
-
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 5. LOWER SECTION: DAILY ISLAMIC HABITS & KHATM PROGRESS TRACKER           */}
-      {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* DAILY ISLAMIC HABITS CHECKLIST (8 COLUMNS ON DESKTOP) */}
-        <div className="lg:col-span-8 p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-tertiary" />
-              <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps">
-                {isTamil ? 'தினசரி நற்செயல்கள்' : 'Daily Islamic Habits'}
-              </h3>
-            </div>
-            <span className="text-xs text-tertiary font-bold px-2.5 py-0.5 rounded-full bg-tertiary/15">
-              {habits.filter((h) => h.completed).length}/{habits.length} {isTamil ? 'நிறைவு' : 'Done'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {habits.map((habit) => (
-              <div
-                key={habit.id}
-                onClick={() => toggleHabit(habit.id)}
-                className={`p-3 rounded-2xl flex items-center justify-between border cursor-pointer transition ${
-                  habit.completed
-                    ? 'bg-surface-container-highest/60 border-tertiary/30 text-on-surface'
-                    : 'bg-surface-container/60 border-outline-variant/20 text-on-surface-variant hover:border-primary/40'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  {habit.completed ? (
-                    <CheckCircle2 className="w-4.5 h-4.5 text-tertiary shrink-0" />
-                  ) : (
-                    <Circle className="w-4.5 h-4.5 text-outline shrink-0" />
-                  )}
-                  <div className="truncate">
-                    <p className={`text-xs font-semibold truncate ${habit.completed ? 'line-through opacity-70' : 'text-on-surface'}`}>
-                      {isTamil ? habit.nameTa : habit.name}
-                    </p>
-                    <p className="text-[10px] text-outline truncate">{habit.time}</p>
-                  </div>
-                </div>
-
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-outline border border-outline-variant/30 shrink-0 ml-2">
-                  {isTamil ? (habit.category === 'prayer' ? 'தொழுகை' : habit.category === 'dhikr' ? 'திக்ர்' : 'குர்ஆன்') : habit.category}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* KHATM JOURNEY (4 COLUMNS ON DESKTOP) */}
-        <div className="lg:col-span-4 p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Award className="w-4.5 h-4.5 text-secondary" />
-              <h3 className="text-xs font-bold text-on-surface uppercase tracking-wider font-label-caps">
-                {isTamil ? 'குர்ஆன் கத்ம் பயணம்' : 'Khatm Journey'}
-              </h3>
-            </div>
-            <span className="text-xs font-bold text-secondary">{khatmPercent}%</span>
-          </div>
-
-          <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
-            <div
-              className="bg-secondary h-full rounded-full transition-all duration-700"
-              style={{ width: `${Math.max(khatmPercent, (user?.pages || 0) > 0 ? 2 : 0)}%` }}
-            />
-          </div>
-
-          <div className="flex items-center justify-between text-xs text-on-surface-variant">
-            <span>{user?.pages || 0} {isTamil ? '/ 604 பக்கங்கள்' : 'of 604 pages'}</span>
-            <span className="text-outline">{isTamil ? 'முழு குர்ஆன்' : '604 total'}</span>
-          </div>
-
-          <p className="text-[11px] text-on-surface-variant leading-relaxed pt-1">
-            {isTamil 
-              ? 'தினமும் தொடர்ந்து ஓதி புனித குர்ஆனை முழுமையாக நிறைவு செய்யும் ஆன்மீகப் பயணம்.'
-              : 'Recite consistently each day to accomplish the sacred milestone of completing the Holy Quran.'
-            }
-          </p>
         </div>
 
       </div>

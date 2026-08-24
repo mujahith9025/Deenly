@@ -80,7 +80,6 @@
 - **Live Session Timer**: Tracks active recitation duration down to the second.
 - **Floating Hasanat Badges**: Real-time visual reward feedback (`+770 Hasanat`) popping up as verses are recited and marked complete.
 - **Dynamic Juz Progress**: Live calculation of active Juz completion percentages and remaining verses.
-- **Khatm Milestones**: Real-time progress bar tracking progress through the 604 pages of the Holy Quran.
 
 ### 👤 Modern Profile & Spiritual Repository
 - **Favorite Verses & Hadiths**: Dedicated collection sub-page with categorized filtering (`All`, `Quran`, `Hadiths`) and 1-tap reader navigation.
