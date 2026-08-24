@@ -36,6 +36,7 @@ import { TajweedArabicText } from '../components/TajweedArabicText'
 import { TajweedLegendModal } from '../components/TajweedLegendModal'
 import { MUSHAF_THEMES, type MushafThemeId } from '../lib/mushafThemes'
 import { MushafThemeModal } from '../components/MushafThemeModal'
+import { ChapterCompletionModal } from '../components/ChapterCompletionModal'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -45,7 +46,7 @@ export const ReadingScreen: React.FC = () => {
 
   // State
   const [floatingHasanat, setFloatingHasanat] = useState<{ amount: number; id: number } | null>(null)
-  const [chapterCompletedBanner, setChapterCompletedBanner] = useState<string | null>(null)
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState<boolean>(false)
   const [zoomFeedback, setZoomFeedback] = useState<number | null>(null)
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(false)
   const [isThemeModalOpen, setIsThemeModalOpen] = useState<boolean>(false)
@@ -265,39 +266,38 @@ export const ReadingScreen: React.FC = () => {
     setFloatingHasanat({ amount: earned, id: Date.now() })
     setTimeout(() => setFloatingHasanat(null), 1800)
 
-    // 3. Navigation: Next Ayah or Next Surah
+    // 3. Navigation: Next Ayah or Trigger Celebratory Chapter Khatam Modal
     if (currentAyahNumber < totalAyahs) {
       const nextAyahNum = currentAyahNumber + 1
       setCurrentPosition(currentSurahNumber, nextAyahNum)
       setSearchParams({ surah: currentSurahNumber.toString(), ayah: nextAyahNum.toString() })
       useAuthStore.getState().updateLastReadPosition(currentSurahNumber, nextAyahNum)
     } else {
-      // Completed current Surah!
-      const completedName = currentSurah.name
-      setChapterCompletedBanner(`🎉 Completed Surah ${completedName}! Advancing to next chapter...`)
-      setTimeout(() => setChapterCompletedBanner(null), 3000)
-
-      if (currentSurahNumber < 114) {
-        const nextSurahNum = currentSurahNumber + 1
-        setCurrentPosition(nextSurahNum, 1)
-        setSearchParams({ surah: nextSurahNum.toString(), ayah: '1' })
-        useAuthStore.getState().updateLastReadPosition(nextSurahNum, 1)
-      } else {
-        // Full Quran Khatam!
-        navigate('/dashboard')
-      }
+      // 🎉 Completed current Surah! Open Celebratory Chapter Completion Modal with Golden Confetti
+      setIsCompletionModalOpen(true)
     }
   }, [
     currentAyah,
-    currentSurah,
     currentAyahNumber,
     totalAyahs,
     currentSurahNumber,
     markAyahRead,
     setCurrentPosition,
     setSearchParams,
-    navigate,
   ])
+
+  // Advance to Next Chapter from Milestone Modal
+  const handleContinueNextChapter = () => {
+    setIsCompletionModalOpen(false)
+    if (currentSurahNumber < 114) {
+      const nextSurahNum = currentSurahNumber + 1
+      setCurrentPosition(nextSurahNum, 1)
+      setSearchParams({ surah: nextSurahNum.toString(), ayah: '1' })
+      useAuthStore.getState().updateLastReadPosition(nextSurahNum, 1)
+    } else {
+      handleFinishSession()
+    }
+  }
 
   // Go to Previous Ayah
   const handlePrevAyah = (e?: React.MouseEvent) => {
@@ -564,13 +564,7 @@ export const ReadingScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* Chapter Completed Transition Toast Banner */}
-      {chapterCompletedBanner && (
-        <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 animate-fade-in shadow-lg shrink-0">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>{chapterCompletedBanner}</span>
-        </div>
-      )}
+
 
       {/* ========================================================================= */}
       {/* 2. PROPORTIONED CENTER: PINCH-TO-ZOOM / WHEEL-ZOOM SUPPORTED CANVAS       */}
@@ -708,6 +702,25 @@ export const ReadingScreen: React.FC = () => {
         onClose={() => setIsThemeModalOpen(false)}
         currentTheme={activeMushafTheme}
         onSelectTheme={(selectedTheme) => setMushafTheme(selectedTheme)}
+      />
+
+      {/* 🎉 Celebratory Chapter Khatam Milestone Modal with Golden Confetti & Star Burst */}
+      <ChapterCompletionModal
+        isOpen={isCompletionModalOpen}
+        surahNumber={currentSurahNumber}
+        surahName={currentSurah?.name || ''}
+        surahNameTa={currentSurah?.nameTa || currentSurah?.name || ''}
+        arabicName={currentSurah?.arabicName || ''}
+        totalAyahs={totalAyahs}
+        sessionHasanat={activeSession.sessionHasanat}
+        sessionDurationSeconds={activeSession.elapsedSeconds}
+        juzProgress={juzProgress}
+        onContinueNextChapter={handleContinueNextChapter}
+        onFinishSession={() => {
+          setIsCompletionModalOpen(false)
+          handleFinishSession()
+        }}
+        onClose={() => setIsCompletionModalOpen(false)}
       />
     </div>
   )

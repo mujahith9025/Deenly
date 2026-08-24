@@ -69,6 +69,7 @@
 - **Offline-First Storage**: IndexedDB caching layer (`deenly_quran_cache`) ensuring chapters load instantly even without an internet connection.
 
 ### ⏱️ Reading Session & Realtime Metrics
+- **🎉 Celebratory Surah Khatam Milestone & Golden Confetti Burst**: Completing the final verse of any Surah triggers a radiant dual-cannon Golden & Emerald starburst explosion (`canvas-confetti`) alongside an animated Islamic golden medallion modal, displaying session Hasanat roll-up, recitation duration, active streak, Sunnah completion Du'a, and 1-tap next chapter navigation.
 - **Live Session Timer**: Tracks active recitation duration down to the second.
 - **Floating Hasanat Badges**: Real-time visual reward feedback (`+770 Hasanat`) popping up as verses are recited and marked complete.
 - **Dynamic Juz Progress**: Live calculation of active Juz completion percentages and remaining verses.
