@@ -1,4 +1,5 @@
 import React, { useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { 
   Play, 
   Pause, 
@@ -10,11 +11,11 @@ import {
   VolumeX, 
   Repeat, 
   Repeat1, 
-  ChevronUp, 
   ChevronDown, 
   X, 
   Compass, 
-  Radio 
+  Radio,
+  Maximize2
 } from 'lucide-react'
 import { useQuranAudioStore, type RepeatMode } from '../store/useQuranAudioStore'
 import { SURAH_METADATA } from '../lib/quranMetadata'
@@ -63,6 +64,8 @@ export const QuranChapterAudioPlayer: React.FC = () => {
   } = useQuranAudioStore()
 
   const progressBarRef = useRef<HTMLDivElement>(null)
+  const location = useLocation()
+  const isReadingPage = location.pathname.startsWith('/reading')
 
   const appLanguage = useI18nStore((state) => state.appLanguage)
   const user = useAuthStore((state) => state.user)
@@ -101,7 +104,7 @@ export const QuranChapterAudioPlayer: React.FC = () => {
             <button
               onClick={() => setIsExpanded(false)}
               className="p-2.5 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-on-surface transition cursor-pointer"
-              title="Minimize Player"
+              title="Minimize to Floating Island"
             >
               <ChevronDown className="w-5 h-5" />
             </button>
@@ -117,7 +120,7 @@ export const QuranChapterAudioPlayer: React.FC = () => {
 
             <button
               onClick={closePlayer}
-              className="p-2.5 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-on-surface transition cursor-pointer"
+              className="p-2.5 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-on-surface hover:text-rose-400 transition cursor-pointer"
               title="Close Player"
             >
               <X className="w-5 h-5" />
@@ -132,7 +135,7 @@ export const QuranChapterAudioPlayer: React.FC = () => {
                 <span className="text-primary font-bold">
                   {appLanguage === 'ta' ? `வசனம் ${currentAyahNumberInSurah} / ${surahMeta.numberOfAyahs}` : `Ayah ${currentAyahNumberInSurah} of ${surahMeta.numberOfAyahs}`}
                 </span>
-                <span className="text-tertiary">{appLanguage === 'ta' ? 'மிஷாரி ரஷீத் அலஃபாஸி' : 'Mishary Rashid Alafasy'}</span>
+                <span className="text-tertiary">{appLanguage === 'ta' ? 'மிஷாரி ரஷீத் அலஃபாஸி' : 'Sheikh Mishary Rashid Alafasy'}</span>
               </div>
 
               <p
@@ -250,8 +253,63 @@ export const QuranChapterAudioPlayer: React.FC = () => {
                   setPlaybackRate(nextSpeed)
                 }}
                 className="text-xs font-bold font-mono px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/30 text-on-surface hover:border-primary transition cursor-pointer"
+                title="Playback Speed"
               >
                 {playbackRate}x
+              </button>
+            </div>
+
+            {/* Auxiliary Tools Row (Mute/Volume, Prev Chapter, Autoscroll, Next Chapter) */}
+            <div className="flex items-center justify-between text-xs pt-2 border-t border-outline-variant/20">
+              {/* Volume / Mute Toggle */}
+              <button
+                onClick={toggleMute}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/30 text-outline hover:text-on-surface transition cursor-pointer"
+                title={isMuted || volume === 0 ? 'Unmute' : 'Mute'}
+              >
+                {isMuted || volume === 0 ? (
+                  <>
+                    <VolumeX className="w-4 h-4 text-rose-400" />
+                    <span className="text-[11px] text-rose-400">Muted</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-4 h-4 text-primary" />
+                    <span className="text-[11px]">{Math.round(volume * 100)}%</span>
+                  </>
+                )}
+              </button>
+
+              {/* Prev / Next Chapter Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={previousSurah}
+                  className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-[11px] font-bold text-outline hover:text-on-surface transition cursor-pointer"
+                  title="Previous Chapter"
+                >
+                  |« Prev Surah
+                </button>
+                <button
+                  onClick={nextSurah}
+                  className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-[11px] font-bold text-outline hover:text-on-surface transition cursor-pointer"
+                  title="Next Chapter"
+                >
+                  Next Surah »|
+                </button>
+              </div>
+
+              {/* Autoscroll Toggle */}
+              <button
+                onClick={() => setAutoScroll(!autoScroll)}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full border transition cursor-pointer ${
+                  autoScroll
+                    ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                    : 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface'
+                }`}
+                title={autoScroll ? 'Autoscroll Active' : 'Autoscroll Disabled'}
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span className="text-[11px]">{autoScroll ? 'Autoscroll On' : 'Autoscroll'}</span>
               </button>
             </div>
           </div>
@@ -259,222 +317,143 @@ export const QuranChapterAudioPlayer: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 🌟 2. FLOATING FOOTER DOCKED AUDIO BAR (SPOTIFY / APPLE MUSIC STYLE)      */}
+      {/* 🌟 2. MINI FLOATING DYNAMIC ISLAND PLAYER (SLEEK CAPSULE HOVERING)        */}
       {/* ========================================================================= */}
-      <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 bg-surface-container/95 backdrop-blur-2xl border-t border-outline-variant/30 shadow-2xl p-2.5 sm:p-3 transition-all duration-300">
-        
-        {/* Continuous Scrubber Line at the very top of the dock */}
+      {!isExpanded && (
         <div
-          ref={progressBarRef}
-          onClick={handleSeekbarClick}
-          className="absolute -top-1 left-0 right-0 h-1.5 bg-surface-container-highest/80 cursor-pointer group hover:h-2 transition-all"
-          title="Click to seek"
+          className={`fixed z-40 transition-all duration-300 pointer-events-auto ${
+            isReadingPage
+              ? 'bottom-20 right-3 sm:right-6 sm:bottom-6 max-w-[340px] sm:max-w-[400px]'
+              : 'bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[410px]'
+          }`}
         >
-          <div
-            className="h-full primary-gradient-btn relative transition-all duration-100"
-            style={{ width: `${progressPercent}%` }}
-          >
-            <span className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
-          
-          {/* Left: Track Info & Animated Equalizer */}
-          <div 
-            onClick={() => setIsExpanded(true)}
-            className="flex items-center gap-2.5 min-w-0 flex-1 sm:flex-initial sm:w-72 cursor-pointer group"
-          >
-            {/* Pulsating Audio Equalizer Icon */}
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl primary-gradient-btn flex items-center justify-center text-white shrink-0 shadow-md group-hover:scale-105 transition-transform">
-              {isPlaying ? (
-                <div className="flex items-end gap-0.5 h-4">
-                  <span className="w-1 bg-white rounded-full animate-[pulse_0.6s_ease-in-out_infinite]" style={{ height: '60%' }} />
-                  <span className="w-1 bg-white rounded-full animate-[pulse_0.4s_ease-in-out_infinite]" style={{ height: '100%' }} />
-                  <span className="w-1 bg-white rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" style={{ height: '40%' }} />
-                </div>
-              ) : (
-                <Radio className="w-5 h-5 text-white" />
-              )}
+          {/* Dynamic Island Capsule Outer Wrapper */}
+          <div className="relative rounded-full glass-card border border-primary/50 bg-surface/92 backdrop-blur-2xl shadow-[0_12px_45px_rgba(0,0,0,0.55)] ring-1 ring-primary/25 p-2 pl-2.5 pr-2 transition-all duration-300 flex items-center justify-between gap-2.5 hover:border-primary hover:shadow-[0_16px_50px_rgba(124,58,237,0.3)] animate-spring-up group overflow-hidden">
+            
+            {/* Integrated Slim Scrubber Line at the very bottom curve of the Island */}
+            <div
+              ref={progressBarRef}
+              onClick={handleSeekbarClick}
+              className="absolute bottom-0 left-3 right-3 h-[2px] bg-outline-variant/30 cursor-pointer group-hover:h-[3px] transition-all overflow-hidden rounded-full"
+              title="Click to seek"
+            >
+              <div
+                className="h-full primary-gradient-btn relative transition-all duration-100 rounded-full"
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
 
-            <div className="truncate">
-              <div className="flex items-center gap-1.5 truncate">
-                <span className="text-xs sm:text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">
-                  {surahMeta.number}. {appLanguage === 'ta' ? (surahMeta.nameTa || surahMeta.name) : surahMeta.name}
-                </span>
-                <span className="font-noto-serif text-xs text-primary font-bold hidden sm:inline truncate" dir="rtl">
-                  ({surahMeta.arabicName})
-                </span>
+            {/* Left: Animated Sound Wave Avatar & Surah Info (Click to Expand) */}
+            <div
+              onClick={() => setIsExpanded(true)}
+              className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer select-none"
+              title="Tap to open full player view"
+            >
+              {/* Pulsating Audio Equalizer Icon */}
+              <div className="w-9 h-9 rounded-full primary-gradient-btn flex items-center justify-center text-white shrink-0 shadow-md group-hover:scale-105 transition-transform relative">
+                {isPlaying ? (
+                  <div className="flex items-end gap-[2px] h-3.5">
+                    <span className="w-[2.5px] bg-white rounded-full animate-[pulse_0.6s_ease-in-out_infinite]" style={{ height: '60%' }} />
+                    <span className="w-[2.5px] bg-white rounded-full animate-[pulse_0.4s_ease-in-out_infinite]" style={{ height: '100%' }} />
+                    <span className="w-[2.5px] bg-white rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" style={{ height: '45%' }} />
+                  </div>
+                ) : (
+                  <Radio className="w-4 h-4 text-white" />
+                )}
               </div>
-              <p className="text-[10px] sm:text-[11px] text-outline truncate flex items-center gap-1">
-                <span>{appLanguage === 'ta' ? `வசனம் ${currentAyahNumberInSurah}/${surahMeta.numberOfAyahs}` : `Ayah ${currentAyahNumberInSurah}/${surahMeta.numberOfAyahs}`}</span>
-                <span>•</span>
-                <span className="truncate">{appLanguage === 'ta' ? 'மிஷாரி அலஃபாஸி' : 'Mishary Alafasy'}</span>
-              </p>
+
+              {/* Title & Ayah Progress */}
+              <div className="min-w-0 flex-1 truncate">
+                <div className="flex items-center gap-1.5 truncate">
+                  <span className="text-xs font-bold text-on-surface truncate group-hover:text-primary transition-colors">
+                    {surahMeta.number}. {appLanguage === 'ta' ? (surahMeta.nameTa || surahMeta.name) : surahMeta.name}
+                  </span>
+                  <span className="text-[11px] text-primary font-bold hidden sm:inline shrink-0" dir="rtl" style={{ fontFamily: arabicFontFamily }}>
+                    {surahMeta.arabicName}
+                  </span>
+                </div>
+                <p className="text-[10px] text-on-surface-variant truncate flex items-center gap-1">
+                  <span className="font-semibold text-primary">
+                    {appLanguage === 'ta' ? `வசனம் ${currentAyahNumberInSurah}/${surahMeta.numberOfAyahs}` : `Ayah ${currentAyahNumberInSurah}/${surahMeta.numberOfAyahs}`}
+                  </span>
+                  <span>•</span>
+                  <span className="truncate">{appLanguage === 'ta' ? 'மிஷாரி அலஃபாஸி' : 'Mishary Alafasy'}</span>
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Center: Main Playback Controls */}
-          <div className="flex flex-col items-center gap-1 shrink-0">
-            <div className="flex items-center gap-1 sm:gap-2">
-              {/* Prev Chapter */}
-              <button
-                onClick={previousSurah}
-                className="p-1.5 sm:p-2 rounded-full text-outline hover:text-on-surface hover:bg-surface-container-high transition cursor-pointer hidden md:flex"
-                title="Previous Surah"
-              >
-                <span className="text-[10px] font-bold">|«</span>
-              </button>
-
+            {/* Right: Touch Controls (Prev, Play/Pause, Next, Expand, Close) */}
+            <div className="flex items-center gap-1 shrink-0">
               {/* Prev Verse */}
               <button
-                onClick={previousAyah}
-                className="p-1.5 sm:p-2 rounded-full text-on-surface hover:text-primary transition cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  previousAyah()
+                }}
+                className="w-7 h-7 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high flex items-center justify-center transition cursor-pointer"
                 title="Previous Ayah"
               >
-                <SkipBack className="w-4 h-4 sm:w-5 sm:h-5" />
+                <SkipBack className="w-3.5 h-3.5" />
               </button>
 
-              {/* -10s */}
+              {/* Main Play/Pause Floating Toggle Button */}
               <button
-                onClick={() => seekRelative(-10)}
-                className="p-1.5 rounded-full text-outline hover:text-on-surface transition cursor-pointer hidden sm:flex"
-                title="Rewind 10 seconds"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-
-              {/* Main Play/Pause Button */}
-              <button
-                onClick={togglePlay}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full primary-gradient-btn flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  togglePlay()
+                }}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full primary-gradient-btn flex items-center justify-center text-white shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
                 title={isPlaying ? 'Pause' : 'Play'}
               >
                 {isLoadingAudio ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : isPlaying ? (
-                  <Pause className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 ) : (
-                  <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-white ml-0.5" />
+                  <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white ml-0.5" />
                 )}
-              </button>
-
-              {/* +10s */}
-              <button
-                onClick={() => seekRelative(10)}
-                className="p-1.5 rounded-full text-outline hover:text-on-surface transition cursor-pointer hidden sm:flex"
-                title="Forward 10 seconds"
-              >
-                <RotateCw className="w-4 h-4" />
               </button>
 
               {/* Next Verse */}
               <button
-                onClick={nextAyah}
-                className="p-1.5 sm:p-2 rounded-full text-on-surface hover:text-primary transition cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  nextAyah()
+                }}
+                className="w-7 h-7 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high flex items-center justify-center transition cursor-pointer"
                 title="Next Ayah"
               >
-                <SkipForward className="w-4 h-4 sm:w-5 sm:h-5" />
+                <SkipForward className="w-3.5 h-3.5" />
               </button>
 
-              {/* Next Chapter */}
+              {/* Expand Fullscreen Button */}
               <button
-                onClick={nextSurah}
-                className="p-1.5 sm:p-2 rounded-full text-outline hover:text-on-surface hover:bg-surface-container-high transition cursor-pointer hidden md:flex"
-                title="Next Surah"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsExpanded(true)
+                }}
+                className="w-7 h-7 rounded-full text-outline hover:text-primary hover:bg-surface-container-high flex items-center justify-center transition cursor-pointer ml-0.5"
+                title="Expand to Fullscreen Player"
               >
-                <span className="text-[10px] font-bold">»|</span>
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Dismiss / Close Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  closePlayer()
+                }}
+                className="w-7 h-7 rounded-full text-outline hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition cursor-pointer"
+                title="Dismiss Player"
+              >
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Time stamps */}
-            <div className="flex items-center gap-2 text-[10px] font-mono text-outline">
-              <span>{formatAudioTime(currentTime)}</span>
-              <span>/</span>
-              <span>{formatAudioTime(duration)}</span>
-            </div>
           </div>
-
-          {/* Right: Extra Tools (Speed, Autoscroll, Repeat, Expand, Close) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Repeat Mode */}
-            <button
-              onClick={handleRepeatModeCycle}
-              className={`p-2 rounded-full transition cursor-pointer hidden sm:flex ${
-                repeatMode !== 'none'
-                  ? 'text-primary bg-primary/15'
-                  : 'text-outline hover:text-on-surface'
-              }`}
-              title={`Repeat Mode: ${repeatMode} (Tap to change)`}
-            >
-              {repeatMode === 'verse' ? (
-                <Repeat1 className="w-4 h-4" />
-              ) : (
-                <Repeat className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Speed Pill */}
-            <button
-              onClick={() => {
-                const speeds = [0.75, 1.0, 1.25, 1.5]
-                const nextSpeed = speeds[(speeds.indexOf(playbackRate) + 1) % speeds.length]
-                setPlaybackRate(nextSpeed)
-              }}
-              className="px-2 py-1 rounded-full bg-surface-container-high border border-outline-variant/30 text-[10px] font-mono font-bold text-on-surface hover:border-primary transition cursor-pointer hidden sm:block"
-              title="Playback Speed"
-            >
-              {playbackRate}x
-            </button>
-
-            {/* AutoScroll Toggle */}
-            <button
-              onClick={() => setAutoScroll(!autoScroll)}
-              className={`p-2 rounded-full transition cursor-pointer hidden md:flex ${
-                autoScroll
-                  ? 'text-tertiary bg-tertiary/15'
-                  : 'text-outline hover:text-on-surface'
-              }`}
-              title={autoScroll ? 'Autoscroll Active' : 'Autoscroll Disabled'}
-            >
-              <Compass className="w-4 h-4" />
-            </button>
-
-            {/* Volume / Mute */}
-            <button
-              onClick={toggleMute}
-              className="p-2 rounded-full text-outline hover:text-on-surface transition cursor-pointer hidden md:flex"
-              title={isMuted ? 'Unmute' : 'Mute'}
-            >
-              {isMuted || volume === 0 ? (
-                <VolumeX className="w-4 h-4 text-rose-400" />
-              ) : (
-                <Volume2 className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Expand */}
-            <button
-              onClick={() => setIsExpanded(true)}
-              className="p-2 rounded-full text-outline hover:text-primary transition cursor-pointer"
-              title="Expand Fullscreen View"
-            >
-              <ChevronUp className="w-4 h-4" />
-            </button>
-
-            {/* Close Player */}
-            <button
-              onClick={closePlayer}
-              className="p-2 rounded-full text-outline hover:text-rose-400 transition cursor-pointer"
-              title="Dismiss Player"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
         </div>
-      </div>
+      )}
     </>
   )
 }

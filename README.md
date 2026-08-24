@@ -65,7 +65,7 @@
   - 🇮🇳 / 🇱🇰 **Tamil Translations (தமிழ்)**:
     - **மௌலானா ஏ.கே. அப்துல் ஹமீது பாகவி** (*Allama A.K. Abdul Hameed Baqavi* — Default Tamil)
     - **ஜான் டிரஸ்ட் பதிப்பு** (*Jan Trust Foundation* — King Fahd Complex Madinah Official Edition)
-- **Continuous Spotify-Grade Quran Audio Player**: Full-chapter sequential recitation by Sheikh Mishary Rashid Alafasy with MediaSession background lock screen controls, draggable seekbar, autoscroll, and automatic next chapter advancement.
+- **Mini Floating Dynamic Island Quran Audio Player**: A sleek Apple Dynamic Island / Spotify-style floating capsule hovering gracefully over all pages with live animated sound waves, continuous verse-by-verse recitation by Sheikh Mishary Rashid Alafasy, integrated bottom scrubber track, quick skip/play touch controls, MediaSession background lock screen controls, and an expandable fullscreen immersive recitation modal.
 - **Offline-First Storage**: IndexedDB caching layer (`deenly_quran_cache`) ensuring chapters load instantly even without an internet connection.
 
 ### ⏱️ Reading Session & Realtime Metrics

@@ -22,7 +22,6 @@ import { useReadingStore } from '../store/useReadingStore'
 import { useBookmarkStore } from '../store/useBookmarkStore'
 import { useFavoriteStore } from '../store/useFavoriteStore'
 import { useQuranAudioStore } from '../store/useQuranAudioStore'
-import { QuranChapterAudioPlayer } from '../components/QuranChapterAudioPlayer'
 import type { SurahDetail, Ayah } from '../types/quran'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { 
@@ -764,11 +763,6 @@ export const QuranScreen: React.FC = () => {
           )}
         </div>
       )}
-
-      {/* ========================================================================= */}
-      {/* 4. DOCKED FULL CHAPTER CONTINUOUS FOOTER AUDIO PLAYER                     */}
-      {/* ========================================================================= */}
-      <QuranChapterAudioPlayer />
 
       {/* Tajweed Legend Interactive Modal */}
       <TajweedLegendModal
