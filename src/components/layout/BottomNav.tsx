@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, ScrollText, Settings } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Compass, ScrollText, Settings } from 'lucide-react'
 import { useI18nStore } from '../../lib/i18n'
 
 export const BottomNav: React.FC = () => {
@@ -9,6 +9,7 @@ export const BottomNav: React.FC = () => {
   const mobileNavItems = [
     { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { path: '/quran', label: t('quran'), icon: BookOpen },
+    { path: '/explore', label: t('explore'), icon: Compass },
     { path: '/hadith', label: t('hadith'), icon: ScrollText },
     { path: '/settings', label: t('settings'), icon: Settings },
   ]

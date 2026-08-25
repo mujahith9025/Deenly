@@ -81,12 +81,13 @@
 - **Floating Hasanat Badges**: Real-time visual reward feedback (`+770 Hasanat`) popping up as verses are recited and marked complete.
 - **Dynamic Juz Progress**: Live calculation of active Juz completion percentages and remaining verses.
 
-### 📿 Interactive Digital Tasbih & Daily Dhikr Engine
-- **Tactile Circular Dial**: SVG progress ring with responsive tap counter, smooth gradient fill, and subtle haptic/sound feedback.
+### 📿 Interactive Digital Tasbih & Daily Dhikr Studio (with Daily Goals & Explore Hub)
+- **Compact Dashboard Dial**: Fast-access circular counting widget directly on the dashboard displaying live counts, active Dhikr transliteration/Arabic script, and daily goal progress.
+- **Dedicated Explore Hub (`/explore`)**: Positioned prominently in the middle of Quran and Hadith in navigation (Sidebar & BottomNav), featuring the full **Digital Tasbih Studio**, authentic **Prophetic Du'as (*Hisnul Muslim*)**, and **Asmaul Husna (99 Names of Allah)**.
+- **Daily Dhikr Goal & Storage Breakdown**: Set personalized daily targets (100, 300, 500, 1000, or custom) with progress bars, persistent daily history, and detailed breakdown of recitation counts across all Dhikrs.
 - **Authentic Sunnah Presets**: Pre-configured with *SubhanAllah* (33x), *Alhamdulillah* (33x), *Allahu Akbar* (34x), *Astaghfirullah* (100x), *La ilaha illallah*, *Salawat*, and *La hawla*.
 - **Virtues & Citations**: Scholarly citations from *Sahih al-Bukhari*, *Sahih Muslim*, and *Jami` at-Tirmidhi* in English and Tamil.
-- **Sunnah Post-Prayer Loop**: Automatic 33-33-34 cycle progression for post-Salah remembrance.
-- **Daily Persistence & Targets**: Tracks total daily Dhikrs recited with customizable target presets (33, 100, 300, or Free count).
+- **Sunnah Post-Prayer Loop**: Automatic 33-33-34 cycle progression for post-Salah remembrance with haptic and audio chime feedback.
 
 ### 👤 Modern Profile & Spiritual Repository
 - **Favorite Verses & Hadiths**: Dedicated collection sub-page with categorized filtering (`All`, `Quran`, `Hadiths`) and 1-tap reader navigation.

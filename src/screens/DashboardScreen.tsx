@@ -23,7 +23,7 @@ import {
 } from '../lib/hasanatEngine'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useI18nStore } from '../lib/i18n'
-import { DigitalTasbihEngine } from '../components/DigitalTasbihEngine'
+import { DashboardTasbihWidget } from '../components/DashboardTasbihWidget'
 
 type TimeframeFilter = 'today' | 'week' | 'all'
 
@@ -792,9 +792,9 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 5. 📿 INTERACTIVE DIGITAL TASBIH & DAILY DHIKR ENGINE                     */}
+      {/* 5. 📿 INTERACTIVE DIGITAL TASBIH CIRCULAR WIDGET (COMPACT COUNTING)       */}
       {/* ========================================================================= */}
-      <DigitalTasbihEngine />
+      <DashboardTasbihWidget />
 
     </div>
   )

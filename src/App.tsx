@@ -9,6 +9,7 @@ import { SignupScreen } from './screens/SignupScreen'
 import { DashboardScreen } from './screens/DashboardScreen'
 import { ReadingScreen } from './screens/ReadingScreen'
 import { QuranScreen } from './screens/QuranScreen'
+import { ExploreScreen } from './screens/ExploreScreen'
 import { HadithScreen } from './screens/HadithScreen'
 import { ProfileScreen } from './screens/ProfileScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
@@ -62,7 +63,8 @@ export const App: React.FC = () => {
             <Route path="/reading" element={<ReadingScreen />} />
             {/* All 114 Quran Chapters & Whole Chapter Stream */}
             <Route path="/quran" element={<QuranScreen />} />
-            <Route path="/explore" element={<QuranScreen />} />
+            {/* Spiritual Explorer: Digital Tasbih Studio, Daily Dhikr Goals & Authentic Du'as */}
+            <Route path="/explore" element={<ExploreScreen />} />
             {/* The Six Major Hadith Books (Kutub al-Sittah) in Arabic, English & Tamil */}
             <Route path="/hadith" element={<HadithScreen />} />
             <Route path="/leaderboard" element={<Navigate to="/hadith" replace />} />

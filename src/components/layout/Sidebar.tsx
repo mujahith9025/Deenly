@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   BookOpen, 
+  Compass, 
   ScrollText, 
   User, 
   Settings, 
@@ -24,6 +25,7 @@ export const Sidebar: React.FC = () => {
   const navItems = [
     { path: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
     { path: '/quran', label: t('quran'), icon: BookOpen },
+    { path: '/explore', label: t('explore'), icon: Compass },
     { path: '/hadith', label: t('hadith'), icon: ScrollText },
     { path: '/settings', label: t('settings'), icon: Settings },
   ]
