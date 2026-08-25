@@ -11,7 +11,9 @@ import {
   Smartphone,
   Target,
   Minus,
-  Sliders
+  Sliders,
+  BarChart3,
+  CheckCircle2
 } from 'lucide-react'
 import { DHIKR_PRESETS, type DhikrItem } from '../lib/dhikrData'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
@@ -73,7 +75,11 @@ function playChime(isCompletion = false) {
   }
 }
 
-export const DigitalTasbihEngine: React.FC = () => {
+interface DigitalTasbihEngineProps {
+  onOpenAnalytics?: () => void
+}
+
+export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpenAnalytics }) => {
   const gradientId = useId()
   const user = useAuthStore((state) => state.user)
   const appLanguage = useI18nStore((state) => state.appLanguage)
@@ -86,21 +92,26 @@ export const DigitalTasbihEngine: React.FC = () => {
     activeDhikrId,
     target,
     dailyGoal,
+    dhikrTargets,
     soundEnabled,
     hapticsEnabled,
     sessionCount,
     sessionLaps,
     todayDhikrCounts,
     lifetimeDhikrCounts,
+    currentStreak,
     setActiveDhikrId,
     setTarget,
     setDailyGoal,
+    setAllDhikrTargets,
     toggleSound,
     toggleHaptics,
     incrementCount,
     decrementCount,
     resetSessionCount,
     getTodayTotalCount,
+    getCompletedDhikrsCount,
+    getAllDhikrsCompleted,
     getActiveDhikr,
   } = useTasbihStore()
 
@@ -113,6 +124,10 @@ export const DigitalTasbihEngine: React.FC = () => {
   const activeDhikr = getActiveDhikr()
   const todayTotal = getTodayTotalCount()
   const dailyGoalPercent = Math.min(100, Math.round((todayTotal / Math.max(1, dailyGoal)) * 100))
+  
+  const completedCount = getCompletedDhikrsCount()
+  const totalPresets = DHIKR_PRESETS.length
+  const allDhikrsDone = getAllDhikrsCompleted()
 
   // Filtered Dhikr presets
   const filteredPresets = activeCategory === 'all' 
@@ -190,7 +205,7 @@ export const DigitalTasbihEngine: React.FC = () => {
   return (
     <div className="space-y-8">
       
-      {/* 🌟 1. HERO BANNER: DAILY GOAL PROGRESS & STUDIO CONTROLS */}
+      {/* 🌟 1. HERO BANNER: DAILY GOALS & ALL-DHIKR PROGRESSION */}
       <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6 shadow-md relative overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-outline-variant/20">
           <div className="flex items-center gap-3">
@@ -200,21 +215,36 @@ export const DigitalTasbihEngine: React.FC = () => {
             <div>
               <h2 className="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
                 <span>{isTamil ? 'டிஜிட்டல் தஸ்பீஹ் & தினசரி திக்ர் அரங்கம்' : 'Digital Tasbih & Daily Dhikr Studio'}</span>
+                {currentStreak > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 text-[10px] font-extrabold border border-amber-500/30">
+                    🔥 {currentStreak} {isTamil ? 'நாள் தொடர்' : 'Day Streak'}
+                  </span>
+                )}
               </h2>
               <p className="text-xs text-on-surface-variant">
-                {isTamil ? 'இறை நினைவூட்டல், தினசரி இலக்குகள் மற்றும் நபிகளாரின் சுன்னத் திக்ருகள்' : 'Track daily Dhikr goals, Sunnah remembrance, and authentic Hadith virtues'}
+                {isTamil ? 'இறை நினைவூட்டல், அனைத்து திக்ர் இலக்குகள் மற்றும் நபிகளாரின் சுன்னத் திக்ருகள்' : 'Track daily targets across all Dhikrs, Sunnah remembrance, and authentic Hadith virtues'}
               </p>
             </div>
           </div>
 
-          {/* Audio & Haptic Controls */}
+          {/* Audio, Haptic & Goal Controls */}
           <div className="flex items-center gap-2">
+            {onOpenAnalytics && (
+              <button
+                onClick={onOpenAnalytics}
+                className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-primary/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer text-primary shadow-xs"
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                <span>{isTamil ? 'பகுப்பாய்வு' : 'Analytics'}</span>
+              </button>
+            )}
+
             <button
               onClick={() => setShowGoalEditor(!showGoalEditor)}
-              className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer text-primary shadow-xs"
+              className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer text-on-surface shadow-xs"
             >
               <Sliders className="w-3.5 h-3.5" />
-              <span>{isTamil ? 'இலக்கை மாற்று' : 'Set Daily Goal'}</span>
+              <span>{isTamil ? 'இலக்குகளை மாற்று' : 'Set Targets'}</span>
             </button>
 
             <button
@@ -243,47 +273,75 @@ export const DigitalTasbihEngine: React.FC = () => {
           </div>
         </div>
 
-        {/* Daily Goal Progress Bar Card */}
-        <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/25 space-y-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2 font-bold text-on-surface">
-              <Target className="w-4 h-4 text-primary" />
-              <span>{isTamil ? 'இன்றைய திக்ர் இலக்கு' : "Today's Dhikr Target Progress"}</span>
+        {/* Dual Progress: (A) Global Aggregate + (B) All-Dhikr Completion */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* Card A: Global Daily Total Progress */}
+          <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/25 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 font-bold text-on-surface">
+                <Target className="w-4 h-4 text-primary" />
+                <span>{isTamil ? 'மொத்த தினசரி திக்ர் இலக்கு' : 'Daily Aggregate Target'}</span>
+              </div>
+              <div className="font-extrabold text-primary">
+                <span>{todayTotal}</span>
+                <span className="text-outline font-normal"> / {dailyGoal}</span>
+                <span className="ml-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px]">
+                  {dailyGoalPercent}%
+                </span>
+              </div>
             </div>
-            <div className="font-extrabold text-primary">
-              <span>{todayTotal}</span>
-              <span className="text-outline font-normal"> / {dailyGoal} {isTamil ? 'திக்ருகள்' : 'Dhikrs'}</span>
-              <span className="ml-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px]">
-                {dailyGoalPercent}%
-              </span>
+
+            <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+              <div
+                className="bg-linear-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${dailyGoalPercent}%` }}
+              />
             </div>
           </div>
 
-          <div className="w-full bg-surface-container-highest h-3 rounded-full overflow-hidden">
-            <div
-              className="bg-linear-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-500 shadow-sm"
-              style={{ width: `${dailyGoalPercent}%` }}
-            />
+          {/* Card B: All Dhikr Completion Rate */}
+          <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/25 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 font-bold text-on-surface">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span>{isTamil ? 'அனைத்து திக்ர் இலக்குகள் நிறைவு' : 'All-Dhikr Goals Met'}</span>
+              </div>
+              <div className="font-extrabold text-emerald-500">
+                <span>{completedCount}</span>
+                <span className="text-outline font-normal"> / {totalPresets} {isTamil ? 'திக்ருகள்' : 'Dhikrs'}</span>
+                <span className="ml-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 text-[10px]">
+                  {Math.round((completedCount / totalPresets) * 100)}%
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+              <div
+                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${(completedCount / totalPresets) * 100}%` }}
+              />
+            </div>
           </div>
 
-          {todayTotal >= dailyGoal && (
-            <p className="text-xs text-primary font-bold flex items-center gap-1.5 pt-1">
-              <Award className="w-4 h-4 text-amber-500" />
-              <span>
-                {isTamil 
-                  ? 'மாஷா அல்லாஹ்! இன்றைய திக்ர் இலக்கை வெற்றிகரமாக நிறைவு செய்துள்ளீர்கள்!' 
-                  : 'Māshā’Allāh! You have accomplished your daily Dhikr goal for today!'
-                }
-              </span>
-            </p>
-          )}
         </div>
+
+        {allDhikrsDone && (
+          <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-500 font-bold">
+            <Award className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>
+              {isTamil 
+                ? 'மாஷா அல்லாஹ்! இன்றைய அனைத்து திக்ர் இலக்குகளையும் வெற்றிகரமாக நிறைவு செய்துள்ளீர்கள்!' 
+                : 'Māshā’Allāh! You have completed the daily target for every single Dhikr in the studio!'}
+            </span>
+          </div>
+        )}
 
         {/* Goal Customizer Modal / Tray */}
         {showGoalEditor && (
-          <div className="p-4 rounded-2xl bg-surface-container-high/80 border border-primary/30 space-y-3">
+          <div className="p-4 rounded-2xl bg-surface-container-high/90 border border-primary/30 space-y-3">
             <div className="flex items-center justify-between text-xs font-bold text-on-surface">
-              <span>{isTamil ? 'தினசரி திக்ர் இலக்கைத் தேர்ந்தெடுக்கவும்' : 'Select Daily Dhikr Target'}</span>
+              <span>{isTamil ? 'தினசரி திக்ர் இலக்குகளை அமைக்கவும்' : 'Configure Daily Targets'}</span>
               <button 
                 onClick={() => setShowGoalEditor(false)}
                 className="text-outline hover:text-on-surface cursor-pointer"
@@ -293,21 +351,21 @@ export const DigitalTasbihEngine: React.FC = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
-              {[100, 300, 500, 1000].map((preset) => (
+              <span className="text-xs text-outline font-semibold">
+                {isTamil ? 'அனைத்திற்கும் ஒரே இலக்கு:' : 'Universal Goal for all:'}
+              </span>
+              {[33, 100, 300].map((preset) => (
                 <button
                   key={preset}
-                  onClick={() => handleSaveGoal(preset)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
-                    dailyGoal === preset
-                      ? 'bg-primary text-on-primary border-primary shadow-xs'
-                      : 'bg-surface-container text-on-surface-variant border-outline-variant/30 hover:bg-surface-container-highest'
-                  }`}
+                  onClick={() => setAllDhikrTargets(preset)}
+                  className="px-3 py-1 rounded-xl text-xs font-bold bg-surface-container hover:bg-surface-container-highest border border-outline-variant/30 text-on-surface cursor-pointer"
                 >
-                  {preset} {isTamil ? 'முறை' : 'times'}
+                  {preset}x
                 </button>
               ))}
 
               <div className="flex items-center gap-1.5 ml-auto">
+                <span className="text-xs text-outline font-semibold">{isTamil ? 'மொத்த இலக்கு' : 'Daily Goal'}:</span>
                 <input
                   type="number"
                   min="10"
@@ -315,7 +373,6 @@ export const DigitalTasbihEngine: React.FC = () => {
                   value={customGoalInput}
                   onChange={(e) => setCustomGoalInput(e.target.value)}
                   className="w-20 px-2 py-1 rounded-xl bg-surface-container border border-outline-variant/30 text-xs font-bold text-on-surface focus:outline-none focus:border-primary text-center"
-                  placeholder="Custom"
                 />
                 <button
                   onClick={() => handleSaveGoal(parseInt(customGoalInput, 10) || 300)}
@@ -404,42 +461,58 @@ export const DigitalTasbihEngine: React.FC = () => {
             )}
           </div>
 
-          {/* Presets List in this Category */}
+          {/* Presets List in this Category with Per-Dhikr Goal Badges */}
           <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-md">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-outline font-label-caps">
-              {isTamil ? 'திக்ர் பட்டியல்' : 'Available Presets'}
-            </h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-outline font-label-caps">
+                {isTamil ? 'திக்ர் பட்டியல் & இலக்குகள்' : 'Dhikr Library & Targets'}
+              </h4>
+              <span className="text-[11px] text-primary font-semibold">
+                {completedCount} / {totalPresets} {isTamil ? 'நிறைவு' : 'completed'}
+              </span>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {filteredPresets.map((dhikr) => (
-                <div
-                  key={dhikr.id}
-                  onClick={() => handleSelectDhikr(dhikr)}
-                  className={`p-3 rounded-2xl flex items-center justify-between border cursor-pointer transition ${
-                    activeDhikrId === dhikr.id
-                      ? 'bg-secondary/15 border-secondary/40 text-on-surface shadow-xs'
-                      : 'bg-surface-container/60 border-outline-variant/20 text-on-surface-variant hover:border-primary/40'
-                  }`}
-                >
-                  <div className="truncate min-w-0 pr-2">
-                    <p className="text-xs font-bold truncate text-on-surface">
-                      {dhikr.transliteration}
-                    </p>
-                    <p className="text-[10px] text-outline truncate">
-                      {isTamilTranslation ? dhikr.translationTa : dhikr.translationEn}
-                    </p>
-                  </div>
+              {filteredPresets.map((dhikr) => {
+                const currentToday = todayDhikrCounts[dhikr.id] || 0
+                const currentTarget = dhikrTargets[dhikr.id] || dhikr.defaultTarget || 33
+                const isDone = currentToday >= currentTarget && currentTarget > 0
 
-                  <div className="text-right shrink-0">
-                    <span className="text-xs font-extrabold text-primary block">
-                      {todayDhikrCounts[dhikr.id] || 0}
-                    </span>
-                    <span className="text-[9px] text-outline">
-                      {dhikr.defaultTarget}x target
-                    </span>
+                return (
+                  <div
+                    key={dhikr.id}
+                    onClick={() => handleSelectDhikr(dhikr)}
+                    className={`p-3 rounded-2xl flex items-center justify-between border cursor-pointer transition ${
+                      activeDhikrId === dhikr.id
+                        ? 'bg-secondary/15 border-secondary/40 text-on-surface shadow-xs'
+                        : isDone
+                        ? 'bg-primary/10 border-primary/30 text-on-surface'
+                        : 'bg-surface-container/60 border-outline-variant/20 text-on-surface-variant hover:border-primary/40'
+                    }`}
+                  >
+                    <div className="truncate min-w-0 pr-2">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-bold truncate text-on-surface">
+                          {dhikr.transliteration}
+                        </p>
+                        {isDone && <Check className="w-3 h-3 text-primary stroke-[3]" />}
+                      </div>
+                      <p className="text-[10px] text-outline truncate">
+                        {isTamilTranslation ? dhikr.translationTa : dhikr.translationEn}
+                      </p>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className={`text-xs font-extrabold block ${isDone ? 'text-emerald-500' : 'text-primary'}`}>
+                        {currentToday} / {currentTarget}
+                      </span>
+                      <span className="text-[9px] text-outline">
+                        {isDone ? (isTamil ? 'நிறைவு' : 'Target Done') : `${currentTarget - currentToday} left`}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 

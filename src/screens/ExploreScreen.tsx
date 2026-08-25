@@ -7,16 +7,18 @@ import {
   Star, 
   Search, 
   Shield, 
-  Info 
+  Info,
+  BarChart3
 } from 'lucide-react'
 import { DigitalTasbihEngine } from '../components/DigitalTasbihEngine'
+import { DhikrAnalyticsView } from '../components/DhikrAnalyticsView'
 import { useAuthStore } from '../store/useAuthStore'
 import { useI18nStore } from '../lib/i18n'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { ASMAUL_HUSNA, type AsmaulHusnaItem } from '../lib/asmaulHusnaData'
 import { HISNUL_MUSLIM_DUAS, HISNUL_MUSLIM_CATEGORIES } from '../lib/hisnulMuslimData'
 
-type ExploreTab = 'dhikr' | 'hisnul_muslim' | 'asmaul_husna'
+type ExploreTab = 'dhikr' | 'analytics' | 'hisnul_muslim' | 'asmaul_husna'
 
 export const ExploreScreen: React.FC = () => {
   const user = useAuthStore((state) => state.user)
@@ -98,8 +100,8 @@ export const ExploreScreen: React.FC = () => {
 
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
             {isTamil 
-              ? 'டிஜிட்டல் தஸ்பீஹ் திக்ர் அரங்கம், ஆதாரப்பூர்வமான ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்களை முழுமையாக ஆராயுங்கள்.' 
-              : 'Discover the Interactive Dhikr & Digital Tasbih Studio, authentic Hisnul Muslim supplications, and all 99 Beautiful Names of Allah.'
+              ? 'டிஜிட்டல் தஸ்பீஹ் திக்ர் அரங்கம், நாட்களின் பகுப்பாய்வு, ஆதாரப்பூர்வமான ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்களை முழுமையாக ஆராயுங்கள்.' 
+              : 'Discover the Interactive Dhikr & Digital Tasbih Studio, progression analytics, authentic Hisnul Muslim supplications, and all 99 Beautiful Names of Allah.'
             }
           </p>
         </div>
@@ -108,31 +110,39 @@ export const ExploreScreen: React.FC = () => {
         <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
       </div>
 
-      {/* 🌟 2. EXPLORE 3 CORE HEADINGS / NAVIGATION TABS */}
+      {/* 🌟 2. EXPLORE 4 CORE HEADINGS / NAVIGATION TABS */}
       <div className="flex items-center gap-3 border-b border-outline-variant/25 pb-3 overflow-x-auto scrollbar-none">
         {[
           { 
             id: 'dhikr', 
-            labelEn: 'Dhikr & Digital Tasbih Studio', 
-            labelTa: 'திக்ர் & டிஜிட்டல் தஸ்பீஹ்', 
-            descEn: 'Full counter, daily goals & Hadith virtues',
-            descTa: 'முழு தஸ்பீஹ் அரங்கம் & நற்பலன்கள்',
+            labelEn: 'Dhikr & Digital Tasbih', 
+            labelTa: 'திக்ர் & தஸ்பீஹ் அரங்கம்', 
+            descEn: 'Tactile counter, goals & virtues',
+            descTa: 'எண்ணிக்கை & நற்பலன்கள்',
             icon: Sparkles 
           },
           { 
+            id: 'analytics', 
+            labelEn: 'Dhikr Analytics & Trends', 
+            labelTa: 'திக்ர் பகுப்பாய்வு & வரைபடம்', 
+            descEn: 'Daily progress, streaks & charts',
+            descTa: 'நாட்கள் வரைபடம் & சாதனைகள்',
+            icon: BarChart3 
+          },
+          { 
             id: 'hisnul_muslim', 
-            labelEn: 'Hisnul Muslim (Fortress of the Muslim)', 
-            labelTa: 'ஹிஸ்னுல் முஸ்லிம் (துஆக்கள்)', 
-            descEn: 'Authentic daily Prophetic supplications',
-            descTa: 'நபிகளாரின் ஆதாரப்பூர்வமான துஆக்கள்',
+            labelEn: 'Hisnul Muslim', 
+            labelTa: 'ஹிஸ்னுல் முஸ்லிம்', 
+            descEn: 'Authentic daily supplications',
+            descTa: 'முஸ்லிமின் கவச துஆக்கள்',
             icon: Shield 
           },
           { 
             id: 'asmaul_husna', 
-            labelEn: '99 Names of Allah (Asmaul Husna)', 
-            labelTa: 'அல்லாஹ்வின் 99 திருநாமங்கள்', 
-            descEn: 'All 99 Divine Attributes & Meanings',
-            descTa: 'முழுமையான 99 பெயர்கள் & விளக்கங்கள்',
+            labelEn: '99 Names of Allah', 
+            labelTa: '99 திருநாமங்கள்', 
+            descEn: 'All 99 Divine Attributes',
+            descTa: 'அல்லாஹ்வின் அழகிய பெயர்கள்',
             icon: Star 
           },
         ].map((tab) => {
@@ -180,12 +190,21 @@ export const ExploreScreen: React.FC = () => {
           </div>
 
           {/* Full Interactive Digital Tasbih Engine */}
-          <DigitalTasbihEngine />
+          <DigitalTasbihEngine onOpenAnalytics={() => setActiveTab('analytics')} />
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 2. 🛡️ OPTION 2: HISNUL MUSLIM (AUTHENTIC FORTRESS OF THE MUSLIM ACCESS)     */}
+      {/* 2. 📊 OPTION 2: DHIKR ANALYTICS, CHARTS & DAILY HISTORY                    */}
+      {/* ========================================================================= */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-6">
+          <DhikrAnalyticsView />
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. 🛡️ OPTION 3: HISNUL MUSLIM (AUTHENTIC FORTRESS OF THE MUSLIM ACCESS)     */}
       {/* ========================================================================= */}
       {activeTab === 'hisnul_muslim' && (
         <div className="space-y-6">
@@ -316,7 +335,7 @@ export const ExploreScreen: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 3. 🌟 OPTION 3: ALL 99 NAMES OF ALLAH (COMPLETE ASMAUL HUSNA GALLERY)       */}
+      {/* 4. 🌟 OPTION 4: ALL 99 NAMES OF ALLAH (COMPLETE ASMAUL HUSNA GALLERY)       */}
       {/* ========================================================================= */}
       {activeTab === 'asmaul_husna' && (
         <div className="space-y-6">

@@ -81,13 +81,13 @@
 - **Floating Hasanat Badges**: Real-time visual reward feedback (`+770 Hasanat`) popping up as verses are recited and marked complete.
 - **Dynamic Juz Progress**: Live calculation of active Juz completion percentages and remaining verses.
 
-### 📿 Interactive Digital Tasbih & Daily Dhikr Studio (with Daily Goals & Explore Hub)
+### 📿 Interactive Digital Tasbih & Dhikr Analytics Engine (with Cloud Sync & Goals)
+- **Target Goal Reflection on All Dhikrs**: Set universal or per-Dhikr custom targets (e.g. 33x, 100x) that reflect across all Dhikrs with individual today progress bars (`todayCount / target`) and an All-Dhikr Completionist milestone.
+- **Dedicated Dhikr Analytics & Multi-Day Trends**: Interactive bar charts (7-day, 14-day, 30-day progression), Dhikr streak tracking (current & best streaks), remembrance distribution share (% of each Dhikr), and unlockable spiritual badges.
+- **Multi-Device Real-Time Cloud Sync**: Real-time broadcast and Supabase cloud persistence for Dhikr counts and logs across phones, tablets, and laptops.
 - **Compact Dashboard Dial**: Fast-access circular counting widget directly on the dashboard displaying live counts, active Dhikr transliteration/Arabic script, and daily goal progress.
-- **Dedicated Explore Hub (`/explore`)**: Positioned prominently in the middle of Quran and Hadith in navigation (Sidebar & BottomNav), featuring the full **Digital Tasbih Studio**, authentic **Prophetic Du'as (*Hisnul Muslim*)**, and **Asmaul Husna (99 Names of Allah)**.
-- **Daily Dhikr Goal & Storage Breakdown**: Set personalized daily targets (100, 300, 500, 1000, or custom) with progress bars, persistent daily history, and detailed breakdown of recitation counts across all Dhikrs.
-- **Authentic Sunnah Presets**: Pre-configured with *SubhanAllah* (33x), *Alhamdulillah* (33x), *Allahu Akbar* (34x), *Astaghfirullah* (100x), *La ilaha illallah*, *Salawat*, and *La hawla*.
-- **Virtues & Citations**: Scholarly citations from *Sahih al-Bukhari*, *Sahih Muslim*, and *Jami` at-Tirmidhi* in English and Tamil.
-- **Sunnah Post-Prayer Loop**: Automatic 33-33-34 cycle progression for post-Salah remembrance with haptic and audio chime feedback.
+- **Dedicated Explore Hub (`/explore`)**: Positioned prominently in the middle of Quran and Hadith in navigation (Sidebar & BottomNav), featuring the full **Digital Tasbih Studio**, **Dhikr Analytics**, authentic **Hisnul Muslim Supplications**, and **Asmaul Husna (All 99 Names of Allah)**.
+- **Authentic Sunnah Presets & Virtues**: Scholarly citations from *Sahih al-Bukhari*, *Sahih Muslim*, and *Jami` at-Tirmidhi* in English and Tamil with post-prayer Sunnah loop (33-33-34).
 
 ### 👤 Modern Profile & Spiritual Repository
 - **Favorite Verses & Hadiths**: Dedicated collection sub-page with categorized filtering (`All`, `Quran`, `Hadiths`) and 1-tap reader navigation.

@@ -47,7 +47,8 @@ export const syncService = {
     userId: string,
     onRemoteDelta: (delta: SessionDelta) => void,
     onRemoteReset?: () => void,
-    onRemoteProfileUpdate?: (profileRow: Record<string, unknown>) => void
+    onRemoteProfileUpdate?: (profileRow: Record<string, unknown>) => void,
+    onRemoteDhikrDelta?: (data: { dhikrId: string; deltaCount: number; dateStr: string }) => void
   ): () => void {
     const currentDeviceId = getDeviceId()
 
@@ -64,6 +65,11 @@ export const syncService = {
           if (data.type === 'reset_stats' && data.userId === userId && data.deviceId !== currentDeviceId) {
             console.log('🔄 Received remote reset_stats via BroadcastChannel')
             onRemoteReset?.()
+            return
+          }
+          if (data.type === 'dhikr_delta' && data.userId === userId && data.deviceId !== currentDeviceId) {
+            console.log('🔄 Received remote dhikr_delta via BroadcastChannel:', data)
+            onRemoteDhikrDelta?.(data)
             return
           }
           const delta = data as SessionDelta
@@ -114,6 +120,17 @@ export const syncService = {
               if (data && data.deviceId !== currentDeviceId) {
                 console.log('📡 Received remote reset_stats via Supabase Realtime')
                 onRemoteReset?.()
+              }
+            }
+          )
+          .on(
+            'broadcast',
+            { event: 'dhikr_delta' },
+            (payload) => {
+              const data = payload.payload as { userId: string; dhikrId: string; deltaCount: number; dateStr: string; deviceId?: string }
+              if (data && data.deviceId !== currentDeviceId) {
+                console.log('📡 Received remote dhikr_delta via Supabase Realtime:', data)
+                onRemoteDhikrDelta?.(data)
               }
             }
           )
@@ -286,5 +303,42 @@ export const syncService = {
 
     saveOfflineQueue([])
     return flushedCount
+  },
+
+  async publishDhikrDelta(
+    userId: string,
+    dhikrId: string,
+    deltaCount: number,
+    dateStr: string
+  ): Promise<void> {
+    const payload = {
+      type: 'dhikr_delta',
+      userId,
+      dhikrId,
+      deltaCount,
+      dateStr,
+      deviceId: getDeviceId(),
+      timestamp: Date.now(),
+    }
+
+    if (broadcastChannel) {
+      try {
+        broadcastChannel.postMessage(payload)
+      } catch {
+        // ignore
+      }
+    }
+
+    if (isConfigured && activeSupabaseChannel) {
+      try {
+        await activeSupabaseChannel.send({
+          type: 'broadcast',
+          event: 'dhikr_delta',
+          payload,
+        })
+      } catch {
+        // ignore
+      }
+    }
   },
 }

@@ -7,6 +7,7 @@ import { supabase, isConfigured } from '../lib/supabase'
 import { calculateDailyStreak, getLocalDateString, type SessionMetrics } from '../lib/hasanatEngine'
 import { syncService, getDeviceId } from '../lib/syncService'
 import { useReadingStore } from './useReadingStore'
+import { useTasbihStore } from './useTasbihStore'
 import { quranCache } from '../lib/quranCache'
 import { logger } from '../lib/logger'
 
@@ -56,6 +57,9 @@ function setupRealtimeSyncForUser(userId: string) {
     },
     (profileRow) => {
       useAuthStore.getState().applyRemoteProfileUpdate(profileRow)
+    },
+    (dhikrDelta) => {
+      useTasbihStore.getState().applyRemoteDhikrDelta(dhikrDelta)
     }
   )
 }
