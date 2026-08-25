@@ -1539,6 +1539,16 @@ export const SettingsScreen: React.FC = () => {
             <span className="text-[10px] text-primary">இமாம் நவவீ</span>
           </div>
           <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
+            <span className="font-bold text-on-surface block">Hisnul Muslim</span>
+            <span className="text-[11px] text-outline block">ஹிஸ்னுல் முஸ்லிம்</span>
+            <span className="text-[10px] text-primary">ஷேக் ஸயீத் அல்-கஹ்தானி</span>
+          </div>
+          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
+            <span className="font-bold text-on-surface block">Asmaul Husna</span>
+            <span className="text-[11px] text-outline block">அல்லாஹ்வின் 99 திருநாமங்கள்</span>
+            <span className="text-[10px] text-primary">Authentic Sahih Quranic Collection</span>
+          </div>
+          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
             <span className="font-bold text-on-surface block">Sunnah.com API</span>
             <span className="text-[11px] text-outline block">திறந்த மூல ஹதீஸ் தளம்</span>
             <span className="text-[10px] text-primary">Global Open Database</span>
