@@ -39,6 +39,9 @@ import { MushafThemeModal } from '../components/MushafThemeModal'
 import { ChapterCompletionModal } from '../components/ChapterCompletionModal'
 import { getArabicTransliteration } from '../lib/transliteration'
 import { countArabicLetters } from '../lib/quranApi'
+import { useQuranAudioStore } from '../store/useQuranAudioStore'
+import { getQariById } from '../lib/qariData'
+import { Play, Pause } from 'lucide-react'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -105,6 +108,13 @@ export const ReadingScreen: React.FC = () => {
   // Auth & Session
   const activeSession = useReadingStore((state) => state.activeSession)
   const startSession = useReadingStore((state) => state.startSession)
+
+  // 🎙️ Multi-Qari Audio Store
+  const audioStore = useQuranAudioStore()
+  const isAudioPlayingCurrentAyah = 
+    audioStore.isPlaying && 
+    audioStore.surahNumber === currentSurahNumber && 
+    audioStore.currentAyahNumberInSurah === currentAyahNumber
   const tickTimer = useReadingStore((state) => state.tickTimer)
   const markAyahRead = useReadingStore((state) => state.markAyahRead)
   const finishSession = useReadingStore((state) => state.finishSession)
@@ -526,6 +536,34 @@ export const ReadingScreen: React.FC = () => {
               தமிழ்
             </div>
           )}
+
+          {/* 🎙️ Quick Listen to Current Ayah by Active Qari */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              if (isAudioPlayingCurrentAyah) {
+                audioStore.pause()
+              } else {
+                audioStore.playSingleAyah(currentSurahNumber, currentAyahNumber)
+              }
+            }}
+            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-sm shrink-0 active:scale-95 ${
+              isAudioPlayingCurrentAyah
+                ? 'bg-primary border-primary text-white shadow-[0_0_15px_rgba(124,58,237,0.5)] animate-pulse'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-primary'
+            }`}
+            title={
+              isAudioPlayingCurrentAyah
+                ? (appLanguage === 'ta' ? 'ஆடியோவை நிறுத்து' : 'Pause Recitation')
+                : `${appLanguage === 'ta' ? getQariById(audioStore.selectedQariId).nameTa : getQariById(audioStore.selectedQariId).nameEn} (${appLanguage === 'ta' ? 'வசனத்தைக் கேட்க' : 'Listen to Ayah'})`
+            }
+          >
+            {isAudioPlayingCurrentAyah ? (
+              <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+            ) : (
+              <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
+            )}
+          </button>
 
           {/* Favorite Button (Heart) */}
           <button

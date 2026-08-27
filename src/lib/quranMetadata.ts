@@ -1,4 +1,5 @@
 import type { SurahSummary, JuzSummary } from '../types/quran'
+import { getAyahAudioUrlByQari, DEFAULT_QARI_ID } from './qariData'
 
 export const SURAH_METADATA: SurahSummary[] = [
   { number: 1, name: 'Al-Fatihah', nameTa: 'அல்-ஃபாத்திஹா', arabicName: 'الفاتحة', englishName: 'Al-Fatihah', englishNameTranslation: 'The Opening', englishNameTranslationTa: 'தோற்றுவாய்', numberOfAyahs: 7, revelationType: 'Meccan', startPage: 1, startJuz: 1 },
@@ -194,10 +195,13 @@ export function getGlobalAyahNumber(surahNumber: number, ayahNumberInSurah: numb
 }
 
 /**
- * 🌟 Get verified CDN audio URL for Sheikh Mishary Rashid Alafasy
- * Guaranteed 100% matched with the correct Surah and Ayah.
+ * 🌟 Get verified CDN audio URL for any Surah and Ayah with a specific Qari
+ * Defaults to Sheikh Mishary Rashid Alafasy.
  */
-export function getAyahAudioUrl(surahNumber: number, ayahNumberInSurah: number): string {
-  const globalNum = getGlobalAyahNumber(surahNumber, ayahNumberInSurah)
-  return `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNum}.mp3`
+export function getAyahAudioUrl(
+  surahNumber: number, 
+  ayahNumberInSurah: number,
+  qariId: string = DEFAULT_QARI_ID
+): string {
+  return getAyahAudioUrlByQari(qariId, surahNumber, ayahNumberInSurah)
 }

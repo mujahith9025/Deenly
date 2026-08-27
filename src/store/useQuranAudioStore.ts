@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { SURAH_METADATA, getAyahAudioUrl, getGlobalAyahNumber } from '../lib/quranMetadata'
+import { getQariById, DEFAULT_QARI_ID } from '../lib/qariData'
 import { quranApi } from '../lib/quranApi'
 import type { SurahDetail } from '../types/quran'
 
@@ -25,6 +26,12 @@ interface QuranAudioState {
   isPlayerVisible: boolean
   isExpanded: boolean
 
+  // 🎙️ Multi-Qari & Hifz Engine
+  selectedQariId: string
+  hifzRepeatCount: number // 1, 3, 5, 10, or Infinity
+  hifzCurrentIteration: number
+  hifzLoopRange: { startAyah: number; endAyah: number } | null
+
   // Active Surah cache
   currentSurahData: SurahDetail | null
   
@@ -46,6 +53,9 @@ interface QuranAudioState {
   setAutoScroll: (autoScroll: boolean) => void
   setRepeatMode: (mode: RepeatMode) => void
   setIsExpanded: (expanded: boolean) => void
+  setQari: (qariId: string) => void
+  setHifzRepeatCount: (count: number) => void
+  setHifzLoopRange: (range: { startAyah: number; endAyah: number } | null) => void
   closePlayer: () => void
   setSurahData: (data: SurahDetail) => void
 }
@@ -59,6 +69,11 @@ function getAudioElement(): HTMLAudioElement {
     globalAudio.preload = 'auto'
   }
   return globalAudio!
+}
+
+const getInitialQariId = (): string => {
+  if (typeof window === 'undefined') return DEFAULT_QARI_ID
+  return localStorage.getItem('deenly_selected_qari') || DEFAULT_QARI_ID
 }
 
 export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
@@ -102,29 +117,52 @@ export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
 
     audio.onended = () => {
       const state = get()
-      const { repeatMode } = state
+      const { repeatMode, hifzRepeatCount, hifzCurrentIteration, hifzLoopRange } = state
 
-      if (repeatMode === 'verse') {
-        audio.currentTime = 0
-        audio.play().catch(console.warn)
-        return
+      // 1. Hifz Verse Repeat (e.g. repeat 3x or 5x or infinite)
+      if (repeatMode === 'verse' || hifzRepeatCount > 1) {
+        if (hifzCurrentIteration < hifzRepeatCount) {
+          set({ hifzCurrentIteration: hifzCurrentIteration + 1 })
+          audio.currentTime = 0
+          audio.play().catch(console.warn)
+          return
+        } else {
+          set({ hifzCurrentIteration: 1 })
+          if (repeatMode === 'verse') {
+            audio.currentTime = 0
+            audio.play().catch(console.warn)
+            return
+          }
+        }
       }
 
-      // Continuous playback: Advance to next Ayah or next Surah
+      // 2. Hifz Custom Range Loop (e.g. Ayah 1 -> Ayah 10)
+      if (hifzLoopRange && state.currentSurahData) {
+        const currentNum = state.currentAyahNumberInSurah
+        if (currentNum >= hifzLoopRange.endAyah) {
+          const startIndex = Math.max(0, hifzLoopRange.startAyah - 1)
+          playAyahInternal(state.currentSurahData, startIndex)
+          return
+        }
+      }
+
+      // 3. Continuous playback: Advance to next Ayah or next Surah
       state.nextAyah()
     }
 
     audio.onerror = (e) => {
       console.warn('Audio playback encountered error:', e)
-      const currentSrc = audio.src
       const state = get()
-      if (currentSrc.includes('cdn.islamic.network') && state.surahNumber > 0 && state.currentAyahNumberInSurah > 0) {
+      const qari = getQariById(state.selectedQariId)
+      if (state.surahNumber > 0 && state.currentAyahNumberInSurah > 0) {
         const s = String(state.surahNumber).padStart(3, '0')
         const a = String(state.currentAyahNumberInSurah).padStart(3, '0')
-        const fallbackUrl = `https://everyayah.com/data/Alafasy_128kbps/${s}${a}.mp3`
-        audio.src = fallbackUrl
-        audio.play().catch(() => set({ isLoadingAudio: false, isPlaying: false }))
-        return
+        const fallbackUrl = `https://everyayah.com/data/${qari.folderName}/${s}${a}.mp3`
+        if (audio.src !== fallbackUrl) {
+          audio.src = fallbackUrl
+          audio.play().catch(() => set({ isLoadingAudio: false, isPlaying: false }))
+          return
+        }
       }
       set({ isLoadingAudio: false, isPlaying: false })
     }
@@ -135,12 +173,13 @@ export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
     if (typeof window === 'undefined' || !('mediaSession' in navigator)) return
 
     const surahMeta = SURAH_METADATA.find(s => s.number === surahNum) || SURAH_METADATA[0]
+    const qari = getQariById(get().selectedQariId)
     
     try {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: `Surah ${surahMeta.name} (${surahMeta.arabicName}) — Ayah ${ayahNumInSurah}/${surahMeta.numberOfAyahs}`,
-        artist: 'Sheikh Mishary Rashid Alafasy',
-        album: `Holy Quran • ${surahMeta.englishNameTranslation} (${surahMeta.revelationType})`,
+        artist: qari.nameEn,
+        album: `Holy Quran • ${qari.styleLabelEn}`,
         artwork: [
           { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
@@ -174,7 +213,8 @@ export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
 
     const safeIndex = Math.max(0, Math.min(ayahs.length - 1, index))
     const ayah = ayahs[safeIndex]
-    const audioUrl = getAyahAudioUrl(surahData.number, ayah.verseNumberInSurah)
+    const currentQari = get().selectedQariId
+    const audioUrl = getAyahAudioUrl(surahData.number, ayah.verseNumberInSurah, currentQari)
     const globalAyahNum = getGlobalAyahNumber(surahData.number, ayah.verseNumberInSurah)
 
     set({
@@ -185,6 +225,7 @@ export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
       currentAyahArabicText: ayah.arabicText,
       currentAyahText: ayah.translations.en || '',
       currentSurahData: surahData,
+      hifzCurrentIteration: 1,
       isLoadingAudio: true,
       isPlayerVisible: true,
     })
@@ -232,10 +273,33 @@ export const useQuranAudioStore = create<QuranAudioState>((set, get) => {
     repeatMode: 'continuous',
     isPlayerVisible: false,
     isExpanded: false,
+    selectedQariId: getInitialQariId(),
+    hifzRepeatCount: 1,
+    hifzCurrentIteration: 1,
+    hifzLoopRange: null,
     currentSurahData: null,
 
     setSurahData: (data: SurahDetail) => {
       set({ currentSurahData: data })
+    },
+
+    setQari: (qariId: string) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('deenly_selected_qari', qariId)
+      }
+      set({ selectedQariId: qariId })
+      const state = get()
+      if (state.currentSurahData && state.isPlayerVisible) {
+        playAyahInternal(state.currentSurahData, state.currentAyahIndex)
+      }
+    },
+
+    setHifzRepeatCount: (count: number) => {
+      set({ hifzRepeatCount: count, hifzCurrentIteration: 1 })
+    },
+
+    setHifzLoopRange: (range: { startAyah: number; endAyah: number } | null) => {
+      set({ hifzLoopRange: range })
     },
 
     playSurah: async (surahNum: number, startAyahNumberInSurah = 1) => {

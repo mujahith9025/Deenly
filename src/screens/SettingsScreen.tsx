@@ -23,12 +23,17 @@ import {
   BookOpen,
   Award,
   Volume2,
-  Smartphone
+  Smartphone,
+  Mic,
+  Play,
+  Pause
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthStore } from '../store/useAuthStore'
 import { useThemeStore } from '../store/useThemeStore'
 import { useReadingStore } from '../store/useReadingStore'
+import { useQuranAudioStore } from '../store/useQuranAudioStore'
+import { QARI_LIST, getQariById, type QariStyle } from '../lib/qariData'
 import { syncService } from '../lib/syncService'
 import { quranCache } from '../lib/quranCache'
 import { QURAN_FONT_STYLES, getArabicFontFamily, getArabicFontMeta, type ArabicFontStyle } from '../lib/quranFonts'
@@ -48,6 +53,7 @@ import { getArabicTransliteration } from '../lib/transliteration'
 type SettingCategory = 
   | 'language'
   | 'theme' 
+  | 'audio_qari'
   | 'translation' 
   | 'transliteration'
   | 'font' 
@@ -122,6 +128,18 @@ export const SettingsScreen: React.FC = () => {
   const currentGoal = user?.dailyGoalVerses || 10
   const prayerAlerts = user?.prayerNotifications !== false
   const readingAlerts = user?.readingReminders !== false
+
+  // 🎙️ Qari Audio Store Hooks
+  const selectedQariId = useQuranAudioStore((state) => state.selectedQariId)
+  const setQari = useQuranAudioStore((state) => state.setQari)
+  const playbackRate = useQuranAudioStore((state) => state.playbackRate)
+  const setPlaybackRate = useQuranAudioStore((state) => state.setPlaybackRate)
+  const hifzRepeatCount = useQuranAudioStore((state) => state.hifzRepeatCount)
+  const setHifzRepeatCount = useQuranAudioStore((state) => state.setHifzRepeatCount)
+
+  const [settingsQariFilter, setSettingsQariFilter] = useState<'all' | QariStyle>('all')
+  const [settingsPreviewQariId, setSettingsPreviewQariId] = useState<string | null>(null)
+  const settingsPreviewAudioRef = React.useRef<HTMLAudioElement | null>(null)
 
   const handleAppLanguageChange = (lang: AppLanguage) => {
     setAppLanguage(lang)
@@ -467,6 +485,282 @@ export const SettingsScreen: React.FC = () => {
                     : 'In the Name of Allah, the Most Gracious, the Most Merciful.'}
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // 1.5 Qari Voice & Audio Engine Section
+  const renderAudioQariSection = () => {
+    const activeQari = getQariById(selectedQariId)
+    const filteredQaris = QARI_LIST.filter(
+      (q) => settingsQariFilter === 'all' || q.style === settingsQariFilter
+    )
+
+    const handlePreviewAudio = (qariId: string, e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (settingsPreviewQariId === qariId) {
+        if (settingsPreviewAudioRef.current) {
+          settingsPreviewAudioRef.current.pause()
+          setSettingsPreviewQariId(null)
+        }
+        return
+      }
+
+      const q = getQariById(qariId)
+      if (settingsPreviewAudioRef.current) {
+        settingsPreviewAudioRef.current.pause()
+      }
+      const sampleUrl = `https://everyayah.com/data/${q.folderName}/001001.mp3`
+      const audio = new Audio(sampleUrl)
+      settingsPreviewAudioRef.current = audio
+      setSettingsPreviewQariId(qariId)
+
+      audio.play().catch(console.warn)
+      audio.onended = () => setSettingsPreviewQariId(null)
+      audio.onerror = () => setSettingsPreviewQariId(null)
+    }
+
+    return (
+      <div className="space-y-7 animate-fade-in">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+            {appLanguage === 'ta' ? 'காரீ ஓதுபவர் & ஆடியோ இன்ஜின்' : 'Quran Reciter & Audio Engine'}
+          </h2>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+            {appLanguage === 'ta'
+              ? '13 அங்கீகரிக்கப்பட்ட உலகப் புகழ்பெற்ற காரீக்கள், ஓதும் வேகம் மற்றும் மனன சுழற்சி அமைப்புகள்.'
+              : 'Choose your default authentic Qari, adjust playback speed (0.75x–2.0x), and set Hifz repeat loops.'}
+          </p>
+        </div>
+
+        {/* 🌟 Active Qari Spotlight Card */}
+        <div className="p-6 sm:p-7 rounded-3xl glass-card border border-primary/40 bg-surface-container-low/90 shadow-xl space-y-4 relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-14 h-14 rounded-2xl bg-surface-container-high border border-primary/30 flex items-center justify-center text-3xl shadow-inner shrink-0">
+                <span>{activeQari.flag}</span>
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base sm:text-lg font-bold text-on-surface">
+                    {appLanguage === 'ta' ? activeQari.nameTa : activeQari.nameEn}
+                  </h3>
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
+                    {appLanguage === 'ta' ? activeQari.badgeTa : activeQari.badgeEn}
+                  </span>
+                </div>
+                <p className="text-xs text-primary font-semibold">
+                  {appLanguage === 'ta' ? activeQari.styleLabelTa : activeQari.styleLabelEn} • {activeQari.bitrate}
+                </p>
+                <p className="text-[11px] text-outline font-arabic" dir="rtl">{activeQari.nameAr}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={(e) => handlePreviewAudio(activeQari.id, e)}
+              className={`px-4 py-2.5 rounded-2xl border text-xs font-bold flex items-center gap-2 transition cursor-pointer self-start sm:self-center shrink-0 ${
+                settingsPreviewQariId === activeQari.id
+                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 animate-pulse'
+                  : 'primary-gradient-btn text-white shadow-md hover:scale-105'
+              }`}
+            >
+              {settingsPreviewQariId === activeQari.id ? (
+                <>
+                  <Pause className="w-4 h-4 fill-current" />
+                  <span>{appLanguage === 'ta' ? 'ஒலிக்கிறது...' : 'Playing Sample...'}</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>{appLanguage === 'ta' ? 'மாதிரி கேட்க' : 'Play Sample Audio'}</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <p className="text-xs text-on-surface-variant leading-relaxed pt-1 border-t border-outline-variant/20">
+            {appLanguage === 'ta' ? activeQari.descriptionTa : activeQari.descriptionEn}
+          </p>
+        </div>
+
+        {/* 🌟 13 World-Renowned Qaris Grid */}
+        <div className="space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <span className="text-xs sm:text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps flex items-center gap-1.5">
+              <Mic className="w-4 h-4 text-primary" />
+              <span>{appLanguage === 'ta' ? 'அனைத்து காரீக்கள்' : 'All World-Renowned Reciters'}</span>
+            </span>
+
+            {/* Filter pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+              {[
+                { id: 'all', label: appLanguage === 'ta' ? 'அனைத்தும் (13)' : 'All (13)' },
+                { id: 'murattal', label: appLanguage === 'ta' ? 'முரத்தல்' : 'Murattal' },
+                { id: 'haramain', label: appLanguage === 'ta' ? 'ஹரமைன்' : 'Makkah Imams' },
+                { id: 'mujawwad', label: appLanguage === 'ta' ? 'முஜவ்வத்' : 'Mujawwad' },
+                { id: 'teaching', label: appLanguage === 'ta' ? 'கற்றல்' : 'Teaching' },
+                { id: 'emotional', label: appLanguage === 'ta' ? 'உணர்வு' : 'Emotional' },
+              ].map((chip) => (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => setSettingsQariFilter(chip.id as any)}
+                  className={`px-3 py-1 rounded-full font-bold whitespace-nowrap transition cursor-pointer border ${
+                    settingsQariFilter === chip.id
+                      ? 'bg-primary text-white border-primary shadow-xs'
+                      : 'bg-surface-container/70 border-outline-variant/30 text-outline hover:text-on-surface hover:border-primary/40'
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {filteredQaris.map((q) => {
+              const isSelected = selectedQariId === q.id
+              const isPreviewing = settingsPreviewQariId === q.id
+
+              return (
+                <div
+                  key={q.id}
+                  onClick={() => setQari(q.id)}
+                  className={`p-4 sm:p-5 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-3 ${
+                    isSelected
+                      ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
+                      : 'glass-card border-outline-variant/30 hover:border-primary/40'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-surface-container-high border border-outline-variant/30 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                          <span>{q.flag}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-sm sm:text-base font-bold text-on-surface block">
+                              {appLanguage === 'ta' ? q.nameTa : q.nameEn}
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                              {appLanguage === 'ta' ? q.badgeTa : q.badgeEn}
+                            </span>
+                          </div>
+                          <span className="text-xs text-outline font-medium block">
+                            {q.country} • {q.bitrate}
+                          </span>
+                        </div>
+                      </div>
+
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shrink-0 shadow-sm">
+                          <Check className="w-3.5 h-3.5" />
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-on-surface-variant leading-relaxed">
+                      {appLanguage === 'ta' ? q.descriptionTa : q.descriptionEn}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-outline-variant/20 flex items-center justify-between">
+                    <span className="font-arabic text-xs text-outline" dir="rtl">{q.nameAr}</span>
+
+                    <button
+                      type="button"
+                      onClick={(e) => handlePreviewAudio(q.id, e)}
+                      className={`px-3 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                        isPreviewing
+                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 animate-pulse'
+                          : 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface hover:border-primary/40'
+                      }`}
+                    >
+                      {isPreviewing ? (
+                        <>
+                          <Pause className="w-3 h-3 fill-current" />
+                          <span>Previewing</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3 h-3 fill-current" />
+                          <span>Preview</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 🌟 Audio Controls: Playback Speed & Hifz Loop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Playback Speed Card */}
+          <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+                {appLanguage === 'ta' ? 'ஓதும் வேகம்' : 'Default Playback Speed'}
+              </span>
+              <span className="text-xs font-mono font-bold text-primary">{playbackRate}x</span>
+            </div>
+
+            <div className="grid grid-cols-5 gap-1.5 pt-1">
+              {[0.75, 1.0, 1.25, 1.5, 2.0].map((spd) => (
+                <button
+                  key={spd}
+                  type="button"
+                  onClick={() => setPlaybackRate(spd)}
+                  className={`py-2 rounded-xl text-xs font-bold font-mono transition cursor-pointer border text-center ${
+                    playbackRate === spd
+                      ? 'primary-gradient-btn text-white shadow-sm'
+                      : 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface hover:border-primary/40'
+                  }`}
+                >
+                  {spd}x
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Hifz Repeat Preset Card */}
+          <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+                {appLanguage === 'ta' ? 'மனன சுழற்சி (Hifz Repeat)' : 'Hifz Memorization Repeats'}
+              </span>
+              <span className="text-xs font-bold text-primary">
+                {hifzRepeatCount === Infinity ? '∞ Loop' : hifzRepeatCount === 1 ? '1x (Off)' : `${hifzRepeatCount}x`}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-5 gap-1.5 pt-1">
+              {[
+                { val: 1, label: '1x' },
+                { val: 3, label: '3x' },
+                { val: 5, label: '5x' },
+                { val: 10, label: '10x' },
+                { val: Infinity, label: '∞' },
+              ].map((rpt) => (
+                <button
+                  key={rpt.label}
+                  type="button"
+                  onClick={() => setHifzRepeatCount(rpt.val)}
+                  className={`py-2 rounded-xl text-xs font-bold transition cursor-pointer border text-center ${
+                    hifzRepeatCount === rpt.val
+                      ? 'primary-gradient-btn text-white shadow-sm'
+                      : 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface hover:border-primary/40'
+                  }`}
+                >
+                  {rpt.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -1587,6 +1881,8 @@ export const SettingsScreen: React.FC = () => {
         return renderLanguageSection()
       case 'theme':
         return renderThemeSection()
+      case 'audio_qari':
+        return renderAudioQariSection()
       case 'translation':
         return renderTranslationSection()
       case 'transliteration':
@@ -1609,6 +1905,7 @@ export const SettingsScreen: React.FC = () => {
   }
 
   const activeFontMeta = getArabicFontMeta(currentFontStyle)
+  const activeQariInfo = getQariById(selectedQariId)
 
   // Array of categories for navigation (Crisp & Short Descriptions)
   const categories: Array<{ id: SettingCategory; label: string; icon: any; desc: string }> = [
@@ -1623,6 +1920,12 @@ export const SettingsScreen: React.FC = () => {
       label: t('themeAppearance'), 
       icon: theme === 'dark' ? Moon : Sun, 
       desc: `${theme.charAt(0).toUpperCase() + theme.slice(1)} • ${appLanguage === 'ta' ? (MUSHAF_THEMES[currentMushafTheme]?.nameTa || 'முஸ்ஹஃப்') : (MUSHAF_THEMES[currentMushafTheme]?.nameEn || 'Mushaf')}` 
+    },
+    { 
+      id: 'audio_qari', 
+      label: appLanguage === 'ta' ? 'காரீ ஓதுபவர் & ஆடியோ' : 'Quran Reciter & Audio', 
+      icon: Mic, 
+      desc: `${activeQariInfo.flag} ${activeQariInfo.nameEn.split(' ').slice(-1)[0]} • ${playbackRate}x` 
     },
     { 
       id: 'translation', 

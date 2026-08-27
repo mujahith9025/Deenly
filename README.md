@@ -74,7 +74,22 @@
   - 🇮🇳 / 🇱🇰 **Tamil Translations (தமிழ்)**:
     - **மௌலானா ஏ.கே. அப்துல் ஹமீது பாகவி** (*Allama A.K. Abdul Hameed Baqavi* — Default Tamil)
     - **ஜான் டிரஸ்ட் பதிப்பு** (*Jan Trust Foundation* — King Fahd Complex Madinah Official Edition)
-- **Mini Floating Dynamic Island Quran Audio Player**: A sleek Apple Dynamic Island / Spotify-style floating capsule hovering gracefully over all pages with live animated sound waves, continuous verse-by-verse recitation by Sheikh Mishary Rashid Alafasy, integrated bottom scrubber track, quick skip/play touch controls, MediaSession background lock screen controls, and an expandable fullscreen immersive recitation modal.
+- **🎙️ Advanced Audio & Multi-Qari Engine (13 World-Renowned Reciters & Hifz Repeats)**:
+  - **13 Authentic Global Reciters**: Seamless high-definition (128kbps – 192kbps HQ) audio streaming via EveryAyah and QuranCDN across 5 distinct recitation styles:
+    - 🇰🇼 **Sheikh Mishary Rashid Alafasy** (*Murattal / Modern Studio — Default*)
+    - 🇪🇬 **Sheikh Abdul Basit Abdul Samad** (*Classical Mujawwad & Murattal*)
+    - 🇪🇬 **Sheikh Mahmoud Khalil Al-Husary** (*Master Tajweed Murattal & Muallim Teaching Mode*)
+    - 🇪🇬 **Sheikh Mohamed Siddiq Al-Minshawi** (*Legendary Mujawwad & Emotional Murattal*)
+    - 🇸🇦 **Sheikh Abdur-Rahman As-Sudais** (*Grand Mosque Makkah Haramain Imam*)
+    - 🇸🇦 **Sheikh Saud Al-Shuraim** (*Former Makkah Haramain Chief Imam*)
+    - 🇸🇦 **Sheikh Maher Al-Muaiqly** (*Masjid al-Haram Imam — Heart-touching*)
+    - 🇸🇦 **Sheikh Abu Bakr Al-Shatri** (*Calm Studio Murattal*)
+    - 🇸🇦 **Sheikh Saad Al-Ghamadi** (*Warm, Soul-Stirring Recitation*)
+    - 🇸🇦 **Sheikh Hani Ar-Rifai** (*Deep Emotional Tearful Recitation*)
+  - **🔁 Hifz Memorization Loop Engine**: Built-in repetition counter cycling between `1x (Off)`, `3x`, `5x`, `10x`, and `∞ (Infinite Continuous Loop)` for effortless Quran memorization.
+  - **⚡ Variable Playback Speed Control**: Instant pitch-preserved speed switching (`0.75x`, `1.0x`, `1.25x`, `1.5x`, `2.0x`).
+  - **🎵 Mini Floating Dynamic Island & Fullscreen Spotify-Style Player**: Sleek pill hovering with animated sound equalizer, scrubber bar, quick touch controls, Qari picker modal with live sample previews, and system MediaSession background lockscreen integration.
+  - **🔘 1-Tap Verse Recitation**: Instant 1-tap verse audio triggers embedded in both the 1-Verse Quran Reader header and the 114-Chapter Explorer list.
 - **Offline-First Storage**: IndexedDB caching layer (`deenly_quran_cache`) ensuring chapters load instantly even without an internet connection.
 
 ### 📜 The Six Canonical Hadith Collections (Kutub al-Sittah)
@@ -203,8 +218,8 @@ Deenly draws profound inspiration and architectural reference from the pioneerin
 - **Al-Arba'in an-Nawawiyyah** (*Imam Yahya ibn Sharaf an-Nawawi*)
 - *Hadith Data Source*: Sunnah.com API & verified open Hadith databases with English and authentic Tamil translations.
 
-### 🎙️ Audio Recitation & Calligraphy Fonts
-- **Reciter**: *Sheikh Mishary Rashid Alafasy* (الشيخ مشاري بن راشد العفاسي) — Crystal-clear verse-by-verse and full-chapter recitations hosted via EveryAyah.com & QuranCDN.
+### 🎙️ Audio Reciters & Calligraphy Fonts
+- **13 Global Reciters**: *Sheikh Mishary Rashid Alafasy*, *Sheikh Abdul Basit Abdul Samad*, *Sheikh Mahmoud Khalil Al-Husary*, *Sheikh Mohamed Siddiq Al-Minshawi*, *Sheikh Abdur-Rahman As-Sudais*, *Sheikh Saud Al-Shuraim*, *Sheikh Maher Al-Muaiqly*, *Sheikh Abu Bakr Al-Shatri*, *Sheikh Saad Al-Ghamadi*, and *Sheikh Hani Ar-Rifai* via EveryAyah.com & QuranCDN.
 - **Sacred Fonts**: King Fahd Complex Uthmanic Script, *Amiri & Amiri Quran* (Dr. Khaled Hosny / Google Fonts), *Scheherazade New* (SIL International), *Lateef* (SIL International), *Noto Naskh Arabic & Noto Kufi Arabic* (Google Fonts), and *Noto Sans Tamil* (Google Fonts).
 
 ---

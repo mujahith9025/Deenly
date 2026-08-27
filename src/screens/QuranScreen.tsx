@@ -21,6 +21,7 @@ import { useReadingStore } from '../store/useReadingStore'
 import { useBookmarkStore } from '../store/useBookmarkStore'
 import { useFavoriteStore } from '../store/useFavoriteStore'
 import { useQuranAudioStore } from '../store/useQuranAudioStore'
+import { getQariById } from '../lib/qariData'
 import type { SurahDetail, Ayah } from '../types/quran'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { 
@@ -573,7 +574,11 @@ export const QuranScreen: React.FC = () => {
                                 ? 'bg-primary text-white border-primary shadow-md animate-pulse'
                                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/40 text-on-surface'
                             }`}
-                            title={isCurrentlyReciting ? (appLanguage === 'ta' ? 'நிறுத்து' : 'Pause recitation') : (appLanguage === 'ta' ? 'மிஷாரி ராஷித் அல்-அஃபாஸியின் ஓதுதலைக் கேளுங்கள்' : 'Play verse recitation by Mishary Rashid Alafasy')}
+                            title={
+                              isCurrentlyReciting
+                                ? (appLanguage === 'ta' ? 'நிறுத்து' : 'Pause recitation')
+                                : `${appLanguage === 'ta' ? getQariById(audioStore.selectedQariId).nameTa : getQariById(audioStore.selectedQariId).nameEn} (${appLanguage === 'ta' ? 'ஓதுதலைக் கேட்க' : 'Play verse'})`
+                            }
                           >
                             {isCurrentlyReciting ? (
                               <Pause className="w-3.5 h-3.5" />
