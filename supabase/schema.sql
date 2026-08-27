@@ -1,12 +1,12 @@
 -- ==============================================================================
--- 🌙 DEENLY POSTGRESQL SCHEMA FOR SUPABASE (Safe & Re-runnable)
+-- 🌙 DEENLY POSTGRESQL SCHEMA FOR SUPABASE (Hardened & Re-runnable)
 -- Copy and paste all of this into the Supabase SQL Editor and click "Run"
 -- ==============================================================================
 
 -- 1. Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. Create the User Profiles Table
+-- 2. Create the User Profiles Table with Constraints
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   uid TEXT NOT NULL,
@@ -14,13 +14,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email TEXT NOT NULL,
   photo_url TEXT,
   preferred_translation TEXT DEFAULT 'english',
-  daily_goal_verses INTEGER DEFAULT 10,
-  hasanat BIGINT DEFAULT 0,
-  verses INTEGER DEFAULT 0,
-  time INTEGER DEFAULT 0, -- Total reading time in seconds
-  pages INTEGER DEFAULT 0,
-  current_streak INTEGER DEFAULT 0,
-  best_streak INTEGER DEFAULT 0,
+  daily_goal_verses INTEGER DEFAULT 10 CHECK (daily_goal_verses > 0),
+  hasanat BIGINT DEFAULT 0 CHECK (hasanat >= 0),
+  verses INTEGER DEFAULT 0 CHECK (verses >= 0),
+  time INTEGER DEFAULT 0 CHECK (time >= 0), -- Total reading time in seconds
+  pages INTEGER DEFAULT 0 CHECK (pages >= 0),
+  current_streak INTEGER DEFAULT 0 CHECK (current_streak >= 0),
+  best_streak INTEGER DEFAULT 0 CHECK (best_streak >= 0),
   last_read_surah INTEGER DEFAULT 1,
   last_read_ayah INTEGER DEFAULT 1,
   last_read_at TIMESTAMPTZ,
@@ -28,10 +28,10 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. Enable Row Level Security (RLS)
+-- 3. Enable Row Level Security (RLS) - Mandatory
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- 4. Clean and Recreate Security Policies (Safe)
+-- 4. Clean and Recreate Row Level Security Policies (Strict User Isolation)
 DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
 CREATE POLICY "Users can view their own profile"
   ON public.profiles
@@ -48,7 +48,8 @@ DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
 CREATE POLICY "Users can update their own profile"
   ON public.profiles
   FOR UPDATE
-  USING (auth.uid() = id);
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 DROP POLICY IF EXISTS "Users can delete their own profile" ON public.profiles;
 CREATE POLICY "Users can delete their own profile"
@@ -56,9 +57,13 @@ CREATE POLICY "Users can delete their own profile"
   FOR DELETE
   USING (auth.uid() = id);
 
--- 5. Auto-Create Profile on Signup Trigger
+-- 5. Auto-Create Profile on Signup Trigger (Hardened with Search Path)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
 BEGIN
   INSERT INTO public.profiles (
     id,
@@ -97,7 +102,7 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Drop and recreate the trigger
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -118,7 +123,7 @@ BEGIN
   END IF;
 END $$;
 
--- 7. Additive Incremental Merge Function for Multi-Device Concurrency
+-- 7. Additive Incremental Merge Function (Hardened with Validation & Search Path)
 CREATE OR REPLACE FUNCTION public.increment_user_stats(
   delta_hasanat BIGINT,
   delta_verses INTEGER,
@@ -127,8 +132,17 @@ CREATE OR REPLACE FUNCTION public.increment_user_stats(
   surah_num INTEGER,
   ayah_num INTEGER
 )
-RETURNS VOID AS $$
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
 BEGIN
+  -- Strict sanitization: Disallow negative increments to prevent underflow manipulation
+  IF delta_hasanat < 0 OR delta_verses < 0 OR delta_time < 0 OR delta_pages < 0 THEN
+    RAISE EXCEPTION 'Negative delta values are not permitted for security reasons';
+  END IF;
+
   UPDATE public.profiles
   SET
     hasanat = hasanat + delta_hasanat,
@@ -141,4 +155,4 @@ BEGIN
     updated_at = NOW()
   WHERE id = auth.uid();
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
