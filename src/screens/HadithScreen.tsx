@@ -210,23 +210,23 @@ export const HadithScreen: React.FC = () => {
       {viewMode === 'books' && (
         <div className="space-y-6 animate-fade-in">
           {/* Header Banner */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl cosmic-gradient border border-outline-variant/30 relative overflow-hidden shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-7 rounded-3xl cosmic-gradient border border-outline-variant/30 relative overflow-hidden shadow-xl">
             <div className="space-y-2 relative z-10">
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-bold tracking-wider font-label-caps uppercase">
-                  {appLanguage === 'ta' ? 'அல்-குதுப் அல்-சித்தா' : 'Kutub al-Sittah'}
+                  {appLanguage === 'ta' ? 'குதுப் அல்-சித்தா' : 'Kutub al-Sittah'}
                 </span>
                 <span className="text-xs text-tertiary font-bold flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> {appLanguage === 'ta' ? 'நம்பகமான நபிமொழித் தொகுப்புகள்' : 'Authentic Collections'}
+                  <ShieldCheck className="w-3.5 h-3.5" /> {appLanguage === 'ta' ? 'ஸஹீஹ் தொகுப்புகள்' : 'Authentic Sunnah'}
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-h1 text-on-surface">
-                {appLanguage === 'ta' ? 'ஆறு முக்கிய நபிமொழி நூல்கள்' : 'The Six Major Books of Hadith'}
+                {appLanguage === 'ta' ? 'ஆறு முக்கிய நபிமொழி நூல்கள்' : 'The Six Books of Hadith'}
               </h1>
-              <p className="text-xs sm:text-sm text-on-surface-variant max-w-2xl leading-relaxed">
+              <p className="text-xs sm:text-sm text-on-surface-variant max-w-2xl font-medium leading-relaxed">
                 {appLanguage === 'ta' 
-                  ? 'நபி (ஸல்) அவர்களின் சொல், செயல் மற்றும் அங்கீகாரங்களை அரபு மூலம் மற்றும் தமிழ் மொழிபெயர்ப்புடன் வாசியுங்கள்.' 
-                  : 'Explore the verified words, actions, and approvals of the Prophet Muhammad (ﷺ) with authentic Arabic text and English & Tamil translations.'}
+                  ? 'நபி (ஸல்) அவர்களின் சொல், செயல் மற்றும் அங்கீகாரங்கள் (அரபு மூலம் & தமிழ் விளக்கம்).' 
+                  : 'Authentic traditions of the Prophet (ﷺ) with Arabic script and English & Tamil translations.'}
               </p>
             </div>
 
@@ -235,7 +235,7 @@ export const HadithScreen: React.FC = () => {
               <p className="font-noto-serif text-2xl lg:text-3xl text-primary-fixed-dim" dir="rtl">
                 كُتُبُ السِّتَّةِ النَّبَوِيَّة
               </p>
-              <p className="text-[11px] text-outline mt-1 font-medium">Sahih Bukhari, Muslim, Tirmidhi & Sunan</p>
+              <p className="text-[11px] text-outline mt-1 font-medium">Bukhari, Muslim, Tirmidhi, Abu Dawood, Nasai & Ibn Majah</p>
             </div>
           </div>
 
@@ -247,7 +247,7 @@ export const HadithScreen: React.FC = () => {
               placeholder={appLanguage === 'ta' ? 'நபிமொழி நூல்கள், ஆசிரியர்கள் அல்லது தலைப்புகளைத் தேடுக...' : 'Search Hadith books, authors, or topics...'}
               value={bookSearchQuery}
               onChange={(e) => setBookSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-surface-container border border-outline-variant/30 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition shadow-sm"
+              className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/30 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition shadow-sm"
             />
           </div>
 
@@ -257,15 +257,15 @@ export const HadithScreen: React.FC = () => {
               <div
                 key={book.id}
                 onClick={() => handleSelectBook(book)}
-                className="p-6 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/60 transition-all duration-300 cursor-pointer group flex flex-col justify-between space-y-4 shadow-md hover:-translate-y-1 hover:shadow-xl relative overflow-hidden"
+                className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/60 transition-all duration-300 cursor-pointer group flex flex-col justify-between space-y-3.5 shadow-md hover:-translate-y-1 hover:shadow-xl relative overflow-hidden"
               >
                 {/* Decorative Top Pill & Arabic Title */}
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full bg-surface-container-high text-primary border border-outline-variant/30 font-bold uppercase tracking-wider font-label-caps">
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary border border-outline-variant/30 font-bold uppercase tracking-wider font-label-caps">
                       {appLanguage === 'ta' ? (book.gradeTa ? book.gradeTa.split(' ')[0] : book.grade.split(' ')[0]) : book.grade.split(' ')[0]}
                     </span>
-                    <h2 className="text-lg font-bold text-on-surface group-hover:text-primary transition mt-2 font-h2">
+                    <h2 className="text-lg font-bold text-on-surface group-hover:text-primary transition mt-1.5 font-h2">
                       {appLanguage === 'ta' ? (book.nameTa || book.name) : book.name}
                     </h2>
                     <p className="text-xs text-on-surface-variant font-medium mt-0.5">
@@ -287,7 +287,7 @@ export const HadithScreen: React.FC = () => {
                 <div className="pt-3 border-t border-outline-variant/20 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[11px] text-on-surface-variant font-mono">
                     <span className="px-2 py-0.5 rounded-lg bg-surface-container text-outline">
-                      {book.totalChapters} {appLanguage === 'ta' ? 'அத்தியாயங்கள்' : 'Ch.'}
+                      {book.totalChapters} {appLanguage === 'ta' ? 'அத்தியாயம்' : 'Ch.'}
                     </span>
                     <span className="px-2 py-0.5 rounded-lg bg-surface-container text-tertiary font-bold">
                       {book.totalHadiths.toLocaleString()} {appLanguage === 'ta' ? 'ஹதீஸ்கள்' : 'Hadiths'}
@@ -318,7 +318,7 @@ export const HadithScreen: React.FC = () => {
               className="inline-flex items-center gap-2 text-xs font-bold text-outline hover:text-primary transition cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>{appLanguage === 'ta' ? 'அனைத்து நபிமொழி நூல்களுக்கும் திரும்புக' : 'Back to All Hadith Books'}</span>
+              <span>{appLanguage === 'ta' ? 'அனைத்து நூல்களுக்கும் திரும்புக' : 'Back to All Books'}</span>
             </button>
 
             <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
@@ -332,7 +332,7 @@ export const HadithScreen: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold font-h1 text-on-surface mt-1">
                   {appLanguage === 'ta' ? (selectedBook.nameTa || selectedBook.name) : selectedBook.name}
                 </h1>
-                <p className="text-xs text-on-surface-variant mt-0.5">
+                <p className="text-xs text-on-surface-variant mt-0.5 font-medium">
                   {appLanguage === 'ta' ? (selectedBook.descriptionTa || selectedBook.description) : selectedBook.description}
                 </p>
               </div>
@@ -439,8 +439,8 @@ export const HadithScreen: React.FC = () => {
               <ArrowLeft className="w-4 h-4" />
               <span>
                 {appLanguage === 'ta' 
-                  ? `${selectedBook.nameTa || selectedBook.name} அத்தியாயங்களுக்குத் திரும்புக` 
-                  : `Back to ${selectedBook.name} Chapters`}
+                  ? 'அத்தியாயங்களுக்குத் திரும்புக' 
+                  : 'Back to Chapters'}
               </span>
             </button>
 
@@ -467,7 +467,7 @@ export const HadithScreen: React.FC = () => {
                       : 'text-on-surface-variant hover:text-on-surface'
                   }`}
                 >
-                  தமிழ் (Tamil)
+                  தமிழ்
                 </button>
                 <button
                   type="button"
@@ -517,10 +517,10 @@ export const HadithScreen: React.FC = () => {
                   {selectedChapter.arabicTitle}
                 </p>
               )}
-              <p className="text-xs text-outline">
+              <p className="text-xs text-outline font-medium">
                 {appLanguage === 'ta' 
-                  ? `இந்த அத்தியாயத்தில் உள்ள ${hadiths.length || selectedChapter.hadithCount || 0} நபிமொழிகள்` 
-                  : `Showing ${hadiths.length || selectedChapter.hadithCount || 0} traditions in this chapter`}
+                  ? `${hadiths.length || selectedChapter.hadithCount || 0} நபிமொழிகள்` 
+                  : `Showing ${hadiths.length || selectedChapter.hadithCount || 0} traditions`}
               </p>
             </div>
 
@@ -556,7 +556,7 @@ export const HadithScreen: React.FC = () => {
           {isLoadingHadiths ? (
             <div className="p-16 text-center space-y-3">
               <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-              <p className="text-xs text-on-surface-variant">
+              <p className="text-xs text-on-surface-variant font-medium">
                 {appLanguage === 'ta' ? 'புனித நபிமொழிகள் ஏற்றப்படுகின்றன...' : 'Loading sacred traditions...'}
               </p>
             </div>
@@ -567,7 +567,7 @@ export const HadithScreen: React.FC = () => {
                 {appLanguage === 'ta' ? 'இந்த அத்தியாயத்தில் ஹதீஸ்கள் எதுவும் கிடைக்கவில்லை' : 'No Hadiths found for this chapter'}
               </p>
               <p className="text-xs text-outline">
-                {appLanguage === 'ta' ? 'தயவுசெய்து மற்றொரு அத்தியாயத்தைத் தேர்ந்தெடுக்கவும் அல்லது இணைப்பைச் சரிபார்க்கவும்.' : 'Please select another chapter or check connection.'}
+                {appLanguage === 'ta' ? 'தயவுசெய்து மற்றொரு அத்தியாயத்தைத் தேர்ந்தெடுக்கவும்.' : 'Please select another chapter or check connection.'}
               </p>
             </div>
           ) : (
@@ -591,11 +591,11 @@ export const HadithScreen: React.FC = () => {
                     <div className="flex items-center justify-between gap-3 pb-3 border-b border-outline-variant/20">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="px-3 py-1 rounded-full bg-primary/15 text-primary border border-primary/30 text-xs font-mono font-bold">
-                          {appLanguage === 'ta' ? `ஹதீஸ் எண் #${h.hadithNumber}` : `Hadith #${h.hadithNumber}`}
+                          {appLanguage === 'ta' ? `ஹதீஸ் #${h.hadithNumber}` : `Hadith #${h.hadithNumber}`}
                         </span>
 
                         <span className="text-[11px] text-outline font-mono">
-                          {appLanguage === 'ta' ? `நூல் ${h.referenceBook}, ஹதீஸ் ${h.referenceHadith}` : `Book ${h.referenceBook}, Hadith ${h.referenceHadith}`}
+                          {appLanguage === 'ta' ? `நூல் ${h.referenceBook}, எண் ${h.referenceHadith}` : `Book ${h.referenceBook}, Hadith ${h.referenceHadith}`}
                         </span>
 
                         {h.grades && h.grades.length > 0 && (
@@ -663,7 +663,7 @@ export const HadithScreen: React.FC = () => {
                         <div className="space-y-1">
                           {effectiveLanguageMode === 'dual' && (
                             <span className="text-[10px] uppercase font-bold text-outline font-label-caps tracking-wider block">
-                              English Translation (Sahih International / Darussalam)
+                              English • Darussalam
                             </span>
                           )}
                           <p className="font-sans text-sm sm:text-base text-on-surface-variant leading-relaxed font-normal">
@@ -677,7 +677,7 @@ export const HadithScreen: React.FC = () => {
                         <div className="space-y-1 pt-1 border-t border-outline-variant/10">
                           {effectiveLanguageMode === 'dual' && (
                             <span className="text-[10px] uppercase font-bold text-tertiary font-label-caps tracking-wider block">
-                              தமிழ் மொழிபெயர்ப்பு (Tamil Translation)
+                              தமிழ் • மொழிபெயர்ப்பு
                             </span>
                           )}
                           <p className="font-sans text-sm sm:text-base text-on-surface leading-relaxed font-normal">
