@@ -147,7 +147,7 @@
 - **Quran Reading Screen (`/reading`)**: Enlarged fixed header & footer with monospace timer, letter rewards, dynamic font-size scrolling down to 54px, and clean bilingual translation badges (`English • Sahih` / `தமிழ் • பாகவி`).
 - **Hadith Collections (`/hadith`)**: Scholarly book cards, smart interval search, and concise Hadith reader stream with segmented translation switchers (`English`, `தமிழ்`, `Dual`).
 - **Profile & Spiritual Hub (`/profile`)**: High-contrast KPI widgets, 2-column spiritual repository, and 5 dedicated sub-pages (`Bookmarks`, `Favorites`, `Milestones`, `Analytics`, `Account`).
-- **Settings Screen (`/settings`)**: Modular 10-category master-detail control center with crisp 4–6 word descriptions, instant visual previews, and streamlined attribution cards.
+- **Settings Screen (`/settings`)**: Modular 10-category master-detail control center with crisp descriptions, live visual previews, and a comprehensive **About Deenly & Sources Showcase** detailing all 10 core built-in engines, 13 Qaris, 6 Hadith books, 8 scholarly source attribution cards, live Vercel link, and GitHub repository.
 
 ---
 
