@@ -449,7 +449,9 @@ export const ReadingScreen: React.FC = () => {
               </span>
             </div>
             <p className="text-[10px] sm:text-xs opacity-80 truncate font-semibold">
-              {t('ayahOfTotal')} {currentAyahNumber || 1} {t('of')} {totalAyahs} • {t('juzNumber')} {juzProgress.juzNumber}
+              {appLanguage === 'ta' 
+                ? `வசனம் ${currentAyahNumber || 1} / ${totalAyahs} • ஜுஸ் ${juzProgress.juzNumber}` 
+                : `Ayah ${currentAyahNumber || 1} of ${totalAyahs} • Juz ${juzProgress.juzNumber}`}
             </p>
           </div>
         </div>
@@ -653,7 +655,7 @@ export const ReadingScreen: React.FC = () => {
                   <span className="uppercase font-label-caps tracking-wider flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
                     <span>
-                      {transliterationLang === 'ta' ? 'தமிழ் ஒலிபெயர்ப்பு (Phonetic)' : 'English Phonetic'}
+                      {transliterationLang === 'ta' ? 'தமிழ் ஒலிபெயர்ப்பு' : 'English Phonetics'}
                     </span>
                   </span>
                   <span className="text-emerald-400 font-extrabold flex items-center gap-1 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shadow-2xs">
@@ -666,14 +668,14 @@ export const ReadingScreen: React.FC = () => {
               </div>
             )}
 
-            {/* 🌟 3. TRANSLATION CONTAINER */}
+            {/* 🌟 3. TRANSLATION CONTAINER (CRISP TRANSLATION BADGE) */}
             <div 
               className={`w-full p-4 sm:p-6 rounded-2xl sm:rounded-3xl border text-center space-y-1.5 select-none shadow-sm break-words transition-colors duration-200 ${themeMeta.classes.card}`}
             >
               <span className={`text-[10px] sm:text-xs uppercase font-bold font-label-caps tracking-wider block ${themeMeta.classes.textMuted}`}>
                 {effectiveTranslationLanguage === 'ta' 
-                  ? `தமிழ் மொழிபெயர்ப்பு (${getTranslationMeta(currentTamilTranslation).name})`
-                  : getTranslationMeta(currentEnglishTranslation).name}
+                  ? `தமிழ் • ${getTranslationMeta(currentTamilTranslation).badge}`
+                  : `English • ${getTranslationMeta(currentEnglishTranslation).badge}`}
               </span>
               <p className={`font-sans text-xs sm:text-base md:text-lg leading-relaxed font-normal max-w-2xl mx-auto break-words ${themeMeta.classes.textTranslation}`}>
                 {effectiveTranslationLanguage === 'ta'
