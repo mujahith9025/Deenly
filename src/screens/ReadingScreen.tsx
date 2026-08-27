@@ -58,6 +58,8 @@ export const ReadingScreen: React.FC = () => {
   const pinchStartDistanceRef = useRef<number | null>(null)
   const baseFontSizeRef = useRef<number>(28)
   const isPinchingRef = useRef(false)
+  const touchStartYRef = useRef<number | null>(null)
+  const isDraggingRef = useRef(false)
 
   const user = useAuthStore((state) => state.user)
   const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
@@ -388,77 +390,101 @@ export const ReadingScreen: React.FC = () => {
     })
   }
 
+  const handleCanvasTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartYRef.current = e.touches[0].clientY
+      isDraggingRef.current = false
+    }
+  }
+
+  const handleCanvasTouchMove = (e: React.TouchEvent) => {
+    if (touchStartYRef.current !== null && e.touches.length === 1) {
+      const deltaY = Math.abs(e.touches[0].clientY - touchStartYRef.current)
+      if (deltaY > 8) {
+        isDraggingRef.current = true
+      }
+    }
+  }
+
+  const handleCanvasClick = () => {
+    if (isPinchingRef.current || isDraggingRef.current) {
+      isDraggingRef.current = false
+      return
+    }
+    handleMarkAndNext()
+  }
+
   return (
-    <div className={`h-[100dvh] max-h-[100dvh] w-full max-w-4xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-2 sm:px-6 py-2 sm:py-3.5 gap-1.5 sm:gap-3 transition-colors duration-300 ${themeMeta.classes.container}`}>
+    <div className={`h-[100dvh] max-h-[100dvh] w-full max-w-5xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-2 sm:px-6 py-2.5 sm:py-4 gap-2 sm:gap-3 transition-colors duration-300 ${themeMeta.classes.container}`}>
       {/* Floating Zoom Size Indicator Pill */}
       {zoomFeedback && (
-        <div className="fixed top-18 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full glass-card border border-primary/50 text-primary font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-fade-in backdrop-blur-md">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full glass-card border border-primary/50 text-primary font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-fade-in backdrop-blur-md">
           <ZoomIn className="w-4 h-4 text-primary animate-pulse" />
           <span>{appLanguage === 'ta' ? `அரபு அளவு: ${zoomFeedback}px` : `Arabic Size: ${zoomFeedback}px`}</span>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 1. FIXED TOP BAR: PINNED TO TOP (MATCHED DIMENSIONS WITH FOOTER)          */}
-      {/*    Includes Surah Name, Responsive Scaled Timer & Hasanat, Language Switch */}
+      {/* 1. ENLARGED FIXED TOP BAR: PINNED TO TOP AS PER SCREEN RATIO              */}
+      {/*    Includes Surah Name, Prominent Big Timer & Hasanat, Action Buttons     */}
       {/* ========================================================================= */}
-      <header className={`w-full flex items-center justify-between gap-1.5 sm:gap-4 px-2.5 sm:px-5 py-2 sm:py-3 shrink-0 rounded-2xl sm:rounded-3xl border shadow-md z-30 transition-colors duration-300 ${themeMeta.classes.header}`}>
-        {/* Left: Surah Name & Ayah Counter */}
-        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+      <header className={`w-full flex items-center justify-between gap-2 sm:gap-4 px-3.5 sm:px-6 py-3 sm:py-4.5 shrink-0 rounded-2xl sm:rounded-3xl border shadow-xl z-30 transition-colors duration-300 ${themeMeta.classes.header}`}>
+        {/* Left: Return Back & Surah Name & Ayah Counter */}
+        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
           <button
             onClick={(e) => handleFinishSession(e)}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full hover:bg-surface-container-high border border-outline-variant/30 text-outline hover:text-on-surface transition shrink-0 flex items-center justify-center cursor-pointer shadow-sm"
+            className="w-10 h-10 sm:w-12 sm:h-12 md:w-13 md:h-13 rounded-2xl hover:bg-surface-container-high border border-outline-variant/30 text-outline hover:text-on-surface transition shrink-0 flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
             title="Return to Dashboard"
           >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
           </button>
 
           <div className="truncate">
-            <div className="flex items-center gap-1 sm:gap-2">
-              <span className="font-bold text-xs sm:text-base md:text-lg truncate max-w-[85px] sm:max-w-[160px] md:max-w-none">
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
+              <span className="font-black text-xs sm:text-lg md:text-xl truncate max-w-[85px] sm:max-w-[170px] md:max-w-none text-on-surface">
                 {appLanguage === 'ta' ? (currentSurah?.nameTa || currentSurah?.name || 'அத்தியாயம்') : (currentSurah?.name || 'Surah')}
               </span>
-              <span className="font-noto-serif text-xs sm:text-base md:text-xl text-primary-fixed-dim shrink-0 hidden xs:inline">
+              <span className="font-noto-serif text-sm sm:text-xl md:text-2xl text-primary font-bold shrink-0 hidden xs:inline">
                 {currentSurah?.arabicName}
               </span>
             </div>
-            <p className="text-[9px] sm:text-xs opacity-75 truncate">
+            <p className="text-[10px] sm:text-xs opacity-80 truncate font-semibold">
               {t('ayahOfTotal')} {currentAyahNumber || 1} {t('of')} {totalAyahs} • {t('juzNumber')} {juzProgress.juzNumber}
             </p>
           </div>
         </div>
 
-        {/* Center: RESPONSIVELY SCALED TIME & HASANAT EARNED */}
-        <div className="flex items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-surface-container-high/90 border border-outline-variant/40 shrink-0 shadow-sm">
+        {/* Center: ENLARGED PROMINENT TIME & HASANAT EARNED (PROMINENT BIG DISPLAY) */}
+        <div className="flex items-center gap-2.5 sm:gap-5 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-2xl sm:rounded-full bg-surface-container-high/95 border-2 border-primary/35 shrink-0 shadow-lg">
           {/* Timer */}
-          <div className="flex items-center gap-1 font-mono text-[11px] sm:text-sm md:text-base font-bold">
-            <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+          <div className="flex items-center gap-1.5 sm:gap-2 font-mono text-sm sm:text-xl md:text-2xl font-black text-on-surface tracking-wider">
+            <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-primary shrink-0" />
             <span>{formatTimer(activeSession.elapsedSeconds)}</span>
           </div>
 
-          <span className="opacity-50 text-[10px] sm:text-xs">•</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-outline/40 shrink-0" />
 
           {/* Hasanat Badge */}
-          <div className="flex items-center gap-1 text-tertiary font-bold text-[11px] sm:text-sm md:text-base">
-            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+          <div className="flex items-center gap-1.5 sm:gap-2 text-amber-400 font-black text-sm sm:text-xl md:text-2xl font-mono">
+            <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-amber-400 fill-amber-400/20 shrink-0 animate-pulse" />
             <span>+{activeSession.sessionHasanat}</span>
-            <span className="hidden sm:inline text-[10px] md:text-xs opacity-75 font-normal">{t('pts')}</span>
+            <span className="hidden sm:inline text-xs sm:text-sm font-bold text-amber-300/80 uppercase font-sans">{t('pts')}</span>
           </div>
         </div>
 
         {/* Right: Theme Switcher, Tajweed Toggle, Language Switcher, Favorite & Bookmark */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-          {/* 🌟 Mushaf Eye-Comfort Theme Switcher */}
+          {/* Mushaf Theme Switcher */}
           <button
             onClick={(e) => {
               e.stopPropagation()
               setIsThemeModalOpen(true)
             }}
-            className="w-8 h-8 sm:h-10 sm:w-auto sm:px-3 rounded-full border border-outline-variant/40 bg-surface-container hover:bg-surface-container-high transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0"
+            className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border border-outline-variant/40 bg-surface-container hover:bg-surface-container-high transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95"
             title={appLanguage === 'ta' ? `முஸ்ஹஃப் தீம்: ${themeMeta.nameTa}` : `Mushaf Theme: ${themeMeta.nameEn}`}
           >
-            <Palette className="w-3.5 h-3.5 text-primary" />
-            <span className="hidden md:inline text-[11px]">{themeMeta.icon}</span>
+            <Palette className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <span className="hidden lg:inline text-xs">{themeMeta.icon}</span>
           </button>
 
           {/* Tajweed Toggle Button */}
@@ -467,7 +493,7 @@ export const ReadingScreen: React.FC = () => {
               e.stopPropagation()
               setIsTajweedEnabled(!isTajweedEnabled)
             }}
-            className={`w-8 h-8 sm:h-10 sm:w-auto sm:px-3 rounded-full border transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0 ${
+            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95 ${
               isTajweedEnabled
                 ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 ring-1 ring-emerald-500/30'
                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline'
@@ -478,60 +504,59 @@ export const ReadingScreen: React.FC = () => {
                 : (appLanguage === 'ta' ? 'தஜ்வீத் வண்ணங்களை இயக்கு' : 'Enable Tajweed Colors')
             }
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{appLanguage === 'ta' ? 'தஜ்வீத்' : 'Tajweed'}</span>
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* Language Toggle */}
+          {/* Language Toggle Button */}
           {appLanguage === 'en' ? (
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')
               }}
-              className="h-8 px-2 sm:h-10 sm:px-3.5 rounded-full bg-surface-container border border-outline-variant/30 text-[11px] sm:text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center justify-center shrink-0"
+              className="h-9 px-2.5 sm:h-11 sm:px-4 md:h-12 md:px-4.5 rounded-xl sm:rounded-2xl bg-surface-container border border-outline-variant/30 text-xs sm:text-sm font-black text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center justify-center shrink-0 active:scale-95"
               title="Toggle translation language"
             >
               {translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}
             </button>
           ) : (
-            <div className="h-8 px-2 sm:h-10 sm:px-3.5 rounded-full bg-primary/10 border border-primary/30 text-[11px] sm:text-xs font-bold text-primary shadow-sm flex items-center justify-center shrink-0">
+            <div className="h-9 px-2.5 sm:h-11 sm:px-4 md:h-12 md:px-4.5 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/30 text-xs sm:text-sm font-black text-primary shadow-sm flex items-center justify-center shrink-0">
               தமிழ்
             </div>
           )}
 
-          {/* 🌟 1. Favorite Button (Heart) */}
+          {/* Favorite Button (Heart) */}
           <button
             onClick={(e) => handleToggleFavorite(e)}
-            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border transition cursor-pointer flex items-center justify-center shadow-sm shrink-0 ${
+            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-sm shrink-0 active:scale-95 ${
               isCurrentAyahFavorite
                 ? 'bg-rose-500/20 border-rose-500/50 text-rose-500'
                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-rose-400'
             }`}
             title={isCurrentAyahFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
           >
-            <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isCurrentAyahFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
+            <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isCurrentAyahFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
           </button>
 
-          {/* 🌟 2. Bookmark Button (Bookmark Ribbon) */}
+          {/* Bookmark Button (Ribbon) */}
           <button
             onClick={(e) => handleToggleBookmark(e)}
-            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border transition cursor-pointer flex items-center justify-center shadow-sm shrink-0 ${
+            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-sm shrink-0 active:scale-95 ${
               isCurrentAyahBookmarked
                 ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-amber-400'
             }`}
             title={isCurrentAyahBookmarked ? 'Remove Bookmark' : 'Bookmark Ayah'}
           >
-            <Bookmark className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isCurrentAyahBookmarked ? 'fill-amber-400 text-amber-400' : ''}`} />
+            <Bookmark className={`w-4 h-4 sm:w-5 sm:h-5 ${isCurrentAyahBookmarked ? 'fill-amber-400 text-amber-400' : ''}`} />
           </button>
         </div>
       </header>
 
       {/* ========================================================================= */}
-      {/* 🌟 1.5 DAILY VERSE GOAL LINE PROGRESS BAR (BETWEEN TIMER & QURAN CANVAS)  */}
+      {/* 2. DAILY GOAL PROGRESS TRACKER                                            */}
       {/* ========================================================================= */}
-      <div className="w-full px-3 sm:px-5 py-1.5 sm:py-2 rounded-2xl sm:rounded-3xl glass-card border border-outline-variant/30 shadow-sm shrink-0 space-y-1 bg-surface-container-low/75">
+      <div className="w-full px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-2xl sm:rounded-3xl glass-card border border-outline-variant/30 shadow-sm shrink-0 space-y-1 bg-surface-container-low/75">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5 font-bold text-on-surface min-w-0">
             <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
@@ -574,18 +599,17 @@ export const ReadingScreen: React.FC = () => {
         </div>
       </div>
 
-
-
       {/* ========================================================================= */}
-      {/* 2. PROPORTIONED CENTER: PINCH-TO-ZOOM / WHEEL-ZOOM SUPPORTED CANVAS       */}
-      {/*    🌟 Pinch in/out with 2 fingers or Ctrl+Wheel to resize Arabic text     */}
-      {/*    🌟 TOUCHING/CLICKING ANYWHERE ADVANCES TO NEXT AYAH                    */}
+      {/* 3. CENTER READING CANVAS: SCROLLS DOWN SMOOTHLY BASED ON FONT SIZE        */}
+      {/*    Header & Footer remain 100% fixed as per viewport aspect ratio         */}
       {/* ========================================================================= */}
       <main 
         ref={mainCanvasRef as React.RefObject<HTMLElement>}
-        onClick={handleMarkAndNext}
-        className="flex-1 overflow-y-auto w-full px-2 sm:px-4 py-2 sm:py-3 min-h-0 cursor-pointer select-none overscroll-contain touch-pan-y"
-        title="Pinch to zoom text size • Tap anywhere to advance to next verse"
+        onClick={handleCanvasClick}
+        onTouchStart={handleCanvasTouchStart}
+        onTouchMove={handleCanvasTouchMove}
+        className="flex-1 min-h-0 overflow-y-auto w-full px-1.5 sm:px-3 py-2 cursor-pointer select-none overscroll-contain touch-pan-y scrollbar-thin scrollbar-thumb-primary/25"
+        title="Pinch to zoom text size • Scroll down to read full verse and translation"
       >
         {isLoadingSurah ? (
           <div className="p-8 text-center space-y-2 my-auto flex flex-col items-center justify-center h-full">
@@ -595,10 +619,10 @@ export const ReadingScreen: React.FC = () => {
             </p>
           </div>
         ) : currentAyah ? (
-          <div className="space-y-2 sm:space-y-3.5 max-w-3xl mx-auto w-full animate-fade-in my-auto">
-            {/* 🌟 1. ARABIC AYAH CONTAINER */}
+          <div className="min-h-full flex flex-col justify-center space-y-3 sm:space-y-4 max-w-3xl mx-auto w-full py-2 animate-fade-in">
+            {/* 🌟 1. ARABIC AYAH CONTAINER (Expands with font size & scrolls down cleanly) */}
             <div 
-              className={`w-full p-4 sm:p-7 md:p-8 rounded-2xl sm:rounded-3xl space-y-3 text-center transition-all duration-200 active:scale-[0.99] select-none flex flex-col items-center justify-center break-words border shadow-md ${themeMeta.classes.card}`}
+              className={`w-full p-4 sm:p-7 md:p-9 rounded-2xl sm:rounded-3xl space-y-3 text-center transition-all duration-200 active:scale-[0.99] select-none flex flex-col items-center justify-center break-words border shadow-md ${themeMeta.classes.card}`}
             >
               <p
                 className={`font-normal tracking-wide text-center w-full max-w-2xl mx-auto break-words leading-[2.4] sm:leading-[2.8] md:leading-[3.1] select-none ${themeMeta.classes.textArabic}`}
@@ -624,15 +648,15 @@ export const ReadingScreen: React.FC = () => {
 
             {/* 🌟 2. PHONETIC TRANSLITERATION (IF ENABLED IN SETTINGS) */}
             {showTransliteration && (
-              <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/30 text-left space-y-1 select-none shadow-xs">
+              <div className="w-full p-3.5 sm:p-4.5 rounded-2xl bg-surface-container/75 border border-outline-variant/30 text-left space-y-1.5 select-none shadow-xs">
                 <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-bold text-outline">
                   <span className="uppercase font-label-caps tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-primary" />
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
                     <span>
                       {transliterationLang === 'ta' ? 'தமிழ் ஒலிபெயர்ப்பு (Phonetic)' : 'English Phonetic'}
                     </span>
                   </span>
-                  <span className="text-emerald-400 font-extrabold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shadow-2xs">
+                  <span className="text-emerald-400 font-extrabold flex items-center gap-1 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shadow-2xs">
                     +{countArabicLetters(currentAyah.arabicText) * 10} {t('pts')}
                   </span>
                 </div>
@@ -644,7 +668,7 @@ export const ReadingScreen: React.FC = () => {
 
             {/* 🌟 3. TRANSLATION CONTAINER */}
             <div 
-              className={`w-full p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border text-center space-y-1 sm:space-y-1.5 select-none shadow-sm break-words transition-colors duration-200 ${themeMeta.classes.card}`}
+              className={`w-full p-4 sm:p-6 rounded-2xl sm:rounded-3xl border text-center space-y-1.5 select-none shadow-sm break-words transition-colors duration-200 ${themeMeta.classes.card}`}
             >
               <span className={`text-[10px] sm:text-xs uppercase font-bold font-label-caps tracking-wider block ${themeMeta.classes.textMuted}`}>
                 {effectiveTranslationLanguage === 'ta' 
@@ -665,12 +689,12 @@ export const ReadingScreen: React.FC = () => {
       {/* 4. ENLARGED FIXED BOTTOM BAR: LARGER HIT TARGETS & PROMINENT SIZING       */}
       {/*    ( ← ) Previous Ayah, "I'm Done" Center Pill, ( → ) Next Ayah           */}
       {/* ========================================================================= */}
-      <footer className={`w-full px-3 sm:px-6 py-3 sm:py-4.5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-xl transition-colors duration-300 ${themeMeta.classes.footer}`}>
-        <div className="flex items-center justify-between gap-2.5 sm:gap-5 relative">
+      <footer className={`w-full px-3.5 sm:px-6 py-3.5 sm:py-5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-2xl transition-colors duration-300 ${themeMeta.classes.footer}`}>
+        <div className="flex items-center justify-between gap-3 sm:gap-6 relative">
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (
-            <div className={`absolute -top-9 sm:-top-11 right-4 sm:right-8 pointer-events-none transition-transform duration-300 ${floatingHasanat ? 'scale-125 animate-bounce' : ''}`}>
-              <span className="text-xs sm:text-sm md:text-base font-black text-amber-300 bg-black/90 px-3 sm:px-4 py-1 rounded-full border border-amber-500/50 shadow-2xl">
+            <div className={`absolute -top-10 sm:-top-13 right-5 sm:right-10 pointer-events-none transition-transform duration-300 ${floatingHasanat ? 'scale-125 animate-bounce' : ''}`}>
+              <span className="text-xs sm:text-base md:text-lg font-black text-amber-300 bg-black/95 px-3.5 sm:px-5 py-1 sm:py-1.5 rounded-full border-2 border-amber-500/60 shadow-2xl">
                 +{floatingHasanat ? floatingHasanat.amount : currentAyah.hasanatValue}
               </span>
             </div>
@@ -681,19 +705,20 @@ export const ReadingScreen: React.FC = () => {
             type="button"
             onClick={(e) => handlePrevAyah(e)}
             disabled={currentSurahNumber === 1 && currentAyahNumber === 1}
-            className={`w-16 sm:w-32 md:w-44 h-13 sm:h-16 md:h-18 rounded-2xl sm:rounded-full border flex items-center justify-center transition cursor-pointer shadow-md disabled:opacity-30 active:scale-95 shrink-0 ${themeMeta.classes.buttonSecondary}`}
+            className={`w-20 sm:w-36 md:w-48 h-14 sm:h-18 md:h-20 rounded-2xl sm:rounded-3xl border-2 flex items-center justify-center transition cursor-pointer shadow-lg disabled:opacity-30 active:scale-95 shrink-0 ${themeMeta.classes.buttonSecondary}`}
             title="Previous Ayah"
           >
-            <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 stroke-[2.5]" />
+            <ArrowLeft className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 stroke-[2.5]" />
           </button>
 
           {/* Center Button: "I'm Done" */}
           <button
             type="button"
             onClick={(e) => handleFinishSession(e)}
-            className={`flex-1 h-13 sm:h-16 md:h-18 rounded-2xl sm:rounded-full border text-xs sm:text-base md:text-lg font-black tracking-wide flex items-center justify-center transition cursor-pointer shadow-md active:scale-98 min-w-0 px-3 truncate ${themeMeta.classes.buttonSecondary}`}
+            className={`flex-1 h-14 sm:h-18 md:h-20 rounded-2xl sm:rounded-3xl border-2 text-sm sm:text-xl md:text-2xl font-black tracking-wider flex items-center justify-center gap-2 sm:gap-3 transition cursor-pointer shadow-lg active:scale-98 min-w-0 px-4 truncate ${themeMeta.classes.buttonSecondary}`}
           >
-            {t('imDone')}
+            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0 hidden sm:inline" />
+            <span>{t('imDone')}</span>
           </button>
 
           {/* Right Button: Next Arrow */}
@@ -703,10 +728,10 @@ export const ReadingScreen: React.FC = () => {
               e.stopPropagation()
               handleMarkAndNext()
             }}
-            className={`w-16 sm:w-32 md:w-44 h-13 sm:h-16 md:h-18 rounded-2xl sm:rounded-full font-black flex items-center justify-center transition cursor-pointer shadow-xl active:scale-95 shrink-0 ${themeMeta.classes.buttonPrimary}`}
+            className={`w-20 sm:w-36 md:w-48 h-14 sm:h-18 md:h-20 rounded-2xl sm:rounded-3xl font-black flex items-center justify-center transition cursor-pointer shadow-2xl active:scale-95 shrink-0 ${themeMeta.classes.buttonPrimary}`}
             title={currentAyah && currentAyah.verseNumberInSurah === totalAyahs ? 'Complete Chapter & Next Surah' : 'Mark Read & Next Ayah'}
           >
-            <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 stroke-[3]" />
+            <ArrowRight className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 stroke-[3]" />
           </button>
         </div>
       </footer>

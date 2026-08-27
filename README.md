@@ -56,10 +56,10 @@
   - **Language Selector**: Choose between **English Phonetic (Latin)** (e.g. `Bismillāhir-Raḥmānir-Raḥīm`) and **Tamil Phonetic (தமிழ் உச்சரிப்பு)** (e.g. `பிஸ்மில்லாஹிர் ரஹ்மானிர் ரஹீம்`).
   - **Live Interactive Preview in Settings**: Real-time preview card rendering the chosen language and script.
   - **Live Letter-by-Letter Hasanat Badge**: Displays pronunciation with the Sunnah-accurate letter Hasanat points badge (`+880 pts`), mirroring the Quranly visual experience.
-- **📱 Enlarged Header & Footer with Ergonomic Aspect Ratio**:
-  - **Prominent Header**: Increased height, larger touch buttons, expanded Surah title display, and clear time/Hasanat indicators.
-  - **Enlarged Footer Controls**: Substantially larger `Previous Ayah ( ← )`, `I'm Done`, and `Next Ayah ( → )` action buttons (`h-14` to `h-18`) with large arrow strokes for seamless single-handed navigation.
-  - **Fixed Viewport Aspect Ratio**: Responsive `100dvh` boundary protection ensuring zero distortion or header/footer collision across all mobile and desktop screen ratios.
+- **📱 Enlarged Header & Footer with Fixed Aspect Ratio & Font-Aware Scroll**:
+  - **Prominent Big Timer & Hasanat Header**: Enlarged high-visibility header featuring bold, large-format live session timer (`Clock`) and real-time Hasanat reward points pill (`Sparkles` + points) in prominent typography (`14px` – `24px` font-mono) with expanded Surah title display and touch-friendly controls.
+  - **Enlarged Footer Controls**: Substantially larger `Previous Ayah ( ← )`, `I'm Done` center action button, and `Next Ayah ( → )` action buttons (`h-14 sm:h-18 md:h-20` and `w-20 sm:w-36 md:w-48`) with bold arrow strokes for effortless single-handed navigation.
+  - **Fixed Viewport Aspect Ratio & Font-Aware Scrolling**: Fixed `100dvh` boundary protection ensuring zero distortion or header/footer collision across all mobile and desktop screen aspect ratios. The center verse container seamlessly **scrolls down** as text font size is increased (up to 54px) or on long verses while Header and Footer remain firmly pinned.
 - **Diacritic-Aware Typography Scaling**: Responsive typography scaling (18px – 54px) via dynamic CSS variables, steppers, and quick presets with instant auto-saving.
 - **Pinch-to-Zoom & Gesture Scaling**: 2-finger mobile pinch gestures and trackpad wheel zooming to smoothly scale Arabic text size on the fly with live visual indicator pills.
 - **Verse of the Day & Hadith of the Day**: Automatic midnight rotation of inspiring Quranic verses and authentic Prophetic Hadiths with bilingual English and Tamil translations.
