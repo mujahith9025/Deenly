@@ -120,67 +120,67 @@ export const ExploreScreen: React.FC = () => {
     })
   }, [asmaulSearch])
 
-  // Category Configuration for Square Grid Cards
+  // Category Configuration for Square Grid Cards (Crisp & Punchy Copy)
   const CATEGORIES = [
     {
       key: 'dhikr' as ExploreCategoryKey,
-      titleEn: 'Digital Tasbih & Dhikr Studio',
+      titleEn: 'Digital Tasbih Studio',
       titleTa: 'திக்ர் & தஸ்பீஹ் அரங்கம்',
       arabicScript: 'سُبْحَانَ ٱللَّهِ • الحَمْدُ لِلَّهِ',
-      descEn: 'Interactive counter, custom daily targets, Sunnah 33-33-34 cycles & authentic Hadith virtues.',
-      descTa: 'தொடு உணர்வு தஸ்பீஹ் வட்டம், தினசரி இலக்குகள் & ஆதாரப்பூர்வமான நற்பலன்கள்.',
+      descEn: 'Touch counter, daily targets & Sunnah cycles.',
+      descTa: 'தொடு உணர்வு தஸ்பீஹ், தினசரி இலக்குகள் & சுன்னத் திக்ருகள்.',
       icon: Sparkles,
       gradient: 'from-emerald-500/20 via-emerald-500/5 to-transparent',
       borderColor: 'border-emerald-500/30 hover:border-emerald-500/60',
       iconBg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
       statPill: `${todayTotal}/${dailyGoal} ${isTamil ? 'இன்று' : 'Today'}`,
       badge: totalLifetime > 0 ? `${totalLifetime.toLocaleString()} ${isTamil ? 'ஓதப்பட்டது' : 'Recited'}` : `${totalPresetsCount} ${isTamil ? 'திக்ருகள்' : 'Presets'}`,
-      btnText: isTamil ? 'தஸ்பீஹ் அரங்கம்' : 'Open Tasbih Studio',
+      btnText: isTamil ? 'தஸ்பீஹ் அரங்கம்' : 'Open Studio',
     },
     {
       key: 'analytics' as ExploreCategoryKey,
-      titleEn: 'Dhikr Analytics & Trends',
-      titleTa: 'திக்ர் பகுப்பாய்வு & வரைபடம்',
+      titleEn: 'Dhikr Analytics',
+      titleTa: 'திக்ர் பகுப்பாய்வு',
       arabicScript: 'إِحْصَاءُ الذِّكْرِ وَالْمُتَابَعَةُ',
-      descEn: 'Multi-day activity progression charts, daily goal consistency, streak tracking & unlockable milestone badges.',
-      descTa: 'நாட்களின் திக்ர் வரைபடம், தொடர் பழக்கம், சாதனைகள் & இலக்கு முன்னேற்றம்.',
+      descEn: 'Habit charts, streak tracking & milestone badges.',
+      descTa: 'திக்ர் வரைபடம், தொடர் பழக்கம் & ஆன்மீகச் சாதனைகள்.',
       icon: BarChart3,
       gradient: 'from-amber-500/20 via-amber-500/5 to-transparent',
       borderColor: 'border-amber-500/30 hover:border-amber-500/60',
       iconBg: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
       statPill: `🔥 ${currentStreak} ${isTamil ? 'நாள் தொடர்' : 'Day Streak'}`,
       badge: `${completedDhikrsCount}/${totalPresetsCount} ${isTamil ? 'இலக்குகள்' : 'Goals Met'}`,
-      btnText: isTamil ? 'பகுப்பாய்வைக் காண்க' : 'View Analytics',
+      btnText: isTamil ? 'பகுப்பாய்வு' : 'View Analytics',
     },
     {
       key: 'hisnul_muslim' as ExploreCategoryKey,
-      titleEn: 'Hisnul Muslim (Fortress of the Muslim)',
+      titleEn: 'Hisnul Muslim',
       titleTa: 'ஹிஸ்னுல் முஸ்லிம் (கவச துஆக்கள்)',
-      arabicScript: 'حِصْنُ الْمُسْلِمِ مِنَ الْأَذْكَارِ',
-      descEn: 'Authentic daily invocations from the Quran and Sunnah for morning, evening, prayer, protection & distress.',
-      descTa: 'காலை, மாலை, தொழுகை, பாதுகாப்பு மற்றும் கவலை நீங்க நபிகளாரின் ஆதாரப்பூர்வமான துஆக்கள்.',
+      arabicScript: 'حِصْنُ الْمُسْلِمِ مِنَ الْأَذْகாரِ',
+      descEn: 'Authentic daily supplications from the Sunnah.',
+      descTa: 'ஆதாரப்பூர்வமான தினசரி சுன்னத் துஆக்கள்.',
       icon: Shield,
       gradient: 'from-cyan-500/20 via-cyan-500/5 to-transparent',
       borderColor: 'border-cyan-500/30 hover:border-cyan-500/60',
       iconBg: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-      statPill: `${HISNUL_MUSLIM_DUAS.length} ${isTamil ? 'துஆக்கள்' : 'Supplications'}`,
-      badge: isTamil ? 'ஆதாரப்பூர்வமானது' : 'Sahih Verified',
-      btnText: isTamil ? 'துஆக்களை ஆராய்க' : 'Explore Hisnul Muslim',
+      statPill: `${HISNUL_MUSLIM_DUAS.length} ${isTamil ? 'துஆக்கள்' : 'Duas'}`,
+      badge: isTamil ? 'ஆதாரம்: ஸஹீஹ்' : 'Sahih Verified',
+      btnText: isTamil ? 'துஆக்களைப் பார்க்க' : 'Explore Duas',
     },
     {
       key: 'asmaul_husna' as ExploreCategoryKey,
-      titleEn: '99 Names of Allah (Asmaul Husna)',
-      titleTa: 'அல்லாஹ்வின் 99 அழகிய திருநாமங்கள்',
+      titleEn: '99 Names of Allah',
+      titleTa: 'அல்லாஹ்வின் 99 திருநாமங்கள்',
       arabicScript: 'أَسْمَاءُ اللَّهِ الْحُسْنَىٰ',
-      descEn: 'Complete 1 to 99 Divine Attributes with sacred Arabic calligraphy, English & Tamil meanings, & Quran references.',
-      descTa: 'அல்லாஹ்வின் 99 திருப்பெயர்கள், அரபு எழுத்தமைப்பு, தமிழ் விளக்கம் & திருக்குர்ஆன் வசன ஆதாரங்கள்.',
+      descEn: '99 Divine Names, meanings & Quranic citations.',
+      descTa: 'அல்லாஹ்வின் 99 திருநாமங்களும் பொருள்களும்.',
       icon: Star,
       gradient: 'from-purple-500/20 via-purple-500/5 to-transparent',
       borderColor: 'border-purple-500/30 hover:border-purple-500/60',
       iconBg: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-      statPill: `1 - 99 ${isTamil ? 'திருநாமங்கள்' : 'Divine Names'}`,
+      statPill: `1 - 99 ${isTamil ? 'பெயர்கள்' : 'Divine Names'}`,
       badge: '100% Complete',
-      btnText: isTamil ? '99 பெயர்களைக் காண்க' : 'View All 99 Names',
+      btnText: isTamil ? 'திருநாமங்களைக் காண்க' : 'View 99 Names',
     },
   ]
 
@@ -188,26 +188,26 @@ export const ExploreScreen: React.FC = () => {
   const activeCategoryItem = CATEGORIES.find((c) => c.key === currentCategory)
 
   return (
-    <div className="space-y-8 animate-fade-in pb-16">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in pb-16">
       
       {/* ========================================================================= */}
-      {/* 🌟 1. HERO HEADER BANNER                                                  */}
+      {/* 🌟 1. HERO HEADER BANNER (CRISP & CLEAN)                                  */}
       {/* ========================================================================= */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-linear-to-br from-primary/15 via-surface-container to-surface-container-high border border-primary/25 relative overflow-hidden shadow-md">
-        <div className="relative z-10 space-y-3 max-w-3xl">
+      <div className="p-6 sm:p-7 rounded-3xl bg-linear-to-br from-primary/15 via-surface-container to-surface-container-high border border-primary/25 relative overflow-hidden shadow-md">
+        <div className="relative z-10 space-y-2 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold font-label-caps border border-primary/30 shadow-xs">
             <Compass className="w-3.5 h-3.5" />
-            <span>{isTamil ? 'இஸ்லாமிய பொக்கிஷங்கள்' : 'Islamic Explorer Hub'}</span>
+            <span>{isTamil ? 'இஸ்லாமிய பொக்கிஷங்கள்' : 'Islamic Explorer'}</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight font-headline">
-            {isTamil ? 'ஆன்மீகக் கருவிகள், திக்ர் அரங்கம் & ஹிஸ்னுல் முஸ்லிம்' : 'Spiritual Sanctuary, Dhikr Studio & Hisnul Muslim'}
+            {isTamil ? 'ஆன்மீக அரங்கம் & துஆக்கள்' : 'Spiritual Sanctuary & Daily Duas'}
           </h1>
 
-          <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+          <p className="text-xs sm:text-sm text-on-surface-variant font-medium leading-relaxed">
             {isTamil 
-              ? 'டிஜிட்டல் தஸ்பீஹ் திக்ர் அரங்கம், நாட்களின் பகுப்பாய்வு வரைபடம், ஆதாரப்பூர்வமான ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்களை முழுமையாக ஆராயுங்கள்.' 
-              : 'Explore the Interactive Digital Tasbih Studio, daily Dhikr progress charts, authentic Hisnul Muslim supplications, and all 99 Beautiful Names of Allah.'
+              ? 'டிஜிட்டல் தஸ்பீஹ், திக்ர் வரைபடம், ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்கள்.' 
+              : 'Interactive Digital Tasbih, Dhikr activity charts, authentic Hisnul Muslim supplications, and all 99 Names of Allah.'
             }
           </p>
         </div>
@@ -353,17 +353,17 @@ export const ExploreScreen: React.FC = () => {
       {currentCategory === 'hisnul_muslim' && (
         <div className="space-y-6">
           
-          {/* Search & Header Bar */}
+          {/* Search & Header Bar (Crisp Header) */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-5 rounded-3xl glass-card border border-outline-variant/30 shadow-md">
             <div>
               <h2 className="text-sm sm:text-base font-bold text-on-surface flex items-center gap-2">
                 <Shield className="w-4 h-4 text-cyan-400" />
-                <span>{isTamil ? 'ஹிஸ்னுல் முஸ்லிம் — முஸ்லிமின் கவசம்' : 'Hisnul Muslim — Fortress of the Muslim'}</span>
+                <span>{isTamil ? 'ஹிஸ்னுல் முஸ்லிம் (கவச துஆக்கள்)' : 'Hisnul Muslim (Daily Duas)'}</span>
               </h2>
-              <p className="text-[11px] text-on-surface-variant">
+              <p className="text-[11px] text-on-surface-variant font-medium">
                 {isTamil 
-                  ? 'ஷேக் ஸயீத் பின் அலி அல்-கஹ்தானி தொகுத்த குர்ஆன் மற்றும் சுன்னாவிலிருந்து பெறப்பட்ட ஆதாரப்பூர்வமான துஆக்கள்.' 
-                  : 'Authentic daily invocations from the Quran and Sunnah compiled by Shaykh Sa\'id bin Ali bin Wahf Al-Qahtani.'
+                  ? 'குர்ஆன் மற்றும் சுன்னாவிலிருந்து பெறப்பட்ட ஆதாரப்பூர்வமான தினசரி துஆக்கள்.' 
+                  : 'Authentic daily supplications from the Quran & Sunnah.'
                 }
               </p>
             </div>
@@ -482,17 +482,17 @@ export const ExploreScreen: React.FC = () => {
       {currentCategory === 'asmaul_husna' && (
         <div className="space-y-6">
           
-          {/* Header Banner with Search */}
+          {/* Header Banner with Search (Crisp Header) */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-5 rounded-3xl glass-card border border-outline-variant/30 shadow-md">
             <div>
               <h2 className="text-sm sm:text-base font-bold text-on-surface flex items-center gap-2">
                 <Star className="w-4 h-4 text-amber-500" />
-                <span>{isTamil ? 'அல்லாஹ்வின் 99 அழகிய திருநாமங்கள் (அஸ்மாஉல் ஹுஸ்னா)' : 'The 99 Beautiful Names of Allah (Asmaul Husna)'}</span>
+                <span>{isTamil ? 'அல்லாஹ்வின் 99 அழகிய திருநாமங்கள்' : 'The 99 Beautiful Names of Allah'}</span>
               </h2>
-              <p className="text-[11px] text-on-surface-variant">
+              <p className="text-[11px] text-on-surface-variant font-medium">
                 {isTamil 
-                  ? 'நபி ﷺ கூறினார்கள்: "அல்லாஹ்விற்கு 99 திருப்பெயர்கள் உள்ளன; அவற்றை அறிந்துகொள்பவர் சொர்க்கத்தில் நுழைவார்." (ஸஹீஹ் புகாரி 2736)' 
-                  : 'The Prophet ﷺ said: "Allah has ninety-nine names; whoever comprehends and memorizes them will enter Paradise." (Sahih al-Bukhari 2736)'
+                  ? '"அவற்றை அறிந்துகொள்பவர் சொர்க்கத்தில் நுழைவார்." (ஸஹீஹ் புகாரி 2736)' 
+                  : '"Whoever memorizes and comprehends them will enter Paradise." (Bukhari 2736)'
                 }
               </p>
             </div>
@@ -513,10 +513,10 @@ export const ExploreScreen: React.FC = () => {
           {/* Counter Status */}
           <div className="flex items-center justify-between text-xs text-outline font-semibold px-2">
             <span>
-              {isTamil ? 'காட்டப்படும் திருநாமங்கள்' : 'Showing Divine Names'}: <strong className="text-on-surface">{filteredAsmaulHusna.length}</strong> / 99
+              {isTamil ? 'காட்டப்படும் திருநாமங்கள்' : 'Showing Names'}: <strong className="text-on-surface">{filteredAsmaulHusna.length}</strong> / 99
             </span>
             <span>
-              {isTamil ? 'அனைத்து 99 திருநாமங்களும் உள்ளடக்கப்பட்டுள்ளன' : 'Complete 1 to 99 Collection'}
+              {isTamil ? 'அனைத்து 99 திருநாமங்களும்' : 'Complete 1 to 99 Collection'}
             </span>
           </div>
 
