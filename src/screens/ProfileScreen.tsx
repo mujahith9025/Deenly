@@ -97,12 +97,14 @@ export const ProfileScreen: React.FC = () => {
     }
   }
 
+  const isTamil = appLanguage === 'ta'
+
   const badges = [
-    { title: '7-Day Streak', desc: 'Read Quran 7 days in a row', date: 'Earned 2w ago', icon: Flame, color: 'text-amber-400', progress: '100%' },
-    { title: 'Surah Al-Kahf', desc: 'Read Surah Al-Kahf 4 Fridays in a row', date: 'Earned 1w ago', icon: Award, color: 'text-tertiary', progress: '100%' },
-    { title: 'Milestone Goal', desc: 'Read first 100 Ayahs', date: 'Earned 3d ago', icon: BookOpen, color: 'text-primary', progress: '100%' },
-    { title: 'Khatam Explorer', desc: 'Recite through 10 full Surahs', date: 'In Progress', icon: Sparkles, color: 'text-emerald-400', progress: '60%' },
-    { title: '30-Day Master', desc: 'Maintain a 30-day continuous streak', date: 'In Progress', icon: Target, color: 'text-sky-400', progress: `${Math.min(100, Math.round(((user?.currentStreak || 0) / 30) * 100))}%` },
+    { title: isTamil ? '7-நாள் தொடர்' : '7-Day Streak', desc: isTamil ? 'தொடர்ந்து 7 நாட்கள் ஓதுதல்' : 'Read Quran 7 days in a row', date: isTamil ? 'முடிந்தது' : 'Unlocked', icon: Flame, color: 'text-amber-400', progress: '100%' },
+    { title: isTamil ? 'சூரா அல்-கஹ்ஃப்' : 'Surah Al-Kahf', desc: isTamil ? '4 வெள்ளிக்கிழமை ஓதுதல்' : 'Read Surah Al-Kahf 4 Fridays', date: isTamil ? 'முடிந்தது' : 'Unlocked', icon: Award, color: 'text-tertiary', progress: '100%' },
+    { title: isTamil ? 'முதல் 100 வசனங்கள்' : 'First 100 Ayahs', desc: isTamil ? '100 வசனங்களை ஓதி முடித்தல்' : 'Read first 100 verses', date: isTamil ? 'முடிந்தது' : 'Unlocked', icon: BookOpen, color: 'text-primary', progress: '100%' },
+    { title: isTamil ? 'கத்ம் சாதனையாளர்' : 'Khatam Explorer', desc: isTamil ? '10 முழு அத்தியாயங்கள்' : 'Recite through 10 full Surahs', date: isTamil ? 'முன்னேற்றம்' : 'In Progress', icon: Sparkles, color: 'text-emerald-400', progress: '60%' },
+    { title: isTamil ? '30-நாள் சாதனை' : '30-Day Master', desc: isTamil ? '30-நாள் தொடர் ஓதும் பழக்கம்' : '30-day continuous recitation habit', date: isTamil ? 'முன்னேற்றம்' : 'In Progress', icon: Target, color: 'text-sky-400', progress: `${Math.min(100, Math.round(((user?.currentStreak || 0) / 30) * 100))}%` },
   ]
 
   // Filtered bookmarks
@@ -140,24 +142,26 @@ export const ProfileScreen: React.FC = () => {
   }
 
   // =========================================================================
-  // SUB-PAGE 1: SAVED BOOKMARKS
+  // SUB-PAGE 1: SAVED BOOKMARKS (CRISP)
   // =========================================================================
   if (activeSubPage === 'bookmarks') {
     return (
       <div className="space-y-6 max-w-3xl mx-auto pb-24 animate-fade-in">
         <button
           onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+          className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary hover:underline cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Profile</span>
+          <span>{isTamil ? 'சுயவிவரத்திற்குத் திரும்பு' : 'Back to Profile'}</span>
         </button>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold font-h1 text-on-surface">Saved Bookmarks</h1>
-            <p className="text-xs text-on-surface-variant mt-1">
-              Access and review your personally saved Quran verses and authentic Hadiths.
+            <h1 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+              {isTamil ? 'சேமிக்கப்பட்ட புக்மார்க்குகள்' : 'Saved Bookmarks'}
+            </h1>
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              {isTamil ? 'நீங்கள் சேமித்த திருக்குர்ஆன் வசனங்கள் மற்றும் நபிமொழிகள்.' : 'Quick access to your saved Quran verses and authentic Hadiths.'}
             </p>
           </div>
 
@@ -171,7 +175,7 @@ export const ProfileScreen: React.FC = () => {
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              All ({bookmarks.length})
+              {isTamil ? 'அனைத்தும்' : 'All'} ({bookmarks.length})
             </button>
             <button
               onClick={() => setBookmarkFilter('quran')}
@@ -181,7 +185,7 @@ export const ProfileScreen: React.FC = () => {
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              Quran ({bmQuranCount})
+              {isTamil ? 'குர்ஆன்' : 'Quran'} ({bmQuranCount})
             </button>
             <button
               onClick={() => setBookmarkFilter('hadith')}
@@ -191,7 +195,7 @@ export const ProfileScreen: React.FC = () => {
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              Hadith ({bmHadithCount})
+              {isTamil ? 'ஹதீஸ்' : 'Hadith'} ({bmHadithCount})
             </button>
           </div>
         </div>
@@ -299,24 +303,26 @@ export const ProfileScreen: React.FC = () => {
   }
 
   // =========================================================================
-  // SUB-PAGE 2: FAVORITE VERSES & HADITHS
+  // SUB-PAGE 2: FAVORITE VERSES & HADITHS (CRISP)
   // =========================================================================
   if (activeSubPage === 'favorites') {
     return (
       <div className="space-y-6 max-w-3xl mx-auto pb-24 animate-fade-in">
         <button
           onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+          className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary hover:underline cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Profile</span>
+          <span>{isTamil ? 'சுயவிவரத்திற்குத் திரும்பு' : 'Back to Profile'}</span>
         </button>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold font-h1 text-on-surface">Favorite Verses & Hadiths</h1>
-            <p className="text-xs text-on-surface-variant mt-1">
-              Your cherished collection of inspiring Quranic verses and Prophetic traditions.
+            <h1 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+              {isTamil ? 'விருப்பமான வசனங்கள் & ஹதீஸ்கள்' : 'Favorite Verses & Hadiths'}
+            </h1>
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              {isTamil ? 'நீங்கள் விரும்பிய புனித வசனங்கள் மற்றும் நபிமொழிகள்.' : 'Your cherished collection of inspiring Quranic verses and Hadiths.'}
             </p>
           </div>
 
@@ -330,7 +336,7 @@ export const ProfileScreen: React.FC = () => {
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              All ({favorites.length})
+              {isTamil ? 'அனைத்தும்' : 'All'} ({favorites.length})
             </button>
             <button
               onClick={() => setFavoriteFilter('quran')}
@@ -340,7 +346,7 @@ export const ProfileScreen: React.FC = () => {
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              Quran ({favQuranCount})
+              {isTamil ? 'குர்ஆன்' : 'Quran'} ({favQuranCount})
             </button>
             <button
               onClick={() => setFavoriteFilter('hadith')}
@@ -350,7 +356,7 @@ export const ProfileScreen: React.FC = () => {
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              Hadith ({favHadithCount})
+              {isTamil ? 'ஹதீஸ்' : 'Hadith'} ({favHadithCount})
             </button>
           </div>
         </div>
@@ -362,9 +368,11 @@ export const ProfileScreen: React.FC = () => {
               <Heart className="w-7 h-7 fill-rose-500" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-on-surface">No Favorites Saved Yet</h3>
+              <h3 className="text-base font-bold text-on-surface">
+                {isTamil ? 'விருப்பங்கள் எதுவும் இல்லை' : 'No Favorites Saved Yet'}
+              </h3>
               <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
-                Tap the Heart ❤️ icon on any Quran verse or Hadith to add it to your favorite collection.
+                {isTamil ? 'குர்ஆன் அல்லது ஹதீஸில் உள்ள ❤️ இதய ஐகானைத் தட்டி இங்கே சேமிக்கவும்.' : 'Tap the Heart ❤️ icon on any Quran verse or Hadith to add it here.'}
               </p>
             </div>
             <Link
@@ -372,7 +380,7 @@ export const ProfileScreen: React.FC = () => {
               className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shadow-md hover:scale-105 transition-transform"
             >
               <Heart className="w-4 h-4 fill-white" />
-              <span>Explore & Favorite Verses</span>
+              <span>{isTamil ? 'குர்ஆன் ஓதுக' : 'Explore & Recite Quran'}</span>
             </Link>
           </div>
         ) : (
@@ -388,12 +396,12 @@ export const ProfileScreen: React.FC = () => {
                     {fav.type === 'quran' ? (
                       <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
                         <BookOpen className="w-3 h-3" />
-                        <span>Quran</span>
+                        <span>{isTamil ? 'குர்ஆன்' : 'Quran'}</span>
                       </span>
                     ) : (
                       <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
                         <ScrollText className="w-3 h-3" />
-                        <span>Hadith</span>
+                        <span>{isTamil ? 'ஹதீஸ்' : 'Hadith'}</span>
                       </span>
                     )}
 
@@ -401,8 +409,8 @@ export const ProfileScreen: React.FC = () => {
                       {fav.type === 'quran' 
                         ? (() => {
                             const meta = fav.surahNumber ? SURAH_METADATA.find((s) => s.number === fav.surahNumber) : null
-                            const sName = appLanguage === 'ta' ? (meta?.nameTa || fav.surahName) : fav.surahName
-                            return `${fav.surahNumber}. ${sName} [${appLanguage === 'ta' ? `வசனம் ${fav.ayahNumber}` : `Ayah ${fav.ayahNumber}`}]`
+                            const sName = isTamil ? (meta?.nameTa || fav.surahName) : fav.surahName
+                            return `${fav.surahNumber}. ${sName} [${isTamil ? `வசனம் ${fav.ayahNumber}` : `Ayah ${fav.ayahNumber}`}]`
                           })()
                         : `${fav.bookName} • Hadith #${fav.hadithNumber}`
                       }
@@ -430,7 +438,7 @@ export const ProfileScreen: React.FC = () => {
                 {/* Arabic Snippet */}
                 {fav.arabicText && (
                   <p 
-                    className="text-sm sm:text-base text-rose-300/90 line-clamp-2 text-right" 
+                    className="text-sm sm:text-base text-rose-300/90 line-clamp-2 text-right font-medium" 
                     style={{ fontFamily: arabicFontFamily }}
                     dir="rtl"
                   >
@@ -446,7 +454,7 @@ export const ProfileScreen: React.FC = () => {
                 )}
 
                 <div className="flex items-center justify-end text-xs text-rose-400 font-semibold group-hover:translate-x-0.5 transition-transform pt-1">
-                  <span>Tap to open verse in reader</span>
+                  <span>{isTamil ? 'ஓதும் பக்கத்திற்குச் செல்க' : 'Tap to read'}</span>
                   <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
                 </div>
               </div>
@@ -458,23 +466,25 @@ export const ProfileScreen: React.FC = () => {
   }
 
   // =========================================================================
-  // SUB-PAGE 3: SPIRITUAL MILESTONES & BADGES
+  // SUB-PAGE 3: SPIRITUAL MILESTONES & BADGES (CRISP)
   // =========================================================================
   if (activeSubPage === 'milestones') {
     return (
       <div className="space-y-6 max-w-3xl mx-auto pb-24 animate-fade-in">
         <button
           onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+          className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary hover:underline cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Profile</span>
+          <span>{isTamil ? 'சுயவிவரத்திற்குத் திரும்பு' : 'Back to Profile'}</span>
         </button>
 
         <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Spiritual Milestones & Badges</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Track achievements unlocked along your sacred Quran recitation journey.
+          <h1 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+            {isTamil ? 'ஆன்மீக சாதனைகள் & பதக்கங்கள்' : 'Spiritual Milestones & Badges'}
+          </h1>
+          <p className="text-xs text-on-surface-variant mt-0.5">
+            {isTamil ? 'குர்ஆன் ஓதும் பயணத்தில் நீங்கள் வென்ற சாதனைகள்.' : 'Achievements unlocked along your sacred Quran recitation journey.'}
           </p>
         </div>
 
@@ -499,7 +509,7 @@ export const ProfileScreen: React.FC = () => {
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center justify-between gap-1">
                     <h3 className="text-xs sm:text-sm font-bold text-on-surface truncate">{badge.title}</h3>
-                    <span className="text-[10px] text-outline shrink-0">{badge.date}</span>
+                    <span className="text-[10px] text-outline shrink-0 font-medium">{badge.date}</span>
                   </div>
                   <p className="text-[11px] text-on-surface-variant leading-tight">{badge.desc}</p>
                   <div className="pt-1.5 flex items-center gap-2">
@@ -521,23 +531,25 @@ export const ProfileScreen: React.FC = () => {
   }
 
   // =========================================================================
-  // SUB-PAGE 4: RECITATION ANALYTICS
+  // SUB-PAGE 4: RECITATION ANALYTICS (CRISP)
   // =========================================================================
   if (activeSubPage === 'stats') {
     return (
       <div className="space-y-6 max-w-3xl mx-auto pb-24 animate-fade-in">
         <button
           onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+          className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary hover:underline cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Profile</span>
+          <span>{isTamil ? 'சுயவிவரத்திற்குத் திரும்பு' : 'Back to Profile'}</span>
         </button>
 
         <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Recitation Analytics</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Detailed breakdown of your reading consistency, verses read, and accumulated Hasanat rewards.
+          <h1 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+            {isTamil ? 'ஓதுதல் புள்ளிவிவரங்கள்' : 'Recitation Analytics'}
+          </h1>
+          <p className="text-xs text-on-surface-variant mt-0.5">
+            {isTamil ? 'உங்கள் ஓதும் தொடர், படித்த வசனங்கள் மற்றும் ஹஸனாத் நன்மைகள்.' : 'Breakdown of your reading consistency, verses read, and accumulated Hasanat rewards.'}
           </p>
         </div>
 
@@ -546,22 +558,22 @@ export const ProfileScreen: React.FC = () => {
           <div className="p-4 rounded-3xl glass-card border border-outline-variant/30 text-center space-y-1">
             <Flame className="w-6 h-6 text-amber-400 fill-amber-400 mx-auto" />
             <p className="text-xl sm:text-2xl font-bold text-on-surface">{user?.currentStreak || 0}</p>
-            <p className="text-[10px] sm:text-xs text-outline">Current Streak (Days)</p>
+            <p className="text-[10px] sm:text-xs text-outline">{isTamil ? 'தொடர் (நாட்கள்)' : 'Streak (Days)'}</p>
           </div>
           <div className="p-4 rounded-3xl glass-card border border-outline-variant/30 text-center space-y-1">
             <BookOpen className="w-6 h-6 text-primary mx-auto" />
             <p className="text-xl sm:text-2xl font-bold text-on-surface">{user?.pages || 0}</p>
-            <p className="text-[10px] sm:text-xs text-outline">Total Pages Read</p>
+            <p className="text-[10px] sm:text-xs text-outline">{isTamil ? 'பக்கங்கள்' : 'Pages Read'}</p>
           </div>
           <div className="p-4 rounded-3xl glass-card border border-outline-variant/30 text-center space-y-1">
             <Award className="w-6 h-6 text-tertiary mx-auto" />
             <p className="text-xl sm:text-2xl font-bold text-tertiary">{user?.verses || 0}</p>
-            <p className="text-[10px] sm:text-xs text-outline">Ayahs Completed</p>
+            <p className="text-[10px] sm:text-xs text-outline">{isTamil ? 'வசனங்கள்' : 'Ayahs Done'}</p>
           </div>
           <div className="p-4 rounded-3xl glass-card border border-outline-variant/30 text-center space-y-1">
             <Sparkles className="w-6 h-6 text-amber-300 mx-auto" />
             <p className="text-xl sm:text-2xl font-bold text-amber-300">{(user?.hasanat || 0).toLocaleString()}</p>
-            <p className="text-[10px] sm:text-xs text-outline">Total Hasanat Pts</p>
+            <p className="text-[10px] sm:text-xs text-outline">{isTamil ? 'ஹஸனாத் புள்ளிகள்' : 'Hasanat Pts'}</p>
           </div>
         </div>
 
@@ -569,14 +581,16 @@ export const ProfileScreen: React.FC = () => {
         <div className="p-5 rounded-3xl glass-card border border-primary/30 space-y-3">
           <div className="flex items-center gap-2 text-primary font-bold text-sm">
             <Sparkles className="w-4 h-4" />
-            <span>Divine Hasanat Multiplier Formula</span>
+            <span>{isTamil ? 'ஹஸனாத் கணக்கீட்டு முறை' : 'Hasanat Reward Formula'}</span>
           </div>
           <p className="text-xs text-on-surface-variant leading-relaxed">
-            Based on the authentic Hadith of the Prophet ﷺ (Sunan al-Tirmidhi 2910): <em className="text-on-surface">"Whoever recites a letter from the Book of Allah will have one good deed, and that deed will be multiplied tenfold."</em>
+            {isTamil 
+              ? 'நபி (ஸல்) அவர்கள் கூறினார்கள்: "அல்லாஹ்வின் வேதத்திலிருந்து ஓர் எழுத்தை ஓதுபவருக்கு ஒரு நன்மை உண்டு. அந்த நன்மை பத்து மடங்காக்கப்படும்." (திர்மிதி 2910)' 
+              : 'Prophet Muhammad ﷺ said: "Whoever recites a letter from the Book of Allah will have one good deed, and that deed will be multiplied tenfold." (Tirmidhi 2910)'}
           </p>
           <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20 flex items-center justify-between text-xs font-mono">
-            <span className="text-outline">Letter Count × 10</span>
-            <span className="font-bold text-primary">= Earned Hasanat Points</span>
+            <span className="text-outline">{isTamil ? 'எழுத்துக்கள் × 10' : 'Letter Count × 10'}</span>
+            <span className="font-bold text-primary">= {isTamil ? 'ஹஸனாத் புள்ளிகள்' : 'Earned Hasanat Points'}</span>
           </div>
         </div>
       </div>
@@ -584,23 +598,25 @@ export const ProfileScreen: React.FC = () => {
   }
 
   // =========================================================================
-  // SUB-PAGE 5: ACCOUNT & SECURITY MANAGEMENT
+  // SUB-PAGE 5: ACCOUNT & SECURITY MANAGEMENT (CRISP)
   // =========================================================================
   if (activeSubPage === 'account') {
     return (
       <div className="space-y-6 max-w-3xl mx-auto pb-24 animate-fade-in">
         <button
           onClick={() => setActiveSubPage(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+          className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary hover:underline cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Profile</span>
+          <span>{isTamil ? 'சுயவிவரத்திற்குத் திரும்பு' : 'Back to Profile'}</span>
         </button>
 
         <div>
-          <h1 className="text-2xl font-bold font-h1 text-on-surface">Account & Security</h1>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Manage authentication, synced cloud profile, and recitation data.
+          <h1 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+            {isTamil ? 'கணக்கு & பாதுகாப்பு' : 'Account & Security'}
+          </h1>
+          <p className="text-xs text-on-surface-variant mt-0.5">
+            {isTamil ? 'உங்கள் சுயவிவரம் மற்றும் கிளவுட் ஒத்திசைவு அமைப்புகள்.' : 'Manage authentication, synced profile, and recitation data.'}
           </p>
         </div>
 
@@ -615,8 +631,8 @@ export const ProfileScreen: React.FC = () => {
               )}
             </div>
             <div>
-              <span className="text-sm font-bold text-on-surface block">{user?.name || 'Muslim Seeker'}</span>
-              <span className="text-xs text-outline">{user?.email || (user?.isGuest ? 'Guest User' : 'No email')}</span>
+              <span className="text-sm font-bold text-on-surface block">{user?.name || (isTamil ? 'முஸ்லிம் பயனர்' : 'Muslim Seeker')}</span>
+              <span className="text-xs text-outline">{user?.email || (user?.isGuest ? (isTamil ? 'விருந்தினர் கணக்கு' : 'Guest User') : 'No email')}</span>
             </div>
           </div>
 
@@ -624,15 +640,19 @@ export const ProfileScreen: React.FC = () => {
           {user?.isGuest && (
             <div className="p-4 rounded-2xl bg-primary/10 border border-primary/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-primary block">Sync Across Devices</span>
-                <p className="text-[11px] text-on-surface-variant">Sign in with Google to backup your streaks & bookmarks.</p>
+                <span className="text-xs font-bold text-primary block">
+                  {isTamil ? 'சாதனங்களுக்கிடையே ஒத்திசைக்க' : 'Sync Across Devices'}
+                </span>
+                <p className="text-[11px] text-on-surface-variant">
+                  {isTamil ? 'Google மூலம் உள்நுழைந்து தரவை பாதுகாக்கவும்.' : 'Sign in with Google to backup your streaks & bookmarks.'}
+                </p>
               </div>
               <Link
                 to="/login"
                 className="px-4 py-1.5 rounded-full primary-gradient-btn text-white text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 shadow-md"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In with Google</span>
+                <span>{isTamil ? 'Google உள்நுழைவு' : 'Sign In with Google'}</span>
               </Link>
             </div>
           )}
@@ -641,14 +661,18 @@ export const ProfileScreen: React.FC = () => {
         {/* Data & Reset Actions */}
         <div className="space-y-2">
           <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
-            Data & Privacy Actions
+            {isTamil ? 'தரவு & தனியுரிமை' : 'Data & Privacy'}
           </h2>
           <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden p-4 space-y-3 shadow-sm">
             {/* Reset Stats to Zero */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/20">
               <div>
-                <span className="text-xs font-bold text-on-surface block">Reset Recitation Progress</span>
-                <span className="text-[11px] text-on-surface-variant">Reset reading counters, streak, and Hasanat points to 0</span>
+                <span className="text-xs font-bold text-on-surface block">
+                  {isTamil ? 'ஓதும் முன்னேற்றத்தை மீட்டமை' : 'Reset Recitation Progress'}
+                </span>
+                <span className="text-[11px] text-on-surface-variant">
+                  {isTamil ? 'தொடர் மற்றும் புள்ளிகளை 0 ஆக மாற்றும்' : 'Reset reading counters, streak, and Hasanat points to 0'}
+                </span>
               </div>
               <button
                 type="button"
@@ -656,15 +680,19 @@ export const ProfileScreen: React.FC = () => {
                 className="px-4 py-1.5 rounded-full bg-surface-container border border-outline-variant/30 hover:border-amber-500/50 text-amber-400 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Reset to Zero</span>
+                <span>{isTamil ? 'மீட்டமை' : 'Reset to Zero'}</span>
               </button>
             </div>
 
             {/* Log Out */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/20">
               <div>
-                <span className="text-xs font-bold text-on-surface block">Sign Out</span>
-                <span className="text-[11px] text-on-surface-variant">Log out of your session on this device</span>
+                <span className="text-xs font-bold text-on-surface block">
+                  {isTamil ? 'வெளியேறு' : 'Sign Out'}
+                </span>
+                <span className="text-[11px] text-on-surface-variant">
+                  {isTamil ? 'இந்த சாதனத்திலிருந்து அமர்வை முடிக்க' : 'Log out of your session on this device'}
+                </span>
               </div>
               <button
                 type="button"
@@ -673,15 +701,19 @@ export const ProfileScreen: React.FC = () => {
                 className="px-4 py-1.5 rounded-full bg-surface-container border border-outline-variant/30 hover:border-primary/50 text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition disabled:opacity-50"
               >
                 {isLoggingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5" />}
-                <span>{isLoggingOut ? 'Signing out...' : 'Sign Out'}</span>
+                <span>{isLoggingOut ? (isTamil ? 'வெளியேறுகிறது...' : 'Signing out...') : (isTamil ? 'வெளியேறு' : 'Sign Out')}</span>
               </button>
             </div>
 
             {/* Delete Account */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30">
               <div>
-                <span className="text-xs font-bold text-rose-400 block">Delete Account</span>
-                <span className="text-[11px] text-on-surface-variant">Permanently delete your profile and all synced cloud records</span>
+                <span className="text-xs font-bold text-rose-400 block">
+                  {isTamil ? 'கணக்கை நீக்கு' : 'Delete Account'}
+                </span>
+                <span className="text-[11px] text-on-surface-variant">
+                  {isTamil ? 'சுயவிவரம் மற்றும் கிளவுட் பதிவுகளை நிரந்தரமாக நீக்க' : 'Permanently delete your profile and synced data'}
+                </span>
               </div>
               <button
                 type="button"
@@ -689,7 +721,7 @@ export const ProfileScreen: React.FC = () => {
                 className="px-4 py-1.5 rounded-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete Account</span>
+                <span>{isTamil ? 'கணக்கை நீக்கு' : 'Delete Account'}</span>
               </button>
             </div>
           </div>
@@ -704,9 +736,11 @@ export const ProfileScreen: React.FC = () => {
               </div>
 
               <div className="text-center space-y-1.5">
-                <h3 className="text-lg font-bold font-h2 text-on-surface">Reset All Stats to Zero?</h3>
+                <h3 className="text-lg font-bold font-h2 text-on-surface">
+                  {isTamil ? 'அனைத்து புள்ளிவிவரங்களையும் மீட்டமைக்கவா?' : 'Reset All Stats to Zero?'}
+                </h3>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  This will reset your Hasanat points, verse counters, page counts, and streaks to zero. This action cannot be undone.
+                  {isTamil ? 'இது உங்கள் ஹஸனாத், வசனங்கள் மற்றும் தொடரை மீட்டமைக்கும்.' : 'This will reset your Hasanat points, verses, pages, and streaks to zero.'}
                 </p>
               </div>
 
@@ -717,7 +751,7 @@ export const ProfileScreen: React.FC = () => {
                   disabled={isResetting}
                   className="flex-1 py-2.5 rounded-full bg-surface-container border border-outline-variant/30 text-xs font-semibold text-on-surface hover:bg-surface-container-high transition cursor-pointer"
                 >
-                  Cancel
+                  {isTamil ? 'ரத்து' : 'Cancel'}
                 </button>
                 <button
                   type="button"
@@ -726,7 +760,7 @@ export const ProfileScreen: React.FC = () => {
                   className="flex-1 py-2.5 rounded-full bg-amber-500 text-gray-950 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-amber-400 transition cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {isResetting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                  <span>{isResetting ? 'Resetting...' : 'Yes, Reset Stats'}</span>
+                  <span>{isResetting ? (isTamil ? 'மீட்டமைக்கிறது...' : 'Resetting...') : (isTamil ? 'ஆம், மீட்டமை' : 'Yes, Reset Stats')}</span>
                 </button>
               </div>
             </div>
@@ -742,9 +776,11 @@ export const ProfileScreen: React.FC = () => {
               </div>
 
               <div className="text-center space-y-1.5">
-                <h3 className="text-lg font-bold font-h2 text-rose-400">Permanently Delete Account?</h3>
+                <h3 className="text-lg font-bold font-h2 text-rose-400">
+                  {isTamil ? 'கணக்கை நிரந்தரமாக நீக்கவா?' : 'Permanently Delete Account?'}
+                </h3>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  All your spiritual bookmarks, reading streaks, Hasanat points, and synced progress will be permanently erased.
+                  {isTamil ? 'உங்கள் புக்மார்க்குகள், தொடர் மற்றும் சாதனைகள் அனைத்தும் அழிக்கப்படும்.' : 'All your bookmarks, reading streaks, Hasanat, and progress will be permanently erased.'}
                 </p>
               </div>
 
@@ -755,7 +791,7 @@ export const ProfileScreen: React.FC = () => {
                   disabled={isDeletingAccount}
                   className="flex-1 py-2.5 rounded-full bg-surface-container border border-outline-variant/30 text-xs font-semibold text-on-surface hover:bg-surface-container-high transition cursor-pointer"
                 >
-                  Cancel
+                  {isTamil ? 'ரத்து' : 'Cancel'}
                 </button>
                 <button
                   type="button"
@@ -764,7 +800,7 @@ export const ProfileScreen: React.FC = () => {
                   className="flex-1 py-2.5 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-rose-500 transition cursor-pointer shadow-md disabled:opacity-50"
                 >
                   {isDeletingAccount ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                  <span>{isDeletingAccount ? 'Deleting...' : 'Delete Forever'}</span>
+                  <span>{isDeletingAccount ? (isTamil ? 'நீக்குகிறது...' : 'Deleting...') : (isTamil ? 'ஆம், நீக்கு' : 'Delete Forever')}</span>
                 </button>
               </div>
             </div>
@@ -775,15 +811,17 @@ export const ProfileScreen: React.FC = () => {
   }
 
   // =========================================================================
-  // MAIN PROFILE DIRECTORY MENU (GROUPED INSET CARDS MATCHING SETTINGS)
+  // MAIN PROFILE DIRECTORY MENU (CRISP & MODERN)
   // =========================================================================
   return (
     <div className="space-y-6 max-w-5xl w-full mx-auto pb-24 animate-fade-in">
       {/* Top Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">My Spiritual Profile</h1>
+        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">
+          {isTamil ? 'ஆன்மீக சுயவிவரம்' : 'My Spiritual Profile'}
+        </h1>
         <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-          Your personal Quran reading journey, saved bookmarks, favorites, and account.
+          {isTamil ? 'உங்கள் குர்ஆன் ஓதுதல் பயணம், புக்மார்க்குகள் மற்றும் சாதனைகள்.' : 'Your personal Quran reading journey, saved bookmarks, and spiritual progress.'}
         </p>
       </div>
 
@@ -800,24 +838,26 @@ export const ProfileScreen: React.FC = () => {
         <div className="flex-1 text-center sm:text-left space-y-1">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
-              {user?.name || 'Muslim Seeker'}
+              {user?.name || (isTamil ? 'முஸ்லிம் பயனர்' : 'Muslim Seeker')}
             </h2>
             <Link
               to="/settings"
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-xs text-on-surface-variant hover:text-on-surface self-center sm:self-auto transition shadow-sm"
             >
               <SettingsIcon className="w-3.5 h-3.5" />
-              <span>App Settings</span>
+              <span>{isTamil ? 'அமைப்புகள்' : 'App Settings'}</span>
             </Link>
           </div>
-          <p className="text-xs text-on-surface-variant">{user?.email || (user?.isGuest ? 'Guest Mode (Unsynced)' : 'No email registered')}</p>
+          <p className="text-xs text-on-surface-variant font-medium">
+            {user?.email || (user?.isGuest ? (isTamil ? 'விருந்தினர் கணக்கு (ஒத்திசைக்கப்படவில்லை)' : 'Guest Mode (Unsynced)') : '')}
+          </p>
           
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-2.5 text-xs">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-2 text-xs">
             <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/30 text-on-surface">
-              <Calendar className="w-3.5 h-3.5 text-primary" /> Joined {user?.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : 'August 2026'}
+              <Calendar className="w-3.5 h-3.5 text-primary" /> {isTamil ? 'இணைந்தது' : 'Joined'} {user?.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : 'August 2026'}
             </span>
             <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-tertiary-container/30 border border-tertiary/30 text-tertiary font-semibold">
-              <Sparkles className="w-3.5 h-3.5" /> {(user?.hasanat || 0).toLocaleString()} Hasanat
+              <Sparkles className="w-3.5 h-3.5" /> {(user?.hasanat || 0).toLocaleString()} {isTamil ? 'நன்மைகள்' : 'Hasanat'}
             </span>
           </div>
         </div>
@@ -831,18 +871,18 @@ export const ProfileScreen: React.FC = () => {
       >
         <div className="p-3.5 sm:p-4 rounded-2xl glass-card border border-outline-variant/30 group-hover:border-primary/40 transition text-center shadow-sm">
           <Flame className="w-5 h-5 text-amber-400 fill-amber-400 mx-auto mb-1" />
-          <p className="text-lg sm:text-xl font-bold text-on-surface">{user?.currentStreak || 0} Days</p>
-          <p className="text-[10px] sm:text-xs text-outline">Streak</p>
+          <p className="text-lg sm:text-xl font-bold text-on-surface">{user?.currentStreak || 0} {isTamil ? 'நாட்கள்' : 'Days'}</p>
+          <p className="text-[10px] sm:text-xs text-outline">{isTamil ? 'தொடர்' : 'Streak'}</p>
         </div>
         <div className="p-3.5 sm:p-4 rounded-2xl glass-card border border-outline-variant/30 group-hover:border-primary/40 transition text-center shadow-sm">
           <BookOpen className="w-5 h-5 text-primary mx-auto mb-1" />
           <p className="text-lg sm:text-xl font-bold text-on-surface">{user?.pages || 0}</p>
-          <p className="text-[10px] sm:text-xs text-outline">Pages Read</p>
+          <p className="text-[10px] sm:text-xs text-outline">{isTamil ? 'பக்கங்கள்' : 'Pages Read'}</p>
         </div>
         <div className="p-3.5 sm:p-4 rounded-2xl glass-card border border-outline-variant/30 group-hover:border-primary/40 transition text-center shadow-sm">
           <Award className="w-5 h-5 text-tertiary mx-auto mb-1" />
           <p className="text-lg sm:text-xl font-bold text-tertiary">{user?.verses || 0}</p>
-          <p className="text-[10px] sm:text-xs text-outline">Ayahs</p>
+          <p className="text-[10px] sm:text-xs text-outline">{isTamil ? 'வசனங்கள்' : 'Ayahs'}</p>
         </div>
       </div>
 
@@ -851,7 +891,7 @@ export const ProfileScreen: React.FC = () => {
         {/* GROUP 1: SPIRITUAL REPOSITORY */}
         <div className="space-y-2">
           <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
-            Spiritual Repository
+            {isTamil ? 'ஆன்மீக சேகரிப்புகள்' : 'Spiritual Repository'}
           </h2>
           <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
             {/* 1. Saved Bookmarks */}
@@ -864,11 +904,13 @@ export const ProfileScreen: React.FC = () => {
                   <Bookmark className="w-5 h-5 fill-amber-400" />
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-on-surface block">Saved Bookmarks</span>
-                  <span className="text-xs text-outline">
+                  <span className="text-sm font-bold text-on-surface block">
+                    {isTamil ? 'சேமிக்கப்பட்ட புக்மார்க்குகள்' : 'Saved Bookmarks'}
+                  </span>
+                  <span className="text-xs text-outline font-medium">
                     {bookmarks.length > 0 
-                      ? `${bookmarks.length} Saved Ayahs & Hadiths`
-                      : 'No bookmarks saved yet'
+                      ? `${bookmarks.length} ${isTamil ? 'சேமிப்புகள்' : 'Saved Items'}`
+                      : (isTamil ? 'சேமிப்புகள் எதுவும் இல்லை' : 'No bookmarks saved yet')
                     }
                   </span>
                 </div>
@@ -883,7 +925,7 @@ export const ProfileScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* 🌟 2. Favorite Verses & Hadiths (BELOW BOOKMARK SECTION) */}
+            {/* 2. Favorite Verses & Hadiths */}
             <div
               onClick={() => setActiveSubPage('favorites')}
               className="p-4 sm:p-4.5 hover:bg-surface-container/60 transition cursor-pointer flex items-center justify-between group"
@@ -893,11 +935,13 @@ export const ProfileScreen: React.FC = () => {
                   <Heart className="w-5 h-5 fill-rose-500" />
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-on-surface block">Favorite Verses & Hadiths</span>
-                  <span className="text-xs text-outline">
+                  <span className="text-sm font-bold text-on-surface block">
+                    {isTamil ? 'விருப்பமான வசனங்கள் & ஹதீஸ்கள்' : 'Favorite Verses & Hadiths'}
+                  </span>
+                  <span className="text-xs text-outline font-medium">
                     {favorites.length > 0 
-                      ? `${favorites.length} Cherished Items`
-                      : 'No favorites saved yet'
+                      ? `${favorites.length} ${isTamil ? 'விருப்பங்கள்' : 'Cherished Items'}`
+                      : (isTamil ? 'விருப்பங்கள் எதுவும் இல்லை' : 'No favorites saved yet')
                     }
                   </span>
                 </div>
@@ -922,9 +966,11 @@ export const ProfileScreen: React.FC = () => {
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-on-surface block">Spiritual Milestones & Badges</span>
-                  <span className="text-xs text-outline">
-                    {badges.filter(b => b.progress === '100%').length} Badges Unlocked • 2 in progress
+                  <span className="text-sm font-bold text-on-surface block">
+                    {isTamil ? 'ஆன்மீக சாதனைகள் & பதக்கங்கள்' : 'Spiritual Milestones & Badges'}
+                  </span>
+                  <span className="text-xs text-outline font-medium">
+                    {badges.filter(b => b.progress === '100%').length}/5 {isTamil ? 'பதக்கங்கள் வெல்லப்பட்டுள்ளன' : 'Badges Unlocked'}
                   </span>
                 </div>
               </div>
@@ -941,9 +987,11 @@ export const ProfileScreen: React.FC = () => {
                   <BarChart3 className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-on-surface block">Recitation Analytics</span>
-                  <span className="text-xs text-outline">
-                    {user?.currentStreak || 0}-day streak • {(user?.hasanat || 0).toLocaleString()} Hasanat
+                  <span className="text-sm font-bold text-on-surface block">
+                    {isTamil ? 'ஓதுதல் புள்ளிவிவரங்கள்' : 'Recitation Analytics'}
+                  </span>
+                  <span className="text-xs text-outline font-medium">
+                    {user?.currentStreak || 0} {isTamil ? 'நாள் தொடர்' : 'day streak'} • {(user?.hasanat || 0).toLocaleString()} {isTamil ? 'நன்மைகள்' : 'Hasanat'}
                   </span>
                 </div>
               </div>
@@ -955,7 +1003,7 @@ export const ProfileScreen: React.FC = () => {
         {/* GROUP 2: ACCOUNT & PREFERENCES */}
         <div className="space-y-2">
           <h2 className="text-xs font-bold text-outline uppercase tracking-wider px-2 font-label-caps">
-            Account & Preferences
+            {isTamil ? 'கணக்கு & விருப்பத்தேர்வுகள்' : 'Account & Preferences'}
           </h2>
           <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
             {/* Account Management */}
@@ -968,9 +1016,11 @@ export const ProfileScreen: React.FC = () => {
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-on-surface block">Account & Security</span>
-                  <span className="text-xs text-outline">
-                    {user?.isGuest ? 'Guest Mode (Unsynced)' : 'Google Authenticated Profile'}
+                  <span className="text-sm font-bold text-on-surface block">
+                    {isTamil ? 'கணக்கு & பாதுகாப்பு' : 'Account & Security'}
+                  </span>
+                  <span className="text-xs text-outline font-medium">
+                    {user?.isGuest ? (isTamil ? 'விருந்தினர் முறை' : 'Guest Mode') : (isTamil ? 'Google கணக்கு' : 'Google Authenticated')}
                   </span>
                 </div>
               </div>
@@ -987,9 +1037,11 @@ export const ProfileScreen: React.FC = () => {
                   <SettingsIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-sm font-bold text-on-surface block">App Settings</span>
-                  <span className="text-xs text-outline">
-                    Theme, typography, translation, targets & notifications
+                  <span className="text-sm font-bold text-on-surface block">
+                    {isTamil ? 'பயன்பாட்டு அமைப்புகள்' : 'App Settings'}
+                  </span>
+                  <span className="text-xs text-outline font-medium">
+                    {isTamil ? 'தீம், எழுத்துருக்கள், மொழிபெயர்ப்பு & இலக்குகள்' : 'Theme, fonts, translations & goals'}
                   </span>
                 </div>
               </div>
