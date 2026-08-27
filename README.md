@@ -51,7 +51,15 @@
   - 🇹🇷 **Ottoman / Turkish Naskh** (*Scheherazade New* — Diyanet edition)
   - 📱 **Modern Digital Naskh** (*Noto Naskh Arabic* — High-DPI OLED standard)
   - 🏺 **Classical Early Kufic** (*Noto Kufi Arabic* — Ancient manuscript script)
-- **Phonetic Transliteration with Live Ayah Hasanat Roll-Up**: Displays Latin phonetic transliteration beneath the verse card alongside the Hadith-accurate Hasanat reward points (`+880 pts`), mirroring the Quranly app visual experience.
+- **🔤 Bilingual Phonetic Transliteration (English & Pure Tamil / தமிழ் ஒலிபெயர்ப்பு)**:
+  - **On/Off Setting**: Complete toggle in Settings (`Show Phonetic Transliteration`) to enable or disable pronunciation guidance below verses.
+  - **Language Selector**: Choose between **English Phonetic (Latin)** (e.g. `Bismillāhir-Raḥmānir-Raḥīm`) and **Tamil Phonetic (தமிழ் உச்சரிப்பு)** (e.g. `பிஸ்மில்லாஹிர் ரஹ்மானிர் ரஹீம்`).
+  - **Live Interactive Preview in Settings**: Real-time preview card rendering the chosen language and script.
+  - **Live Letter-by-Letter Hasanat Badge**: Displays pronunciation with the Sunnah-accurate letter Hasanat points badge (`+880 pts`), mirroring the Quranly visual experience.
+- **📱 Enlarged Header & Footer with Ergonomic Aspect Ratio**:
+  - **Prominent Header**: Increased height, larger touch buttons, expanded Surah title display, and clear time/Hasanat indicators.
+  - **Enlarged Footer Controls**: Substantially larger `Previous Ayah ( ← )`, `I'm Done`, and `Next Ayah ( → )` action buttons (`h-14` to `h-18`) with large arrow strokes for seamless single-handed navigation.
+  - **Fixed Viewport Aspect Ratio**: Responsive `100dvh` boundary protection ensuring zero distortion or header/footer collision across all mobile and desktop screen ratios.
 - **Diacritic-Aware Typography Scaling**: Responsive typography scaling (18px – 54px) via dynamic CSS variables, steppers, and quick presets with instant auto-saving.
 - **Pinch-to-Zoom & Gesture Scaling**: 2-finger mobile pinch gestures and trackpad wheel zooming to smoothly scale Arabic text size on the fly with live visual indicator pills.
 - **Verse of the Day & Hadith of the Day**: Automatic midnight rotation of inspiring Quranic verses and authentic Prophetic Hadiths with bilingual English and Tamil translations.

@@ -44,6 +44,8 @@ export interface UserProfile {
   arabicFontStyle?: ArabicFontStyle
   mushafTheme?: import('../lib/mushafThemes').MushafThemeId
   tajweedRulesEnabled?: boolean
+  showTransliteration?: boolean
+  transliterationLanguage?: 'en' | 'ta'
   prayerNotifications?: boolean
   readingReminders?: boolean
   authProvider?: 'google' | 'email' | 'guest'

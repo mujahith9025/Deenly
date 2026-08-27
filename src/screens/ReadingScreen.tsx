@@ -72,6 +72,10 @@ export const ReadingScreen: React.FC = () => {
   const storeTamilTranslation = useReadingStore((state) => state.tamilTranslation)
   const isTajweedEnabled = useReadingStore((state) => state.isTajweedEnabled)
   const setIsTajweedEnabled = useReadingStore((state) => state.setIsTajweedEnabled)
+  const storeShowTransliteration = useReadingStore((state) => state.showTransliteration)
+  const storeTransliterationLang = useReadingStore((state) => state.transliterationLanguage)
+  const showTransliteration = user?.showTransliteration !== undefined ? user.showTransliteration : storeShowTransliteration
+  const transliterationLang: 'en' | 'ta' = user?.transliterationLanguage || storeTransliterationLang || (appLanguage === 'ta' ? 'ta' : 'en')
   const surahTajweedMap = useReadingStore((state) => state.surahTajweedMap)
   const setFontSize = useReadingStore((state) => state.setFontSize)
   const fontSize = storeFontSize || user?.arabicFontSize || 28
@@ -591,27 +595,20 @@ export const ReadingScreen: React.FC = () => {
             </p>
           </div>
         ) : currentAyah ? (
-          <div className="min-h-full flex flex-col justify-center items-center space-y-3 sm:space-y-4 max-w-3xl mx-auto py-2 animate-fade-in">
-            {/* Bismillah Header (Shown only on Ayah 1 if not Surah 9) */}
-            {currentAyahNumber === 1 && currentSurahNumber !== 9 && (
-              <div className="text-center py-0.5">
-                <p 
-                  className="text-base sm:text-xl md:text-2xl text-primary-fixed-dim opacity-90 transition-all duration-150"
-                  style={{ fontFamily: arabicFontFamily }}
-                  dir="rtl"
-                >
-                  بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
-                </p>
-              </div>
-            )}
-
-            {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (SCALES ON PINCH/ZOOM & USES SELECTED FONT & THEME) */}
+          <div className="space-y-2 sm:space-y-3.5 max-w-3xl mx-auto w-full animate-fade-in my-auto">
+            {/* 🌟 1. ARABIC AYAH CONTAINER */}
             <div 
-              className={`w-full p-4 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl space-y-3 text-center transition-all duration-200 active:scale-[0.99] select-none flex flex-col items-center justify-center break-words border shadow-md ${themeMeta.classes.card}`}
+              className={`w-full p-4 sm:p-7 md:p-8 rounded-2xl sm:rounded-3xl space-y-3 text-center transition-all duration-200 active:scale-[0.99] select-none flex flex-col items-center justify-center break-words border shadow-md ${themeMeta.classes.card}`}
             >
               <p
-                className={`text-center leading-[2.4] sm:leading-[2.7] md:leading-[3.0] tracking-normal select-none font-bold break-words w-full transition-all duration-150 ${themeMeta.classes.textArabic}`}
-                style={{ fontSize: `${fontSize}px`, fontFamily: arabicFontFamily }}
+                className={`font-normal tracking-wide text-center w-full max-w-2xl mx-auto break-words leading-[2.4] sm:leading-[2.8] md:leading-[3.1] select-none ${themeMeta.classes.textArabic}`}
+                style={{
+                  fontFamily: arabicFontFamily,
+                  fontSize: `${fontSize}px`,
+                  fontFeatureSettings: '"cv01" 1, "cv02" 1, "cv03" 1, "ss01" 1',
+                  textRendering: 'optimizeLegibility',
+                  WebkitFontSmoothing: 'antialiased',
+                }}
                 dir="rtl"
               >
                 <TajweedArabicText
@@ -625,21 +622,25 @@ export const ReadingScreen: React.FC = () => {
               </p>
             </div>
 
-            {/* 🌟 2. PHONETIC TRANSLITERATION WITH LIVE HASANAT POINTS (QURANLY APP STYLE) */}
-            <div className="w-full p-3 sm:p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/30 text-left space-y-1 select-none shadow-xs">
-              <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-bold text-outline">
-                <span className="uppercase font-label-caps tracking-wider">
-                  {appLanguage === 'ta' ? 'உச்சரிப்பு' : 'Phonetic Transliteration'}
-                </span>
-                <span className="text-emerald-400 font-extrabold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shadow-2xs">
-                  <Sparkles className="w-3 h-3 text-emerald-400" />
-                  +{countArabicLetters(currentAyah.arabicText) * 10} {t('pts')}
-                </span>
+            {/* 🌟 2. PHONETIC TRANSLITERATION (IF ENABLED IN SETTINGS) */}
+            {showTransliteration && (
+              <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/30 text-left space-y-1 select-none shadow-xs">
+                <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-bold text-outline">
+                  <span className="uppercase font-label-caps tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-primary" />
+                    <span>
+                      {transliterationLang === 'ta' ? 'தமிழ் ஒலிபெயர்ப்பு (Phonetic)' : 'English Phonetic'}
+                    </span>
+                  </span>
+                  <span className="text-emerald-400 font-extrabold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shadow-2xs">
+                    +{countArabicLetters(currentAyah.arabicText) * 10} {t('pts')}
+                  </span>
+                </div>
+                <p className="font-sans text-xs sm:text-sm text-secondary/95 font-medium leading-relaxed italic">
+                  {getArabicTransliteration(currentAyah.arabicText, currentSurahNumber, currentAyah.verseNumberInSurah, transliterationLang)}
+                </p>
               </div>
-              <p className="font-sans text-xs sm:text-sm text-secondary/90 leading-relaxed italic">
-                {getArabicTransliteration(currentAyah.arabicText, currentSurahNumber, currentAyah.verseNumberInSurah)}
-              </p>
-            </div>
+            )}
 
             {/* 🌟 3. TRANSLATION CONTAINER */}
             <div 
@@ -661,15 +662,15 @@ export const ReadingScreen: React.FC = () => {
       </main>
 
       {/* ========================================================================= */}
-      {/* 3. FIXED BOTTOM BAR: MATCHED HEIGHT & WIDTH TO HEADER                     */}
+      {/* 4. ENLARGED FIXED BOTTOM BAR: LARGER HIT TARGETS & PROMINENT SIZING       */}
       {/*    ( ← ) Previous Ayah, "I'm Done" Center Pill, ( → ) Next Ayah           */}
       {/* ========================================================================= */}
-      <footer className={`w-full px-2.5 sm:px-5 py-2 sm:py-3.5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-md transition-colors duration-300 ${themeMeta.classes.footer}`}>
-        <div className="flex items-center justify-between gap-2 sm:gap-4 relative">
+      <footer className={`w-full px-3 sm:px-6 py-3 sm:py-4.5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-xl transition-colors duration-300 ${themeMeta.classes.footer}`}>
+        <div className="flex items-center justify-between gap-2.5 sm:gap-5 relative">
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (
-            <div className={`absolute -top-8 sm:-top-10 right-3 sm:right-6 pointer-events-none transition-transform duration-300 ${floatingHasanat ? 'scale-125 animate-bounce' : ''}`}>
-              <span className="text-[11px] sm:text-sm md:text-base font-extrabold text-amber-300 bg-black/90 px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full border border-amber-500/50 shadow-lg">
+            <div className={`absolute -top-9 sm:-top-11 right-4 sm:right-8 pointer-events-none transition-transform duration-300 ${floatingHasanat ? 'scale-125 animate-bounce' : ''}`}>
+              <span className="text-xs sm:text-sm md:text-base font-black text-amber-300 bg-black/90 px-3 sm:px-4 py-1 rounded-full border border-amber-500/50 shadow-2xl">
                 +{floatingHasanat ? floatingHasanat.amount : currentAyah.hasanatValue}
               </span>
             </div>
@@ -680,17 +681,17 @@ export const ReadingScreen: React.FC = () => {
             type="button"
             onClick={(e) => handlePrevAyah(e)}
             disabled={currentSurahNumber === 1 && currentAyahNumber === 1}
-            className={`w-14 sm:w-28 md:w-36 h-12 sm:h-14 md:h-16 rounded-full border flex items-center justify-center transition cursor-pointer shadow-md disabled:opacity-40 active:scale-95 shrink-0 ${themeMeta.classes.buttonSecondary}`}
+            className={`w-16 sm:w-32 md:w-44 h-13 sm:h-16 md:h-18 rounded-2xl sm:rounded-full border flex items-center justify-center transition cursor-pointer shadow-md disabled:opacity-30 active:scale-95 shrink-0 ${themeMeta.classes.buttonSecondary}`}
             title="Previous Ayah"
           >
-            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 stroke-[2.5]" />
+            <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 stroke-[2.5]" />
           </button>
 
           {/* Center Button: "I'm Done" */}
           <button
             type="button"
             onClick={(e) => handleFinishSession(e)}
-            className={`flex-1 h-12 sm:h-14 md:h-16 rounded-full border text-xs sm:text-base md:text-lg font-bold flex items-center justify-center transition cursor-pointer shadow-md active:scale-98 min-w-0 px-2 truncate ${themeMeta.classes.buttonSecondary}`}
+            className={`flex-1 h-13 sm:h-16 md:h-18 rounded-2xl sm:rounded-full border text-xs sm:text-base md:text-lg font-black tracking-wide flex items-center justify-center transition cursor-pointer shadow-md active:scale-98 min-w-0 px-3 truncate ${themeMeta.classes.buttonSecondary}`}
           >
             {t('imDone')}
           </button>
@@ -702,10 +703,10 @@ export const ReadingScreen: React.FC = () => {
               e.stopPropagation()
               handleMarkAndNext()
             }}
-            className={`w-14 sm:w-28 md:w-36 h-12 sm:h-14 md:h-16 rounded-full font-bold flex items-center justify-center transition cursor-pointer shadow-xl active:scale-95 shrink-0 ${themeMeta.classes.buttonPrimary}`}
+            className={`w-16 sm:w-32 md:w-44 h-13 sm:h-16 md:h-18 rounded-2xl sm:rounded-full font-black flex items-center justify-center transition cursor-pointer shadow-xl active:scale-95 shrink-0 ${themeMeta.classes.buttonPrimary}`}
             title={currentAyah && currentAyah.verseNumberInSurah === totalAyahs ? 'Complete Chapter & Next Surah' : 'Mark Read & Next Ayah'}
           >
-            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 stroke-[3]" />
+            <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 stroke-[3]" />
           </button>
         </div>
       </footer>

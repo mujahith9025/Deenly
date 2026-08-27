@@ -84,6 +84,8 @@ const initialGuestUser: UserProfile = {
   bestStreak: 0,
   arabicFontSize: 28,
   arabicFontStyle: 'madani',
+  showTransliteration: true,
+  transliterationLanguage: 'en',
   prayerNotifications: true,
   readingReminders: true,
   authProvider: 'guest',

@@ -44,11 +44,13 @@ import { useI18nStore, type AppLanguage } from '../lib/i18n'
 import { TAJWEED_RULES } from '../lib/tajweed'
 import { TajweedArabicText } from '../components/TajweedArabicText'
 import { MUSHAF_THEMES, type MushafThemeId } from '../lib/mushafThemes'
+import { getArabicTransliteration } from '../lib/transliteration'
 
 type SettingCategory = 
   | 'language'
   | 'theme' 
   | 'translation' 
+  | 'transliteration'
   | 'font' 
   | 'tajweed'
   | 'target' 
@@ -103,6 +105,10 @@ export const SettingsScreen: React.FC = () => {
   const setEnglishTranslation = useReadingStore((state) => state.setEnglishTranslation)
   const setTamilTranslation = useReadingStore((state) => state.setTamilTranslation)
   const setTranslationLanguage = useReadingStore((state) => state.setTranslationLanguage)
+  const storeShowTransliteration = useReadingStore((state) => state.showTransliteration)
+  const storeTransliterationLang = useReadingStore((state) => state.transliterationLanguage)
+  const setShowTransliteration = useReadingStore((state) => state.setShowTransliteration)
+  const setTransliterationLanguage = useReadingStore((state) => state.setTransliterationLanguage)
 
   const deviceId = syncService.getDeviceId()
 
@@ -112,6 +118,8 @@ export const SettingsScreen: React.FC = () => {
   const currentTranslation = user?.preferredTranslation || 'english'
   const currentEnglishTranslation: EnglishTranslationKey = user?.englishTranslation || storeEnglishTranslation || DEFAULT_ENGLISH_TRANSLATION
   const currentTamilTranslation: TamilTranslationKey = user?.tamilTranslation || storeTamilTranslation || DEFAULT_TAMIL_TRANSLATION
+  const showTransliteration = user?.showTransliteration !== undefined ? user.showTransliteration : storeShowTransliteration
+  const transliterationLang = user?.transliterationLanguage || storeTransliterationLang || (appLanguage === 'ta' ? 'ta' : 'en')
   const currentGoal = user?.dailyGoalVerses || 10
   const prayerAlerts = user?.prayerNotifications !== false
   const readingAlerts = user?.readingReminders !== false
@@ -661,6 +669,175 @@ export const SettingsScreen: React.FC = () => {
       </div>
     )
   }
+
+  // 2.5 Phonetic Transliteration (English & Tamil) Section
+  const renderTransliterationSection = () => (
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+          {appLanguage === 'ta' ? 'குர்ஆன் ஒலிபெயர்ப்பு (Phonetic Transliteration)' : 'Phonetic Transliteration'}
+        </h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          {appLanguage === 'ta' 
+            ? 'அரபு வசனங்களுக்குக் கீழே ஆங்கிலம் அல்லது தமிழ் மொழியில் துல்லியமான உச்சரிப்பு வழிகாட்டியை இயக்குங்கள்.'
+            : 'Display pronunciation assistance beneath Quran verses in English (Latin) or pure Tamil (தமிழ் ஒலிபெயர்ப்பு).'}
+        </p>
+      </div>
+
+      {/* Main Master Toggle Card */}
+      <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm sm:text-base font-bold text-on-surface flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>{appLanguage === 'ta' ? 'ஒலிபெயர்ப்பைக் காட்டு' : 'Show Phonetic Transliteration'}</span>
+            </h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              {appLanguage === 'ta' 
+                ? 'ஓதும் திரையில் ஒவ்வொரு வசனத்தின் கீழும் உச்சரிப்பு வரிகளை இயக்கு அல்லது மறை.'
+                : 'Display pronunciation assistance line directly beneath each Ayah on the Quran Reading Screen.'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const nextVal = !showTransliteration
+              setShowTransliteration(nextVal)
+              updateUserSettings({ showTransliteration: nextVal })
+            }}
+            className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+              showTransliteration ? 'bg-primary' : 'bg-surface-container-highest'
+            }`}
+          >
+            <span
+              className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform ${
+                showTransliteration ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Language Selection Grid (English vs Tamil) */}
+      {showTransliteration && (
+        <div className="space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps flex items-center gap-1.5">
+              <Globe className="w-4 h-4 text-primary" />
+              <span>{appLanguage === 'ta' ? 'ஒலிபெயர்ப்பு மொழி தேர்வு' : 'Transliteration Script & Language'}</span>
+            </span>
+            <span className="text-[11px] text-outline font-semibold">2 Authentic Formats</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* English (Latin) */}
+            <div
+              onClick={() => {
+                setTransliterationLanguage('en')
+                updateUserSettings({ transliterationLanguage: 'en' })
+              }}
+              className={`p-5 sm:p-6 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-4 ${
+                transliterationLang === 'en'
+                  ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
+                  : 'glass-card border-outline-variant/30 hover:border-primary/40'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-base shrink-0">
+                  EN
+                </div>
+                {transliterationLang === 'en' && (
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shadow-sm">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">
+                  {appLanguage === 'ta' ? 'ஆங்கில ஒலிபெயர்ப்பு (English Latin)' : 'English Phonetic (Latin)'}
+                </span>
+                <span className="text-xs text-on-surface-variant block mt-1">
+                  International standard transliteration using Latin letters with macrons.
+                </span>
+                <span className="text-xs font-mono text-secondary font-semibold block mt-2 p-2 rounded-xl bg-surface-container/60 border border-outline-variant/20">
+                  "Bismillāhir-Raḥmānir-Raḥīm"
+                </span>
+              </div>
+            </div>
+
+            {/* Tamil */}
+            <div
+              onClick={() => {
+                setTransliterationLanguage('ta')
+                updateUserSettings({ transliterationLanguage: 'ta' })
+              }}
+              className={`p-5 sm:p-6 rounded-3xl border transition duration-200 cursor-pointer flex flex-col justify-between space-y-4 ${
+                transliterationLang === 'ta'
+                  ? 'bg-primary/15 border-primary shadow-lg ring-2 ring-primary/40'
+                  : 'glass-card border-outline-variant/30 hover:border-primary/40'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-surface-container-high border border-outline-variant/40 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                  தமிழ்
+                </div>
+                {transliterationLang === 'ta' && (
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shadow-sm">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <span className="text-base font-bold text-on-surface block">
+                  {appLanguage === 'ta' ? 'தமிழ் ஒலிபெயர்ப்பு (Tamil Phonetic)' : 'Tamil Phonetic (தமிழ்)'}
+                </span>
+                <span className="text-xs text-on-surface-variant block mt-1">
+                  அரபு எழுத்துக்களின் தஜ்வீத் முறைப்படியான தூய தமிழ் ஒலிபெயர்ப்பு உச்சரிப்பு.
+                </span>
+                <span className="text-xs font-mono text-secondary font-semibold block mt-2 p-2 rounded-xl bg-surface-container/60 border border-outline-variant/20">
+                  "பிஸ்மில்லாஹிர் ரஹ்மானிர் ரஹீம்"
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Live Preview Box */}
+          <div className="p-5 sm:p-6 rounded-3xl glass-card border border-primary/30 shadow-md space-y-3 bg-surface-container-low/80">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps">
+                {appLanguage === 'ta' ? 'நேரடி முன்னோட்டம் (அல்-ஃபாத்திஹா 1:1)' : 'Live Reading Preview (Al-Fatihah 1:1)'}
+              </span>
+              <span className="text-[11px] text-primary font-bold">
+                {transliterationLang === 'ta' ? 'தமிழ் ஒலிபெயர்ப்பு செயலில் உள்ளது' : 'English Phonetic Active'}
+              </span>
+            </div>
+
+            {/* Arabic Script */}
+            <div
+              className="p-4 rounded-2xl bg-surface-container-high/40 border border-outline-variant/30 text-center select-none"
+              dir="rtl"
+              style={{ fontFamily: getArabicFontFamily(currentFontStyle) }}
+            >
+              <p className="text-2xl sm:text-3xl font-bold text-on-surface leading-loose">
+                بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ ﴿١﴾
+              </p>
+            </div>
+
+            {/* Transliteration Preview */}
+            <div className="p-3.5 rounded-2xl bg-surface-container/80 border border-outline-variant/20 text-center space-y-1">
+              <span className="text-[10px] uppercase font-bold text-outline font-label-caps block">
+                {transliterationLang === 'ta' ? 'தமிழ் உச்சரிப்பு வடிவம்' : 'Pronunciation Preview'}
+              </span>
+              <p className="text-sm font-bold text-secondary italic">
+                {getArabicTransliteration('بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ', 1, 1, transliterationLang)}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 
   // 3. Font Size & Arabic Font Styles Section
   const renderFontSection = () => {
@@ -1622,6 +1799,8 @@ export const SettingsScreen: React.FC = () => {
         return renderThemeSection()
       case 'translation':
         return renderTranslationSection()
+      case 'transliteration':
+        return renderTransliterationSection()
       case 'font':
         return renderFontSection()
       case 'tajweed':
@@ -1660,6 +1839,14 @@ export const SettingsScreen: React.FC = () => {
       label: t('quranTranslations'), 
       icon: Globe, 
       desc: appLanguage === 'ta' || currentTranslation === 'tamil' ? 'தமிழ் (பாகவி / ஜான் டிரஸ்ட்)' : 'English (Sahih)' 
+    },
+    { 
+      id: 'transliteration', 
+      label: t('phoneticTransliteration'), 
+      icon: Volume2, 
+      desc: showTransliteration 
+        ? (transliterationLang === 'ta' ? 'தமிழ் ஒலிபெயர்ப்பு' : 'English Phonetic') 
+        : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Disabled') 
     },
     { 
       id: 'font', 

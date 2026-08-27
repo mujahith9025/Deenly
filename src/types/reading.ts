@@ -51,6 +51,8 @@ export interface ReadingSessionState {
   currentSurah: SurahDetail | null
   surahTajweedMap: Record<number, string>
   isTajweedEnabled: boolean
+  showTransliteration: boolean
+  transliterationLanguage: 'en' | 'ta'
   isLoadingSurah: boolean
   error: string | null
   activeSession: ActiveReadingSession

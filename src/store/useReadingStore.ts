@@ -21,6 +21,8 @@ interface ReadingStoreActions {
   setTamilTranslation: (trans: TamilTranslationKey) => void
   setMushafTheme: (theme: MushafThemeId) => void
   setIsTajweedEnabled: (enabled: boolean) => void
+  setShowTransliteration: (show: boolean) => void
+  setTransliterationLanguage: (lang: 'en' | 'ta') => void
   setIsPlayingAudio: (isPlaying: boolean) => void
   toggleAudioMute: () => void
   loadSurah: (surahNumber: number) => Promise<void>
@@ -82,6 +84,26 @@ const getStoredLastPosition = (): { surah: number; ayah: number } => {
 
 const lastPos = getStoredLastPosition()
 
+const getStoredShowTransliteration = (): boolean => {
+  if (typeof window === 'undefined') return true
+  try {
+    const s = localStorage.getItem('deenly_show_transliteration')
+    return s !== null ? s === 'true' : true
+  } catch {
+    return true
+  }
+}
+
+const getStoredTransliterationLanguage = (): 'en' | 'ta' => {
+  if (typeof window === 'undefined') return 'en'
+  try {
+    const s = localStorage.getItem('deenly_transliteration_lang')
+    return s === 'ta' ? 'ta' : 'en'
+  } catch {
+    return 'en'
+  }
+}
+
 const initialReadingState: ReadingSessionState = {
   currentSurahNumber: lastPos.surah,
   currentAyahNumber: lastPos.ayah,
@@ -98,6 +120,8 @@ const initialReadingState: ReadingSessionState = {
   currentSurah: null,
   surahTajweedMap: {},
   isTajweedEnabled: getStoredTajweedPreference(),
+  showTransliteration: getStoredShowTransliteration(),
+  transliterationLanguage: getStoredTransliterationLanguage(),
   isLoadingSurah: false,
   error: null,
   activeSession: initialActiveSession,
@@ -136,6 +160,20 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
     setStoredMushafTheme(mushafTheme)
     set({ mushafTheme })
     useAuthStore.getState().updateUserSettings({ mushafTheme })
+  },
+  setShowTransliteration: (showTransliteration) => {
+    try {
+      localStorage.setItem('deenly_show_transliteration', showTransliteration ? 'true' : 'false')
+    } catch {}
+    set({ showTransliteration })
+    useAuthStore.getState().updateUserSettings({ showTransliteration })
+  },
+  setTransliterationLanguage: (transliterationLanguage) => {
+    try {
+      localStorage.setItem('deenly_transliteration_lang', transliterationLanguage)
+    } catch {}
+    set({ transliterationLanguage })
+    useAuthStore.getState().updateUserSettings({ transliterationLanguage })
   },
   setTranslationLanguage: (translationLanguage) => set({ translationLanguage }),
   setEnglishTranslation: (englishTranslation) => {
