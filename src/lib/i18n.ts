@@ -61,8 +61,8 @@ export const TRANSLATIONS_DICT = {
 
     // Quran Explorer
     quranExplorer: 'Quran Explorer',
-    quranExplorerSub: 'Read, explore, and listen to continuous full-chapter audio recitations.',
-    searchSurahPlaceholder: 'Search Surah by name, translation, or number...',
+    quranExplorerSub: '114 Surahs • 6,236 Ayahs • 30 Juz',
+    searchSurahPlaceholder: 'Search Surah name, number, or meaning...',
     allChapters: 'All Chapters',
     playFullSurah: 'Play Full Surah',
     pauseRecitation: 'Pause Recitation',
@@ -226,8 +226,8 @@ export const TRANSLATIONS_DICT = {
 
     // Quran Explorer
     quranExplorer: 'திருக்குர்ஆன் உலாவி',
-    quranExplorerSub: 'முழு அத்தியாயங்களையும் வாசிக்கவும், தொடர் கிராஅத் கேட்கவும்.',
-    searchSurahPlaceholder: 'அத்தியாயத்தின் பெயர், மொழிபெயர்ப்பு அல்லது எண் மூலம் தேடவும்...',
+    quranExplorerSub: '114 அத்தியாயங்கள் • 6,236 வசனங்கள் • 30 ஜுஸ்',
+    searchSurahPlaceholder: 'அத்தியாயத்தின் பெயர், எண் அல்லது பொருள் மூலம் தேடவும்...',
     allChapters: 'அனைத்து அத்தியாயங்களும் (114)',
     playFullSurah: 'முழு அத்தியாயத்தை இயக்கு',
     pauseRecitation: 'ஓதுவதை நிறுத்து',
