@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { 
   Sparkles, 
   Compass, 
@@ -7,20 +8,26 @@ import {
   Star, 
   Search, 
   Shield, 
-  Info,
-  BarChart3
+  BarChart3,
+  ArrowLeft,
+  ArrowRight
 } from 'lucide-react'
 import { DigitalTasbihEngine } from '../components/DigitalTasbihEngine'
 import { DhikrAnalyticsView } from '../components/DhikrAnalyticsView'
 import { useAuthStore } from '../store/useAuthStore'
+import { useTasbihStore } from '../store/useTasbihStore'
 import { useI18nStore } from '../lib/i18n'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { ASMAUL_HUSNA, type AsmaulHusnaItem } from '../lib/asmaulHusnaData'
 import { HISNUL_MUSLIM_DUAS, HISNUL_MUSLIM_CATEGORIES } from '../lib/hisnulMuslimData'
+import { DHIKR_PRESETS } from '../lib/dhikrData'
 
-type ExploreTab = 'dhikr' | 'analytics' | 'hisnul_muslim' | 'asmaul_husna'
+export type ExploreCategoryKey = 'dhikr' | 'analytics' | 'hisnul_muslim' | 'asmaul_husna'
 
 export const ExploreScreen: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentCategory = (searchParams.get('cat') as ExploreCategoryKey | null)
+
   const user = useAuthStore((state) => state.user)
   const appLanguage = useI18nStore((state) => state.appLanguage)
   const isTamil = appLanguage === 'ta'
@@ -28,7 +35,26 @@ export const ExploreScreen: React.FC = () => {
   const fontStyle: ArabicFontStyle = user?.arabicFontStyle || 'madani'
   const arabicFontFamily = getArabicFontFamily(fontStyle)
 
-  const [activeTab, setActiveTab] = useState<ExploreTab>('dhikr')
+  // Tasbih store live metrics for preview in square cards
+  const {
+    dailyGoal,
+    todayDhikrCounts,
+    lifetimeDhikrCounts,
+    currentStreak,
+    getCompletedDhikrsCount,
+  } = useTasbihStore()
+
+  const todayTotal = useMemo(() => {
+    return Object.values(todayDhikrCounts).reduce((acc, v) => acc + v, 0)
+  }, [todayDhikrCounts])
+
+  const totalLifetime = useMemo(() => {
+    return Object.values(lifetimeDhikrCounts).reduce((acc, v) => acc + v, 0)
+  }, [lifetimeDhikrCounts])
+
+  const completedDhikrsCount = getCompletedDhikrsCount()
+  const totalPresetsCount = DHIKR_PRESETS.length
+
   const [copiedId, setCopiedId] = useState<string | null>(null)
   
   // Hisnul Muslim State
@@ -37,6 +63,17 @@ export const ExploreScreen: React.FC = () => {
 
   // 99 Names State
   const [asmaulSearch, setAsmaulSearch] = useState<string>('')
+
+  // Category navigation handlers
+  const handleSelectCategory = (catKey: ExploreCategoryKey) => {
+    setSearchParams({ cat: catKey })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleBackToGrid = () => {
+    setSearchParams({})
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   // Copy helper
   const handleCopy = (id: string, text: string) => {
@@ -83,15 +120,84 @@ export const ExploreScreen: React.FC = () => {
     })
   }, [asmaulSearch])
 
+  // Category Configuration for Square Grid Cards
+  const CATEGORIES = [
+    {
+      key: 'dhikr' as ExploreCategoryKey,
+      titleEn: 'Digital Tasbih & Dhikr Studio',
+      titleTa: 'திக்ர் & தஸ்பீஹ் அரங்கம்',
+      arabicScript: 'سُبْحَانَ ٱللَّهِ • الحَمْدُ لِلَّهِ',
+      descEn: 'Interactive counter, custom daily targets, Sunnah 33-33-34 cycles & authentic Hadith virtues.',
+      descTa: 'தொடு உணர்வு தஸ்பீஹ் வட்டம், தினசரி இலக்குகள் & ஆதாரப்பூர்வமான நற்பலன்கள்.',
+      icon: Sparkles,
+      gradient: 'from-emerald-500/20 via-emerald-500/5 to-transparent',
+      borderColor: 'border-emerald-500/30 hover:border-emerald-500/60',
+      iconBg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+      statPill: `${todayTotal}/${dailyGoal} ${isTamil ? 'இன்று' : 'Today'}`,
+      badge: totalLifetime > 0 ? `${totalLifetime.toLocaleString()} ${isTamil ? 'ஓதப்பட்டது' : 'Recited'}` : `${totalPresetsCount} ${isTamil ? 'திக்ருகள்' : 'Presets'}`,
+      btnText: isTamil ? 'தஸ்பீஹ் அரங்கம்' : 'Open Tasbih Studio',
+    },
+    {
+      key: 'analytics' as ExploreCategoryKey,
+      titleEn: 'Dhikr Analytics & Trends',
+      titleTa: 'திக்ர் பகுப்பாய்வு & வரைபடம்',
+      arabicScript: 'إِحْصَاءُ الذِّكْرِ وَالْمُتَابَعَةُ',
+      descEn: 'Multi-day activity progression charts, daily goal consistency, streak tracking & unlockable milestone badges.',
+      descTa: 'நாட்களின் திக்ர் வரைபடம், தொடர் பழக்கம், சாதனைகள் & இலக்கு முன்னேற்றம்.',
+      icon: BarChart3,
+      gradient: 'from-amber-500/20 via-amber-500/5 to-transparent',
+      borderColor: 'border-amber-500/30 hover:border-amber-500/60',
+      iconBg: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+      statPill: `🔥 ${currentStreak} ${isTamil ? 'நாள் தொடர்' : 'Day Streak'}`,
+      badge: `${completedDhikrsCount}/${totalPresetsCount} ${isTamil ? 'இலக்குகள்' : 'Goals Met'}`,
+      btnText: isTamil ? 'பகுப்பாய்வைக் காண்க' : 'View Analytics',
+    },
+    {
+      key: 'hisnul_muslim' as ExploreCategoryKey,
+      titleEn: 'Hisnul Muslim (Fortress of the Muslim)',
+      titleTa: 'ஹிஸ்னுல் முஸ்லிம் (கவச துஆக்கள்)',
+      arabicScript: 'حِصْنُ الْمُسْلِمِ مِنَ الْأَذْكَارِ',
+      descEn: 'Authentic daily invocations from the Quran and Sunnah for morning, evening, prayer, protection & distress.',
+      descTa: 'காலை, மாலை, தொழுகை, பாதுகாப்பு மற்றும் கவலை நீங்க நபிகளாரின் ஆதாரப்பூர்வமான துஆக்கள்.',
+      icon: Shield,
+      gradient: 'from-cyan-500/20 via-cyan-500/5 to-transparent',
+      borderColor: 'border-cyan-500/30 hover:border-cyan-500/60',
+      iconBg: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+      statPill: `${HISNUL_MUSLIM_DUAS.length} ${isTamil ? 'துஆக்கள்' : 'Supplications'}`,
+      badge: isTamil ? 'ஆதாரப்பூர்வமானது' : 'Sahih Verified',
+      btnText: isTamil ? 'துஆக்களை ஆராய்க' : 'Explore Hisnul Muslim',
+    },
+    {
+      key: 'asmaul_husna' as ExploreCategoryKey,
+      titleEn: '99 Names of Allah (Asmaul Husna)',
+      titleTa: 'அல்லாஹ்வின் 99 அழகிய திருநாமங்கள்',
+      arabicScript: 'أَسْمَاءُ اللَّهِ الْحُسْنَىٰ',
+      descEn: 'Complete 1 to 99 Divine Attributes with sacred Arabic calligraphy, English & Tamil meanings, & Quran references.',
+      descTa: 'அல்லாஹ்வின் 99 திருப்பெயர்கள், அரபு எழுத்தமைப்பு, தமிழ் விளக்கம் & திருக்குர்ஆன் வசன ஆதாரங்கள்.',
+      icon: Star,
+      gradient: 'from-purple-500/20 via-purple-500/5 to-transparent',
+      borderColor: 'border-purple-500/30 hover:border-purple-500/60',
+      iconBg: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+      statPill: `1 - 99 ${isTamil ? 'திருநாமங்கள்' : 'Divine Names'}`,
+      badge: '100% Complete',
+      btnText: isTamil ? '99 பெயர்களைக் காண்க' : 'View All 99 Names',
+    },
+  ]
+
+  // Find active category item if any
+  const activeCategoryItem = CATEGORIES.find((c) => c.key === currentCategory)
+
   return (
     <div className="space-y-8 animate-fade-in pb-16">
       
-      {/* 🌟 1. EXPLORE HERO BANNER */}
+      {/* ========================================================================= */}
+      {/* 🌟 1. HERO HEADER BANNER                                                  */}
+      {/* ========================================================================= */}
       <div className="p-6 sm:p-8 rounded-3xl bg-linear-to-br from-primary/15 via-surface-container to-surface-container-high border border-primary/25 relative overflow-hidden shadow-md">
         <div className="relative z-10 space-y-3 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold font-label-caps border border-primary/30 shadow-xs">
             <Compass className="w-3.5 h-3.5" />
-            <span>{isTamil ? 'இஸ்லாமிய பொக்கிஷங்கள்' : 'Islamic Explorer'}</span>
+            <span>{isTamil ? 'இஸ்லாமிய பொக்கிஷங்கள்' : 'Islamic Explorer Hub'}</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight font-headline">
@@ -100,8 +206,8 @@ export const ExploreScreen: React.FC = () => {
 
           <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
             {isTamil 
-              ? 'டிஜிட்டல் தஸ்பீஹ் திக்ர் அரங்கம், நாட்களின் பகுப்பாய்வு, ஆதாரப்பூர்வமான ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்களை முழுமையாக ஆராயுங்கள்.' 
-              : 'Discover the Interactive Dhikr & Digital Tasbih Studio, progression analytics, authentic Hisnul Muslim supplications, and all 99 Beautiful Names of Allah.'
+              ? 'டிஜிட்டல் தஸ்பீஹ் திக்ர் அரங்கம், நாட்களின் பகுப்பாய்வு வரைபடம், ஆதாரப்பூர்வமான ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்களை முழுமையாக ஆராயுங்கள்.' 
+              : 'Explore the Interactive Digital Tasbih Studio, daily Dhikr progress charts, authentic Hisnul Muslim supplications, and all 99 Beautiful Names of Allah.'
             }
           </p>
         </div>
@@ -110,110 +216,148 @@ export const ExploreScreen: React.FC = () => {
         <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
       </div>
 
-      {/* 🌟 2. EXPLORE 4 CORE HEADINGS / NAVIGATION TABS */}
-      <div className="flex items-center gap-3 border-b border-outline-variant/25 pb-3 overflow-x-auto scrollbar-none">
-        {[
-          { 
-            id: 'dhikr', 
-            labelEn: 'Dhikr & Digital Tasbih', 
-            labelTa: 'திக்ர் & தஸ்பீஹ் அரங்கம்', 
-            descEn: 'Tactile counter, goals & virtues',
-            descTa: 'எண்ணிக்கை & நற்பலன்கள்',
-            icon: Sparkles 
-          },
-          { 
-            id: 'analytics', 
-            labelEn: 'Dhikr Analytics & Trends', 
-            labelTa: 'திக்ர் பகுப்பாய்வு & வரைபடம்', 
-            descEn: 'Daily progress, streaks & charts',
-            descTa: 'நாட்கள் வரைபடம் & சாதனைகள்',
-            icon: BarChart3 
-          },
-          { 
-            id: 'hisnul_muslim', 
-            labelEn: 'Hisnul Muslim', 
-            labelTa: 'ஹிஸ்னுல் முஸ்லிம்', 
-            descEn: 'Authentic daily supplications',
-            descTa: 'முஸ்லிமின் கவச துஆக்கள்',
-            icon: Shield 
-          },
-          { 
-            id: 'asmaul_husna', 
-            labelEn: '99 Names of Allah', 
-            labelTa: '99 திருநாமங்கள்', 
-            descEn: 'All 99 Divine Attributes',
-            descTa: 'அல்லாஹ்வின் அழகிய பெயர்கள்',
-            icon: Star 
-          },
-        ].map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as ExploreTab)}
-              className={`px-4 py-3 rounded-2xl text-left transition cursor-pointer border flex items-center gap-3 shrink-0 ${
-                isActive
-                  ? 'bg-primary text-on-primary border-primary shadow-md'
-                  : 'bg-surface-container/60 text-on-surface-variant border-outline-variant/20 hover:bg-surface-container-high'
-              }`}
-            >
-              <div className={`p-2 rounded-xl ${isActive ? 'bg-on-primary/20 text-on-primary' : 'bg-surface-container-high text-primary'}`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm font-bold whitespace-nowrap">
-                  {isTamil ? tab.labelTa : tab.labelEn}
-                </p>
-                <p className={`text-[10px] truncate ${isActive ? 'text-on-primary/80' : 'text-outline'}`}>
-                  {isTamil ? tab.descTa : tab.descEn}
-                </p>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+      {/* ========================================================================= */}
+      {/* 🌟 2. TOP NAVIGATION / BREADCRUMB (WHEN INSIDE A SPECIFIC CATEGORY)       */}
+      {/* ========================================================================= */}
+      {currentCategory && activeCategoryItem ? (
+        <div className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+          
+          {/* Back to Grid Button */}
+          <button
+            onClick={handleBackToGrid}
+            className="px-4 py-2 rounded-2xl bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/30 text-xs sm:text-sm font-bold text-on-surface flex items-center gap-2 transition cursor-pointer group shadow-xs"
+          >
+            <ArrowLeft className="w-4 h-4 text-primary group-hover:-translate-x-1 transition-transform" />
+            <span>{isTamil ? 'அனைத்துப் பிரிவுகளுக்கும் திரும்பு' : 'Back to Categories'}</span>
+          </button>
+
+          {/* Quick Category Switcher Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {CATEGORIES.map((cat) => {
+              const Icon = cat.icon
+              const isSelected = cat.key === currentCategory
+              return (
+                <button
+                  key={cat.key}
+                  onClick={() => handleSelectCategory(cat.key)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 border ${
+                    isSelected
+                      ? 'bg-primary text-on-primary border-primary shadow-xs'
+                      : 'bg-surface-container/70 text-on-surface-variant border-outline-variant/20 hover:bg-surface-container-high'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{isTamil ? cat.titleTa.split(' ')[0] : cat.titleEn.split(' ')[0]}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
 
       {/* ========================================================================= */}
-      {/* 1. 📿 OPTION 1: DHIKR & DIGITAL TASBIH STUDIO (FULL DETAILED DESCRIPTION)  */}
+      {/* 🌟 3. MAIN EXPLORE GRID VIEW (SQUARE-SHAPED BOXES FOR EACH CATEGORY)      */}
       {/* ========================================================================= */}
-      {activeTab === 'dhikr' && (
-        <div className="space-y-6">
-          <div className="p-4 rounded-2xl bg-surface-container/70 border border-primary/20 flex items-center gap-3">
-            <Info className="w-5 h-5 text-primary shrink-0" />
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {isTamil 
-                ? 'திக்ர் அரங்கம்: நபிகளார் கற்றுத்தந்த சுன்னத் திக்ருகளை ஓதி, உங்கள் தினசரி இலக்குகளை அமைத்து, தஸ்பீஹ் எண்ணிக்கையைச் சேமித்துக் கொள்ளுங்கள்.' 
-                : 'Interactive Dhikr Studio: Recite authentic Sunnah remembrances, customize your daily Dhikr targets, and track your recitation metrics in real-time.'
-              }
-            </p>
+      {!currentCategory && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-sm font-bold text-outline uppercase tracking-wider font-label-caps">
+              {isTamil ? 'பிரிவுகளைத் தேர்வு செய்க' : 'Select an Explore Category'}
+            </h2>
+            <span className="text-xs text-primary font-semibold">
+              4 {isTamil ? 'முக்கியப் பிரிவுகள்' : 'Core Categories'}
+            </span>
           </div>
 
-          {/* Full Interactive Digital Tasbih Engine */}
-          <DigitalTasbihEngine onOpenAnalytics={() => setActiveTab('analytics')} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+            {CATEGORIES.map((cat) => {
+              const Icon = cat.icon
+              return (
+                <div
+                  key={cat.key}
+                  onClick={() => handleSelectCategory(cat.key)}
+                  className={`min-h-[320px] sm:min-h-[350px] p-6 sm:p-7 rounded-3xl glass-card border ${cat.borderColor} bg-linear-to-b ${cat.gradient} flex flex-col justify-between shadow-md hover:shadow-2xl transition-all duration-300 group cursor-pointer hover:-translate-y-1.5 relative overflow-hidden`}
+                >
+                  {/* Top Row: Icon Badge & Stat Pill */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className={`w-12 h-12 rounded-2xl ${cat.iconBg} border flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      
+                      <span className="px-2.5 py-1 rounded-xl bg-surface-container-high/90 border border-outline-variant/30 text-[11px] font-extrabold text-on-surface shadow-2xs">
+                        {cat.statPill}
+                      </span>
+                    </div>
+
+                    {/* Arabic Scripture Preview */}
+                    <p 
+                      className="text-sm sm:text-base text-right text-outline/80 group-hover:text-on-surface/90 transition-colors select-none pt-1"
+                      style={{ fontFamily: arabicFontFamily }}
+                      dir="rtl"
+                    >
+                      {cat.arabicScript}
+                    </p>
+
+                    {/* Titles */}
+                    <div className="space-y-1">
+                      <h3 className="text-base sm:text-lg font-black text-on-surface tracking-tight group-hover:text-primary transition-colors leading-snug">
+                        {isTamil ? cat.titleTa : cat.titleEn}
+                      </h3>
+                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-3">
+                        {isTamil ? cat.descTa : cat.descEn}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom Row: Badge & Action Arrow */}
+                  <div className="pt-4 mt-2 border-t border-outline-variant/20 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-outline uppercase tracking-wider font-label-caps">
+                      {cat.badge}
+                    </span>
+
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
+                      <span>{cat.btnText}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+
+                  {/* Ambient Bottom Backlight */}
+                  <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-primary/10 blur-xl pointer-events-none group-hover:bg-primary/20 transition-all" />
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 2. 📊 OPTION 2: DHIKR ANALYTICS, CHARTS & DAILY HISTORY                    */}
+      {/* 🌟 4. CATEGORY DETAIL VIEWS (WHEN A CATEGORY IS CLICKED)                  */}
       {/* ========================================================================= */}
-      {activeTab === 'analytics' && (
+
+      {/* 📿 CATEGORY 1: DIGITAL TASBIH & DHIKR STUDIO */}
+      {currentCategory === 'dhikr' && (
+        <div className="space-y-6">
+          <DigitalTasbihEngine onOpenAnalytics={() => handleSelectCategory('analytics')} />
+        </div>
+      )}
+
+      {/* 📊 CATEGORY 2: DHIKR ANALYTICS & MULTI-DAY TRENDS */}
+      {currentCategory === 'analytics' && (
         <div className="space-y-6">
           <DhikrAnalyticsView />
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 3. 🛡️ OPTION 3: HISNUL MUSLIM (AUTHENTIC FORTRESS OF THE MUSLIM ACCESS)     */}
-      {/* ========================================================================= */}
-      {activeTab === 'hisnul_muslim' && (
+      {/* 🛡️ CATEGORY 3: HISNUL MUSLIM (FORTRESS OF THE MUSLIM) */}
+      {currentCategory === 'hisnul_muslim' && (
         <div className="space-y-6">
           
-          {/* Header & Search Bar */}
+          {/* Search & Header Bar */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-5 rounded-3xl glass-card border border-outline-variant/30 shadow-md">
             <div>
               <h2 className="text-sm sm:text-base font-bold text-on-surface flex items-center gap-2">
-                <Shield className="w-4 h-4 text-primary" />
+                <Shield className="w-4 h-4 text-cyan-400" />
                 <span>{isTamil ? 'ஹிஸ்னுல் முஸ்லிம் — முஸ்லிமின் கவசம்' : 'Hisnul Muslim — Fortress of the Muslim'}</span>
               </h2>
               <p className="text-[11px] text-on-surface-variant">
@@ -334,10 +478,8 @@ export const ExploreScreen: React.FC = () => {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 4. 🌟 OPTION 4: ALL 99 NAMES OF ALLAH (COMPLETE ASMAUL HUSNA GALLERY)       */}
-      {/* ========================================================================= */}
-      {activeTab === 'asmaul_husna' && (
+      {/* 🌟 CATEGORY 4: 99 NAMES OF ALLAH (ASMAUL HUSNA) */}
+      {currentCategory === 'asmaul_husna' && (
         <div className="space-y-6">
           
           {/* Header Banner with Search */}

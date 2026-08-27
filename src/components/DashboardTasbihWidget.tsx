@@ -299,7 +299,7 @@ export const DashboardTasbihWidget: React.FC = () => {
 
           {/* Direct Link to Detailed Explore Section */}
           <Link
-            to="/explore"
+            to="/explore?cat=dhikr"
             className="w-full py-2.5 px-4 rounded-2xl bg-surface-container-high hover:bg-surface-container-highest border border-primary/25 text-primary text-xs font-bold flex items-center justify-between transition cursor-pointer group shadow-xs"
           >
             <div className="flex items-center gap-2">

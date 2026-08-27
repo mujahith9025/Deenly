@@ -85,8 +85,7 @@
 - **Target Goal Reflection on All Dhikrs**: Set universal or per-Dhikr custom targets (e.g. 33x, 100x) that reflect across all Dhikrs with individual today progress bars (`todayCount / target`) and an All-Dhikr Completionist milestone.
 - **Dedicated Dhikr Analytics & Multi-Day Trends**: Interactive bar charts (7-day, 14-day, 30-day progression), Dhikr streak tracking (current & best streaks), remembrance distribution share (% of each Dhikr), and unlockable spiritual badges.
 - **Multi-Device Real-Time Cloud Sync**: Real-time broadcast and Supabase cloud persistence for Dhikr counts and logs across phones, tablets, and laptops.
-- **Compact Dashboard Dial**: Fast-access circular counting widget directly on the dashboard displaying live counts, active Dhikr transliteration/Arabic script, and daily goal progress.
-- **Dedicated Explore Hub (`/explore`)**: Positioned prominently in the middle of Quran and Hadith in navigation (Sidebar & BottomNav), featuring the full **Digital Tasbih Studio**, **Dhikr Analytics**, authentic **Hisnul Muslim Supplications**, and **Asmaul Husna (All 99 Names of Allah)**.
+- **Dedicated Explore Hub (`/explore`)**: Positioned prominently in the middle of Quran and Hadith in navigation (Sidebar & BottomNav), presenting an **interactive 4-card square grid layout** with direct 1-tap navigation into **Digital Tasbih Studio**, **Dhikr Analytics & Charts**, authentic **Hisnul Muslim Supplications**, and **Asmaul Husna (All 99 Names of Allah)**.
 - **Authentic Sunnah Presets & Virtues**: Scholarly citations from *Sahih al-Bukhari*, *Sahih Muslim*, and *Jami` at-Tirmidhi* in English and Tamil with post-prayer Sunnah loop (33-33-34).
 
 ### 👤 Modern Profile & Spiritual Repository
