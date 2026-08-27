@@ -21,7 +21,6 @@ import {
   Sparkles,
   Languages,
   BookOpen,
-  Heart,
   Award,
   Volume2,
   Smartphone
@@ -1417,376 +1416,167 @@ export const SettingsScreen: React.FC = () => {
     </div>
   )
 
-  // 7. About Section
+  // 7. About Section (Crisp & Modern)
   const renderAboutSection = () => (
-    <div className="space-y-6 sm:space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
-          {appLanguage === 'ta' ? 'தீன்லி பற்றி & அங்கீகாரக் குறிப்புகள்' : 'About Deenly & Resource Credits'}
+          {appLanguage === 'ta' ? 'தீன்லி பற்றி & அங்கீகாரக் குறிப்புகள்' : 'About Deenly & Sources'}
         </h2>
-        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5 font-medium">
           {appLanguage === 'ta' 
-            ? 'அங்கீகரிக்கப்பட்ட புனித குர்ஆன் மற்றும் ஹதீஸ் மூலங்கள், மொழிபெயர்ப்புகள், உத்வேகம் மற்றும் திறந்த மூல பங்களிப்புகள்.' 
-            : 'Verified Quranic scriptures, authentic Hadith repositories, scholarly translations, app inspiration, and open-source attributions.'}
+            ? 'அங்கீகரிக்கப்பட்ட குர்ஆன் மூலங்கள், மொழிபெயர்ப்புகள் மற்றும் வழிகாட்டிகள்.' 
+            : 'Verified Quranic scriptures, authentic Hadiths, translations, and credits.'}
         </p>
       </div>
 
       {/* 1. App Identity Card */}
-      <div className="p-6 sm:p-8 rounded-3xl glass-card border border-outline-variant/30 space-y-4 relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl primary-gradient-btn flex items-center justify-center text-white font-bold text-2xl shadow-xl shrink-0">
+      <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-3 relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl primary-gradient-btn flex items-center justify-center text-white font-bold text-xl shadow-lg shrink-0">
               د
             </div>
             <div>
-              <h3 className="text-xl font-extrabold font-h2 text-on-surface flex items-center gap-2">
+              <h3 className="text-lg font-bold font-h2 text-on-surface flex items-center gap-2">
                 <span>Deenly (دينلي)</span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold border border-primary/30">v2.0.0</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary font-bold border border-primary/30 font-mono">v2.0.0</span>
               </h3>
-              <p className="text-xs text-primary font-semibold mt-0.5">
-                {appLanguage === 'ta' ? 'ஆன்மீக சிந்தனை & குர்ஆன் ஓதும் முற்போக்கு வலைச் செயலி (PWA)' : 'Quran Reading, Habit Tracking & Spiritual Reflection PWA'}
+              <p className="text-xs text-primary font-semibold">
+                {appLanguage === 'ta' ? 'குர்ஆன் ஓதுதல் & ஆன்மீகப் பழக்கவழக்க கண்காணிப்பு' : 'Quran Reading, Tracking & Spiritual Habit Building PWA'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-center">
-            <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>{appLanguage === 'ta' ? 'முழுமையான பாதுகாப்பு & தனியுரிமை' : '100% Free & Open'}</span>
+              <span>{appLanguage === 'ta' ? '100% இலவசம் & திறந்த மூலம்' : '100% Free & Open Source'}</span>
             </span>
           </div>
         </div>
 
-        <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+        <p className="text-xs text-on-surface-variant leading-relaxed">
           {appLanguage === 'ta' 
-            ? 'தீன்லி தினசரி குர்ஆன் ஓதுதலை எளிதாகவும், ஆழமான சிந்தனையுடனும், தொடர்ச்சியாகவும் ஆக்குவதற்காக உருவாக்கப்பட்டது. துல்லியமான நன்மைகள் கணக்கீடு (நபிமொழி அடிப்படையில் ஓர் அரபு எழுத்துக்கு 10 நன்மைகள்), பலமொழி அறிஞர்களின் அங்கீகரிக்கப்பட்ட மொழிபெயர்ப்புகள், தஜ்வீத் வண்ண வழிகாட்டல், ஷேக் மிஷாரி ராஷித் அல்-அஃபாஸியின் இனிமையான குரல் ஓதுதல் மற்றும் ஆஃப்லைன் பயன்பாடு.' 
-            : 'Deenly is engineered to make daily Quran recitation effortless, spiritually reflective, and consistent. Featuring precision Hadith-accurate Hasanat calculations (10 rewards per Arabic letter), scholarly translations (English & Tamil), dynamic Tajweed color coding, high-fidelity audio recitations by Sheikh Mishary Rashid Alafasy, and offline cloud-synced habit tracking.'}
+            ? 'தினசரி குர்ஆன் ஓதுதலை எளிமையாகவும் தொடர்ச்சியாகவும் ஆக்க வடிவமைக்கப்பட்டது. ஓர் அரபு எழுத்துக்கு 10 நன்மைகள் (ஹஸனாத்) கணக்கீடு, தஜ்வீத் வண்ண வழிகாட்டல், ஷேக் மிஷாரி அல்-அஃபாஸியின் குரல் ஓதுதல் மற்றும் முழு ஆஃப்லைன் பயன்பாடு.' 
+            : 'Engineered for consistent daily Quran recitation. Features Hadith-accurate Hasanat calculations (10 rewards/letter), scholarly translations, Tajweed color coding, Sheikh Mishary Alafasy audio recitations, and offline sync.'}
         </p>
       </div>
 
-      {/* 2. 🌟 Special Inspiration & Reference Credit: Quranly App */}
-      <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-amber-500/15 via-purple-500/10 to-primary/15 border border-amber-500/40 shadow-lg space-y-3 relative overflow-hidden">
+      {/* 2. Special Inspiration Credit: Quranly App */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-amber-500/15 via-purple-500/10 to-primary/15 border border-amber-500/40 shadow-sm space-y-2.5">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shadow-inner shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shadow-inner shrink-0">
             <Smartphone className="w-4 h-4" />
           </div>
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block font-label-caps">
-              {appLanguage === 'ta' ? 'முக்கிய உத்வேகம் & வழிகாட்டி செயலி' : 'Special Inspiration & Reference'}
+              {appLanguage === 'ta' ? 'முக்கிய உத்வேகம்' : 'Special Inspiration'}
             </span>
-            <h4 className="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
-              <span>Quranly App (Google Play Store & iOS App Store)</span>
+            <h4 className="text-sm sm:text-base font-bold text-on-surface">
+              Quranly App (Google Play & App Store)
             </h4>
           </div>
         </div>
 
-        <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
-          {appLanguage === 'ta'
-            ? 'தீன்லி செயலியின் ஒரு வசன வீத வாசிப்பு பயன்முறை (1-Verse Focus Mode), அரபு எழுத்துக்களின் எண்ணிக்கைக்கேற்ப நிகழ்நேர ஹஸனாத் கணக்கீட்டு முறை (10 நன்மைகள்/எழுத்து), தினசரி தொடர்ச்சி நிலைகள் (Daily Streaks), மற்றும் கவனச்சிதறலற்ற நேர்த்தியான வடிவமைப்பு ஆகியவை கூகுள் ப்ளே ஸ்டோரில் உள்ள புகழ்பெற்ற "Quranly" செயலியின் உன்னதமான பழக்கவழக்க உருவாக்கத் தத்துவத்தினால் ஈர்க்கப்பட்டு வடிவமைக்கப்பட்டது. இந்த நவீன அணுகுமுறையை இஸ்லாமிய உலகிற்கு அறிமுகப்படுத்திய Quranly குழுவினருக்கு எங்கள் மனமார்ந்த நன்றிகளும் பாராட்டுக்களும்.'
-            : 'Deenly draws heartfelt architectural inspiration and reference from the revolutionary "Quranly" app on the Google Play Store and Apple App Store. Quranly\'s pioneering concepts of building consistent Quran habits through single-verse focus reading, real-time Arabic letter-count Hasanat rewards gamification (10 Hasanat per letter based on Sunan at-Tirmidhi 2910), daily recitation streaks, and distraction-free visual aesthetics served as the foundational inspiration for Deenly\'s reading engine. We extend our immense gratitude to the creators of Quranly for spearheading transformative digital Quran habit-building.'}
-        </p>
-
-        <div className="pt-1 flex items-center gap-2 text-xs font-semibold text-amber-400">
-          <Award className="w-4 h-4 shrink-0" />
-          <span>{appLanguage === 'ta' ? 'வழிகாட்டி: Quranly - Habit Building Quran App' : 'Reference & Inspiration: Quranly — Habit Building Quran App'}</span>
-        </div>
-      </div>
-
-      {/* 3. 🏛️ Official Arabic Quran Text & Script Credits */}
-      <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 text-primary flex items-center justify-center font-bold shrink-0">
-            <BookOpen className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-base font-bold text-on-surface">
-              {appLanguage === 'ta' ? 'அதிகாரப்பூர்வ அரபு குர்ஆன் மூலங்கள் & உஸ்மானி எழுத்துருக்கள்' : 'Official Quran Arabic Text & Script Sources'}
-            </h4>
-            <p className="text-xs text-on-surface-variant">
-              {appLanguage === 'ta' ? 'மதீனா மன்னர் ஃபஹத் திருக்குர்ஆன் அச்சகம் மற்றும் சர்வதேச ஆய்வுத் தளங்கள்' : 'King Fahd Glorious Quran Printing Complex & Tanzil.net'}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-primary">King Fahd Complex (Madinah)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">KSA Official</span>
-            </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'சவூதி அரேபியா மதீனாவில் உள்ள மன்னர் ஃபஹத் திருக்குர்ஆன் அச்சகத்தின் (مجمع الملك فهد لطباعة المصحف الشريف) அதிகாரப்பூர்வ ஹஃப்ஸ் அன் ஆஸிம் (Hafs \'an \'Asim) உஸ்மானி மூலப் பிரதி.'
-                : 'King Fahd Glorious Quran Printing Complex (Madinah Al-Munawwarah, KSA). The global benchmark for authentic Hafs \'an \'Asim standard Uthmani scripture and page layout.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-primary">Tanzil.net Project</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Sharif Univ.</span>
-            </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'முனைவர் ஹமீத் ஸர்ராபி-ஸாதே (Dr. Hamid Zarrabi-Zadeh) உருவாக்கிய தன்ஸீல் திட்டம். குர்ஆனின் முழுமையான அரபு குறியீடுகள், நிறுத்தல் குறிகள் மற்றும் யுனிகோட் சரிபார்ப்புத் தளம்.'
-                : 'Tanzil Project by Dr. Hamid Zarrabi-Zadeh (Sharif University of Technology). An internationally verified, ultra-accurate Unicode Quran text engine with full diacritics and pause markings.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-primary">Quran.com API v4 & QuranCDN</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Open API</span>
-            </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'உலகளாவிய திறந்த குர்ஆன் தளம். அத்தியாயங்கள், வசனங்கள் மற்றும் சர்வதேச தரவுத்தொகுப்புகளை வழங்குகிறது.'
-                : 'The world\'s leading open digital Quran initiative providing fast, dependable Surah/Ayah datasets and API infrastructure.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-primary">Tajweed Color Rules Engine</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Phonetic</span>
-            </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'மத் (நீட்டுதல்), கல்கலா (அதிர்வு), குன்னா (மூக்கொலி), இக்ஃபா, இத்காம் மற்றும் இக்லாப் ஆகிய தஜ்வீத் ஓதுதல் விதிகளின் வண்ணக் குறியீடுகள்.'
-                : 'Standardized Quranic phonetic color-coding engine covering Obligatory Madd, Qalqalah, Ghunnah, Ikhfa, Idgham, and Iqlab.'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. 🇬🇧 Scholarly English Translations Credits */}
-      <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center font-bold shrink-0">
-            <Languages className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-base font-bold text-on-surface">
-              {appLanguage === 'ta' ? 'அங்கீகரிக்கப்பட்ட ஆங்கில மொழிபெயர்ப்புகள்' : 'Scholarly English Translations'}
-            </h4>
-            <p className="text-xs text-on-surface-variant">
-              {appLanguage === 'ta' ? 'அகில உலக அறிஞர்கள் மற்றும் பல்கலைக்கழகங்களால் அங்கீகரிக்கப்பட்ட 4 பதிப்புகள்' : '4 world-renowned authentic English translations'}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <span className="text-xs font-bold text-on-surface block">1. Sahih International</span>
-            <p className="text-[11px] text-outline"><strong>{appLanguage === 'ta' ? 'ஆசிரியர்:' : 'Translators:'}</strong> Umm Muhammad (Aminah Assami, Amatullah Bantley) • Dar Abul-Qasim (KSA)</p>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'பாரம்பரிய சுன்னத் வல் ஜமாஅத் முறைப்படியான நேரடி மற்றும் மிகத் துல்லியமான சொல்-சொல்லாக அமைந்த ஆங்கில மொழிபெயர்ப்பு.'
-                : 'Strictly faithful word-for-word translation following orthodox traditional Sunni methodology. Highly celebrated across the Muslim world.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <span className="text-xs font-bold text-on-surface block">2. The Clear Quran</span>
-            <p className="text-[11px] text-outline"><strong>{appLanguage === 'ta' ? 'ஆசிரியர்:' : 'Translator:'}</strong> Dr. Mustafa Khattab • Al-Azhar University Approved</p>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'எகிப்து அல்-அஸ்ஹர் பல்கலைக்கழகத்தால் அதிகாரப்பூர்வமாக அங்கீகரிக்கப்பட்ட நவீன, எளிய மற்றும் கருத்தாழமிக்க ஆங்கில மொழிபெயர்ப்பு.'
-                : 'The #1 contemporary English translation officially approved by Al-Azhar Islamic Research Academy (Cairo). Eloquent, fluent, and thematic.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <span className="text-xs font-bold text-on-surface block">3. The Noble Quran</span>
-            <p className="text-[11px] text-outline"><strong>{appLanguage === 'ta' ? 'ஆசிரியர்கள்:' : 'Translators:'}</strong> Dr. M. Taqi-ud-Din Al-Hilali & Dr. M. Muhsin Khan • King Fahd Complex (Madinah)</p>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'மதீனா மன்னர் ஃபஹத் திருக்குர்ஆன் அச்சகப் பதிப்பு. தஃப்சீர் இப்னு கஸீர் மற்றும் புகாரியின் விளக்கங்களை உள்ளடக்கியது.'
-                : 'Official Saudi Madinah edition integrating authentic parenthetical explanations from Tafsir Ibn Kathir and Sahih Al-Bukhari.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <span className="text-xs font-bold text-on-surface block">4. Oxford World\'s Classics</span>
-            <p className="text-[11px] text-outline"><strong>{appLanguage === 'ta' ? 'ஆசிரியர்:' : 'Translator:'}</strong> Prof. M.A.S. Abdel Haleem • Oxford University Press</p>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'லண்டன் பல்கலைக்கழக பேராசிரியர் அப்தெல் ஹலீம் அவர்களின் ஆக்ஸ்போர்டு பல்கலைக்கழக இலக்கியத் தர மொழிபெயர்ப்பு.'
-                : 'Masterfully structured contemporary literary standard English by Professor of Islamic Studies at SOAS, University of London.'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. 🇮🇳 / 🇱🇰 Authentic Tamil Translations Credits */}
-      <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shrink-0">
-            <Languages className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-base font-bold text-on-surface">
-              {appLanguage === 'ta' ? 'அங்கீகரிக்கப்பட்ட தமிழ் திருக்குர்ஆன் மொழிபெயர்ப்புகள்' : 'Authentic Tamil Quran Translations (தமிழ்)'}
-            </h4>
-            <p className="text-xs text-on-surface-variant">
-              {appLanguage === 'ta' ? 'வரலாற்றுச் சிறப்புமிக்க செம்மொழி நடை & மதீனா ஃபஹத் அச்சகப் பதிப்புகள்' : 'Historical classical & official King Fahd Complex editions'}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-on-surface">அப்துல் ஹமீது பாகவி</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-bold">1929–1940s மரபு</span>
-            </div>
-            <p className="text-[11px] text-outline"><strong>ஆசிரியர்:</strong> மௌலானா அல்லாமா ஏ.கே. அப்துல் ஹமீது பாகவி (Baqaviyath)</p>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'தமிழ் மொழியில் வெளியான முதலாவது மற்றும் வரலாற்றுப் புகழ்மிக்க திருக்குர்ஆன் தமிழாக்கம். உலமா பெருமக்களால் போற்றப்படும் பாரம்பரிய தூய செம்மொழி நடை.'
-                : 'The historical 1st classical Tamil translation (1929–1940s) by Allama A.K. Abdul Hameed Baqavi. Acclaimed across South India and Sri Lanka for its rich literary Tamil and orthodox precision.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-on-surface">ஜான் டிரஸ்ட் (மதீனா பதிப்பு)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-bold">மதீனா ஃபஹத் அச்சகம்</span>
-            </div>
-            <p className="text-[11px] text-outline"><strong>வெளியீடு:</strong> King Fahd Glorious Quran Printing Complex (Madinah, KSA) / Jan Trust</p>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'சவூதி அரேபிய அரசு & மதீனா கிங் ஃபஹத் திருக்குர்ஆன் அச்சகத்தால் அதிகாரப்பூர்வமாக அச்சிடப்பட்டு உலகெங்கும் இலவசமாக வழங்கப்படும் ஒரே நேரடித் தமிழாக்கம்.'
-                : 'The official Tamil translation printed and distributed worldwide by King Fahd Glorious Quran Printing Complex (Madinah Al-Munawwarah, Saudi Arabia) via Jan Trust Foundation.'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 6. 📜 The Six Canonical Hadith Collections (Kutub al-Sittah) */}
-      <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold shrink-0">
-            <Award className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-base font-bold text-on-surface">
-              {appLanguage === 'ta' ? 'ஆறு முக்கிய ஆதாரப்பூர்வ ஹதீஸ் நூல்கள் (குதுபுஸ் ஸித்தா)' : 'The Six Canonical Hadith Collections (Kutub al-Sittah)'}
-            </h4>
-            <p className="text-xs text-on-surface-variant">
-              {appLanguage === 'ta' ? 'அரபு மூலம், ஆங்கிலம் & தமிழ் மொழிபெயர்ப்புகளுடன்' : 'Authentic Prophetic Hadiths with Arabic, English & Tamil translations'}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 pt-1 text-xs">
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Sahih al-Bukhari</span>
-            <span className="text-[11px] text-outline block">ஸஹீஹ் அல்-புகாரி</span>
-            <span className="text-[10px] text-primary">இமாம் புகாரி</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Sahih Muslim</span>
-            <span className="text-[11px] text-outline block">ஸஹீஹ் முஸ்லிம்</span>
-            <span className="text-[10px] text-primary">இமாம் முஸ்லிம்</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Sunan an-Nasa\'i</span>
-            <span className="text-[11px] text-outline block">சுனன் நஸாயீ</span>
-            <span className="text-[10px] text-primary">இமாம் நஸாயீ</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Sunan Abi Dawud</span>
-            <span className="text-[11px] text-outline block">சுனன் அபூதாவூத்</span>
-            <span className="text-[10px] text-primary">இமாம் அபூதாவூத்</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Jami` at-Tirmidhi</span>
-            <span className="text-[11px] text-outline block">ஜாமிஉத் திர்மிதி</span>
-            <span className="text-[10px] text-primary">இமாம் திர்மிதி</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Sunan Ibn Majah</span>
-            <span className="text-[11px] text-outline block">சுனன் இப்னு மாஜா</span>
-            <span className="text-[10px] text-primary">இமாம் இப்னு மாஜா</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">40 Hadith Nawawi</span>
-            <span className="text-[11px] text-outline block">அர்பஈன் அந்-நவவீ</span>
-            <span className="text-[10px] text-primary">இமாம் நவவீ</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Hisnul Muslim</span>
-            <span className="text-[11px] text-outline block">ஹிஸ்னுல் முஸ்லிம்</span>
-            <span className="text-[10px] text-primary">ஷேக் ஸயீத் அல்-கஹ்தானி</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Asmaul Husna</span>
-            <span className="text-[11px] text-outline block">அல்லாஹ்வின் 99 திருநாமங்கள்</span>
-            <span className="text-[10px] text-primary">Authentic Sahih Quranic Collection</span>
-          </div>
-          <div className="p-3 rounded-2xl bg-surface-container/60 border border-outline-variant/20">
-            <span className="font-bold text-on-surface block">Sunnah.com API</span>
-            <span className="text-[11px] text-outline block">திறந்த மூல ஹதீஸ் தளம்</span>
-            <span className="text-[10px] text-primary">Global Open Database</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 7. 🎙️ Audio Recitation & Sacred Fonts Credits */}
-      <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold shrink-0">
-            <Volume2 className="w-4 h-4" />
-          </div>
-          <div>
-            <h4 className="text-base font-bold text-on-surface">
-              {appLanguage === 'ta' ? 'காரீ ஓதுதல் & புனித அரபு எழுத்துருக்கள்' : 'Audio Recitation & Calligraphic Fonts'}
-            </h4>
-            <p className="text-xs text-on-surface-variant">
-              {appLanguage === 'ta' ? 'ஷேக் மிஷாரி ராஷித் அல்-அஃபாஸி மற்றும் சர்வதேச அரபு எழுத்துருக்கள்' : 'Sheikh Mishary Rashid Alafasy & authentic typography'}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 text-xs">
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <span className="font-bold text-on-surface block">🎙️ Sheikh Mishary Rashid Alafasy</span>
-            <p className="text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'அகில உலகப் புகழ்பெற்ற குவைத் நாட்டு காரீ ஷேக் மிஷாரி பின் ராஷித் அல்-அஃபாஸியின் உயர் தர ஆடியோ ஓதுதல் (EveryAyah.com & QuranCDN).'
-                : 'World-renowned reciter Sheikh Mishary bin Rashid Alafasy (الشيخ مشاري بن راشد العفاسي). Crystal-clear verse-by-verse and full-chapter audio recitations via EveryAyah.com & QuranCDN.'}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5">
-            <span className="font-bold text-on-surface block">🖋️ Typography & Calligraphy</span>
-            <p className="text-on-surface-variant leading-relaxed">
-              {appLanguage === 'ta'
-                ? 'அமீரி குரான் (Amiri Quran - Dr. Khaled Hosny), ஷெஹரஸாத் (Scheherazade New - SIL), லத்தீஃப் (Lateef Indo-Pak), நோட்டோ நஸ்க் அரபிக் (Noto Naskh Arabic) மற்றும் நோட்டோ சான்ஸ் தமிழ் (Noto Sans Tamil - Google Fonts).'
-                : 'Madani Uthmani (Amiri Quran by Dr. Khaled Hosny), Ottoman Naskh (Scheherazade New by SIL International), Indo-Pak Traditional (Lateef by SIL), Modern Digital Naskh (Noto Naskh Arabic by Google), and Noto Sans Tamil.'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 8. 💻 Open Source & Technical Foundation */}
-      <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 space-y-3">
-        <div className="flex items-center gap-2.5">
-          <Heart className="w-4 h-4 text-rose-500 fill-rose-500 shrink-0" />
-          <h4 className="text-sm font-bold text-on-surface">
-            {appLanguage === 'ta' ? 'திறந்த மூல மென்பொருள் & தொழினுட்பக் கட்டமைப்பு' : 'Open Source Engineering & Technologies'}
-          </h4>
-        </div>
         <p className="text-xs text-on-surface-variant leading-relaxed">
           {appLanguage === 'ta'
-            ? 'தீன்லி செயலி React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Supabase Realtime Channels, IndexedDB (QuranCache), மற்றும் Workbox Progressive Web App (PWA) தொழில்நுட்பங்களால் உருவாக்கப்பட்டுள்ளது.'
-            : 'Deenly is proudly engineered using React 19, TypeScript, Vite, Tailwind CSS, Lucide Icons, Supabase Realtime Channels, IndexedDB client caching, and Workbox Progressive Web App (PWA) offline architecture.'}
-        </p>
-        <p className="text-[11px] text-outline pt-2 border-t border-outline-variant/20">
-          © {new Date().getFullYear()} Deenly. Released under the MIT License for the benefit of the global Muslim Ummah. May Allah accept this humble endeavor.
+            ? 'தீன்லி செயலியின் 1-வசன வாசிப்பு முறை, எழுத்து அடிப்படையிலான ஹஸனாத் கணக்கீடு மற்றும் தொடர் ஓதும் பழக்கவழக்கக் கட்டமைப்பு ஆகியவை "Quranly" செயலியின் நவீன தத்துவத்தால் ஈர்க்கப்பட்டு வடிவமைக்கப்பட்டது.'
+            : 'Deenly draws architectural inspiration from the "Quranly" app. Single-verse focus reading, letter-count Hasanat rewards gamification (Tirmidhi 2910), and daily streaks served as the foundational inspiration for Deenly.'}
         </p>
       </div>
+
+      {/* 3. Verified Scholarly Sources Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+        {/* Quran Text */}
+        <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-primary flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>{appLanguage === 'ta' ? 'அரபு குர்ஆன் உஸ்மானி மூலம்' : 'Arabic Quran Text'}</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Official</span>
+          </div>
+          <p className="text-on-surface-variant leading-relaxed">
+            King Fahd Glorious Quran Complex (Madinah, KSA) & Tanzil.net Unicode Text Engine.
+          </p>
+        </div>
+
+        {/* English Translations */}
+        <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-primary flex items-center gap-1.5">
+              <Languages className="w-3.5 h-3.5" />
+              <span>English Translations</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 font-bold">4 Editions</span>
+          </div>
+          <p className="text-on-surface-variant leading-relaxed">
+            Sahih International, The Clear Quran (Dr. Mustafa Khattab), Hilali-Khan, & Abdel Haleem (Oxford).
+          </p>
+        </div>
+
+        {/* Tamil Translations */}
+        <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-primary flex items-center gap-1.5">
+              <Languages className="w-3.5 h-3.5" />
+              <span>{appLanguage === 'ta' ? 'தமிழ் மொழிபெயர்ப்புகள்' : 'Tamil Translations'}</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold">2 Editions</span>
+          </div>
+          <p className="text-on-surface-variant leading-relaxed">
+            மௌலானா ஏ.கே. அப்துல் ஹமீது பாகவி & ஜான் டிரஸ்ட் (மதீனா மன்னர் ஃபஹத் அச்சகம்).
+          </p>
+        </div>
+
+        {/* Hadith Collections */}
+        <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-primary flex items-center gap-1.5">
+              <Award className="w-3.5 h-3.5" />
+              <span>{appLanguage === 'ta' ? 'ஹதீஸ் நூல்கள்' : 'Hadith Collections'}</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-bold">Kutub al-Sittah</span>
+          </div>
+          <p className="text-on-surface-variant leading-relaxed">
+            Sahih Bukhari, Muslim, Tirmidhi, Abu Dawud, Nasai, Ibn Majah, 40 Nawawi & Hisnul Muslim via Sunnah.com API.
+          </p>
+        </div>
+
+        {/* Audio Reciter */}
+        <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-primary flex items-center gap-1.5">
+              <Volume2 className="w-3.5 h-3.5" />
+              <span>{appLanguage === 'ta' ? 'ஆடியோ காரீ' : 'Audio Recitation'}</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-bold">128kbps HQ</span>
+          </div>
+          <p className="text-on-surface-variant leading-relaxed">
+            Sheikh Mishary bin Rashid Alafasy (EveryAyah.com & QuranCDN).
+          </p>
+        </div>
+
+        {/* Fonts & Tech */}
+        <div className="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/20 space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-primary flex items-center gap-1.5">
+              <Type className="w-3.5 h-3.5" />
+              <span>Typography & Tech</span>
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-outline font-bold">PWA</span>
+          </div>
+          <p className="text-on-surface-variant leading-relaxed">
+            Amiri Quran, Scheherazade New, Lateef, Noto Naskh. Built with React 19, TypeScript, Tailwind CSS.
+          </p>
+        </div>
+      </div>
+
+      {/* Footer Disclaimer */}
+      <p className="text-[11px] text-outline text-center pt-1 border-t border-outline-variant/20">
+        © {new Date().getFullYear()} Deenly. Released under the MIT License for the Muslim Ummah.
+      </p>
     </div>
   )
 
@@ -1820,13 +1610,13 @@ export const SettingsScreen: React.FC = () => {
 
   const activeFontMeta = getArabicFontMeta(currentFontStyle)
 
-  // Array of categories for navigation
+  // Array of categories for navigation (Crisp & Short Descriptions)
   const categories: Array<{ id: SettingCategory; label: string; icon: any; desc: string }> = [
     { 
       id: 'language', 
       label: t('appLanguage'), 
       icon: Languages, 
-      desc: appLanguage === 'ta' ? 'தமிழ் (முழு செயலி)' : 'English (Default)' 
+      desc: appLanguage === 'ta' ? 'தமிழ் (முழு செயலி)' : 'English' 
     },
     { 
       id: 'theme', 
@@ -1838,15 +1628,15 @@ export const SettingsScreen: React.FC = () => {
       id: 'translation', 
       label: t('quranTranslations'), 
       icon: Globe, 
-      desc: appLanguage === 'ta' || currentTranslation === 'tamil' ? 'தமிழ் (பாகவி / ஜான் டிரஸ்ட்)' : 'English (Sahih)' 
+      desc: appLanguage === 'ta' || currentTranslation === 'tamil' ? 'தமிழ் (பாகவி)' : 'English (Sahih)' 
     },
     { 
       id: 'transliteration', 
       label: t('phoneticTransliteration'), 
       icon: Volume2, 
       desc: showTransliteration 
-        ? (transliterationLang === 'ta' ? 'தமிழ் ஒலிபெயர்ப்பு' : 'English Phonetic') 
-        : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Disabled') 
+        ? (transliterationLang === 'ta' ? 'தமிழ் உச்சரிப்பு' : 'English Phonetic') 
+        : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Off') 
     },
     { 
       id: 'font', 
@@ -1858,19 +1648,19 @@ export const SettingsScreen: React.FC = () => {
       id: 'tajweed', 
       label: appLanguage === 'ta' ? 'தஜ்வீத் வண்ண விதிகள்' : 'Tajweed Color Rules', 
       icon: Sparkles, 
-      desc: isTajweedEnabled ? (appLanguage === 'ta' ? 'செயலில் உள்ளது' : 'Active') : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Disabled') 
+      desc: isTajweedEnabled ? (appLanguage === 'ta' ? 'செயலில் உள்ளது' : 'Active') : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Off') 
     },
     { 
       id: 'target', 
       label: t('dailyGoalSetting'), 
       icon: Target, 
-      desc: `${currentGoal} ${t('ayahs')} / ${t('days')}` 
+      desc: `${currentGoal} ${appLanguage === 'ta' ? 'வசனங்கள்' : 'Ayahs'} / ${appLanguage === 'ta' ? 'நாள்' : 'Day'}` 
     },
     { 
       id: 'notifications', 
-      label: appLanguage === 'ta' ? 'அறிவிப்புகள் & பாங்கு' : 'Notifications & Adhan', 
+      label: appLanguage === 'ta' ? 'அறிவிப்புகள்' : 'Notifications & Adhan', 
       icon: Bell, 
-      desc: readingAlerts ? (appLanguage === 'ta' ? 'செயலில் உள்ளது' : 'Alerts Active') : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Disabled') 
+      desc: readingAlerts ? (appLanguage === 'ta' ? 'இயக்கப்பட்டுள்ளது' : 'Enabled') : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Off') 
     },
     { 
       id: 'sync', 
@@ -1882,7 +1672,7 @@ export const SettingsScreen: React.FC = () => {
       id: 'about', 
       label: t('aboutDeenly'), 
       icon: Info, 
-      desc: appLanguage === 'ta' ? 'பதிப்பு 2.0 • தரவு மூலங்கள்' : 'Version 2.0 • Data Sources' 
+      desc: appLanguage === 'ta' ? 'பதிப்பு 2.0 • மூலங்கள்' : 'Version 2.0 • Credits' 
     },
   ]
 
