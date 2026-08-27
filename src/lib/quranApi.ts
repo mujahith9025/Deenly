@@ -25,6 +25,9 @@ export function resolveEditionCode(key: string): string {
   return EDITION_CODES.en
 }
 
+// Fast memoization cache for letter counting across verses
+const letterCountCache = new Map<string, number>()
+
 /**
  * Counts authentic Arabic letters in a given verse.
  * Decision on Diacritics: All vocalization marks/harakat (\p{M}), Quranic stop symbols (\p{S}),
@@ -33,8 +36,15 @@ export function resolveEditionCode(key: string): string {
  */
 export function countArabicLetters(arabicText: string): number {
   if (!arabicText) return 0
+  const cached = letterCountCache.get(arabicText)
+  if (cached !== undefined) return cached
+
   const clean = arabicText.replace(/[\p{M}\p{P}\p{S}\p{Z}\p{N}\u0640]/gu, '')
-  return Array.from(clean).length
+  const count = Array.from(clean).length
+  if (letterCountCache.size < 7000) {
+    letterCountCache.set(arabicText, count)
+  }
+  return count
 }
 
 async function fetchEditionChapter(edition: string, chapter: number): Promise<Array<{ chapter: number; verse: number; text: string }>> {

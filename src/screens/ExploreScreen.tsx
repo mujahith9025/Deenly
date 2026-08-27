@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, Suspense, lazy } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { 
   Sparkles, 
@@ -12,8 +12,6 @@ import {
   ArrowLeft,
   ArrowRight
 } from 'lucide-react'
-import { DigitalTasbihEngine } from '../components/DigitalTasbihEngine'
-import { DhikrAnalyticsView } from '../components/DhikrAnalyticsView'
 import { useAuthStore } from '../store/useAuthStore'
 import { useTasbihStore } from '../store/useTasbihStore'
 import { useI18nStore } from '../lib/i18n'
@@ -21,6 +19,14 @@ import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { ASMAUL_HUSNA, type AsmaulHusnaItem } from '../lib/asmaulHusnaData'
 import { HISNUL_MUSLIM_DUAS, HISNUL_MUSLIM_CATEGORIES } from '../lib/hisnulMuslimData'
 import { DHIKR_PRESETS } from '../lib/dhikrData'
+import { RouteLoadingFallback } from '../components/RouteLoadingFallback'
+
+const DigitalTasbihEngine = lazy(() =>
+  import('../components/DigitalTasbihEngine').then((m) => ({ default: m.DigitalTasbihEngine }))
+)
+const DhikrAnalyticsView = lazy(() =>
+  import('../components/DhikrAnalyticsView').then((m) => ({ default: m.DhikrAnalyticsView }))
+)
 
 export type ExploreCategoryKey = 'dhikr' | 'analytics' | 'hisnul_muslim' | 'asmaul_husna'
 
@@ -338,14 +344,18 @@ export const ExploreScreen: React.FC = () => {
       {/* 📿 CATEGORY 1: DIGITAL TASBIH & DHIKR STUDIO */}
       {currentCategory === 'dhikr' && (
         <div className="space-y-6">
-          <DigitalTasbihEngine onOpenAnalytics={() => handleSelectCategory('analytics')} />
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <DigitalTasbihEngine onOpenAnalytics={() => handleSelectCategory('analytics')} />
+          </Suspense>
         </div>
       )}
 
       {/* 📊 CATEGORY 2: DHIKR ANALYTICS & MULTI-DAY TRENDS */}
       {currentCategory === 'analytics' && (
         <div className="space-y-6">
-          <DhikrAnalyticsView />
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <DhikrAnalyticsView />
+          </Suspense>
         </div>
       )}
 

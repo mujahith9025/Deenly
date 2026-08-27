@@ -1,11 +1,25 @@
-import confetti from 'canvas-confetti'
+import type confetti from 'canvas-confetti'
+
+type ConfettiFn = typeof confetti
+
+let confettiInstance: ConfettiFn | null = null
+
+async function getConfetti(): Promise<ConfettiFn> {
+  if (!confettiInstance) {
+    const mod = await import('canvas-confetti')
+    confettiInstance = (mod.default || mod) as unknown as ConfettiFn
+  }
+  return confettiInstance
+}
 
 /**
  * 🌟 Dual-cannon Golden & Emerald Confetti Explosion
  * Fires from both bottom corners toward the center with radiant gold, amber, emerald, and celestial purple sparkles.
+ * Lazily loaded to minimize initial application bundle size.
  */
-export function triggerGoldenConfetti() {
+export async function triggerGoldenConfetti() {
   if (typeof window === 'undefined') return
+  const confetti = await getConfetti()
 
   const count = 180
   const defaults = {
@@ -13,7 +27,7 @@ export function triggerGoldenConfetti() {
     zIndex: 9999,
   }
 
-  function fire(particleRatio: number, opts: confetti.Options) {
+  function fire(particleRatio: number, opts: Parameters<ConfettiFn>[0]) {
     confetti({
       ...defaults,
       ...opts,
@@ -70,8 +84,9 @@ export function triggerGoldenConfetti() {
  * 🌟 Golden Starburst Cannon
  * A high-intensity burst of golden stars exploding from the center.
  */
-export function triggerStarBurst(originX = 0.5, originY = 0.5) {
+export async function triggerStarBurst(originX = 0.5, originY = 0.5) {
   if (typeof window === 'undefined') return
+  const confetti = await getConfetti()
 
   confetti({
     particleCount: 80,
@@ -89,8 +104,9 @@ export function triggerStarBurst(originX = 0.5, originY = 0.5) {
 /**
  * 🌟 Left & Right Dual Side Cannons
  */
-export function triggerSideCannons() {
+export async function triggerSideCannons() {
   if (typeof window === 'undefined') return
+  const confetti = await getConfetti()
 
   const end = Date.now() + 1200
   const colors = ['#ffd700', '#10b981', '#8b5cf6', '#fbbf24']

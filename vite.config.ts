@@ -71,7 +71,7 @@ export default defineConfig({
             options: {
               cacheName: 'gstatic-fonts-cache',
               expiration: {
-                maxEntries: 10,
+                maxEntries: 15,
                 maxAgeSeconds: 60 * 60 * 24 * 365,
               },
               cacheableResponse: {
@@ -93,8 +93,46 @@ export default defineConfig({
               },
             },
           },
+          {
+            urlPattern: /^https:\/\/everyayah\.com\/data\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'everyayah-audio-cache',
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200, 206],
+              },
+            },
+          },
         ],
       },
     }),
   ],
+  build: {
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-dom') || id.includes('react-router-dom') || id.includes('react/')) {
+              return 'vendor-react'
+            }
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase'
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons'
+            }
+            if (id.includes('zustand') || id.includes('clsx') || id.includes('tailwind-merge')) {
+              return 'vendor-state'
+            }
+          }
+        },
+      },
+    },
+  },
 })

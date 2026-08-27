@@ -220,12 +220,18 @@ export interface TajweedToken {
   content: string
 }
 
+// Fast in-memory token cache to prevent repeated tokenization
+const tajweedTokenCache = new Map<string, TajweedToken[]>()
+
 /**
  * Tokenize a raw Quran Tajweed annotated string into structured tokens.
  * Handles patterns like: `[h:1[ٱ]للَّهِ [h:2[ٱ][l[ل]رَّحْمَ[n[ـٰ]نِ`
  */
 export function tokenizeTajweedText(rawText: string): TajweedToken[] {
   if (!rawText) return []
+  const cached = tajweedTokenCache.get(rawText)
+  if (cached) return cached
+
   const tokens: TajweedToken[] = []
   let i = 0
 
@@ -268,6 +274,9 @@ export function tokenizeTajweedText(rawText: string): TajweedToken[] {
     }
   }
 
+  if (tajweedTokenCache.size < 6000) {
+    tajweedTokenCache.set(rawText, tokens)
+  }
   return tokens
 }
 
