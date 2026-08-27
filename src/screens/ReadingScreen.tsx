@@ -37,6 +37,8 @@ import { TajweedLegendModal } from '../components/TajweedLegendModal'
 import { MUSHAF_THEMES, type MushafThemeId } from '../lib/mushafThemes'
 import { MushafThemeModal } from '../components/MushafThemeModal'
 import { ChapterCompletionModal } from '../components/ChapterCompletionModal'
+import { getArabicTransliteration } from '../lib/transliteration'
+import { countArabicLetters } from '../lib/quranApi'
 
 export const ReadingScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -605,10 +607,10 @@ export const ReadingScreen: React.FC = () => {
 
             {/* 🌟 1. ARABIC SCRIPT HIGHLIGHTED CARD (SCALES ON PINCH/ZOOM & USES SELECTED FONT & THEME) */}
             <div 
-              className={`w-full p-4 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl space-y-2 text-center transition-all duration-200 active:scale-[0.99] select-none flex flex-col items-center justify-center break-words ${themeMeta.classes.card}`}
+              className={`w-full p-4 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl space-y-3 text-center transition-all duration-200 active:scale-[0.99] select-none flex flex-col items-center justify-center break-words border shadow-md ${themeMeta.classes.card}`}
             >
               <p
-                className={`text-center leading-[2.2] sm:leading-[2.6] md:leading-[2.8] tracking-wide select-none font-medium break-words w-full transition-all duration-150 ${themeMeta.classes.textArabic}`}
+                className={`text-center leading-[2.4] sm:leading-[2.7] md:leading-[3.0] tracking-normal select-none font-bold break-words w-full transition-all duration-150 ${themeMeta.classes.textArabic}`}
                 style={{ fontSize: `${fontSize}px`, fontFamily: arabicFontFamily }}
                 dir="rtl"
               >
@@ -623,7 +625,23 @@ export const ReadingScreen: React.FC = () => {
               </p>
             </div>
 
-            {/* 🌟 2. TRANSLATION CONTAINER */}
+            {/* 🌟 2. PHONETIC TRANSLITERATION WITH LIVE HASANAT POINTS (QURANLY APP STYLE) */}
+            <div className="w-full p-3 sm:p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/30 text-left space-y-1 select-none shadow-xs">
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-bold text-outline">
+                <span className="uppercase font-label-caps tracking-wider">
+                  {appLanguage === 'ta' ? 'உச்சரிப்பு' : 'Phonetic Transliteration'}
+                </span>
+                <span className="text-emerald-400 font-extrabold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shadow-2xs">
+                  <Sparkles className="w-3 h-3 text-emerald-400" />
+                  +{countArabicLetters(currentAyah.arabicText) * 10} {t('pts')}
+                </span>
+              </div>
+              <p className="font-sans text-xs sm:text-sm text-secondary/90 leading-relaxed italic">
+                {getArabicTransliteration(currentAyah.arabicText, currentSurahNumber, currentAyah.verseNumberInSurah)}
+              </p>
+            </div>
+
+            {/* 🌟 3. TRANSLATION CONTAINER */}
             <div 
               className={`w-full p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border text-center space-y-1 sm:space-y-1.5 select-none shadow-sm break-words transition-colors duration-200 ${themeMeta.classes.card}`}
             >

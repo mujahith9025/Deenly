@@ -1,5 +1,5 @@
 export type ArabicFontStyle = 
-  | 'madani'   // Amiri Quran / Noto Naskh (Default Madani Rasm al-Uthmani - King Fahd Complex)
+  | 'madani'   // KFGQPC Uthmanic Script HAFS (Official King Fahd Complex / Quranly Master Calligraphy)
   | 'indopak'  // Lateef (South Asian / Indo-Pak Tajweed Style)
   | 'ottoman'  // Scheherazade New (Ottoman / Turkish Diyanet Style)
   | 'noto'     // Noto Naskh Arabic (Clean Modern Digital Naskh)
@@ -19,12 +19,12 @@ export interface ArabicFontMeta {
 export const QURAN_FONT_STYLES: ArabicFontMeta[] = [
   {
     id: 'madani',
-    name: 'Madani Uthmani',
-    arabicName: 'مصحف المدينة (النسخ)',
-    region: 'Medina / Global Standard',
-    sampleText: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ',
-    description: 'The golden standard of the King Fahd Glorious Quran Printing Complex, based on the master calligraphy of Uthman Taha.',
-    fontFamily: "'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', serif",
+    name: 'Uthmanic Hafs (Quranly Style)',
+    arabicName: 'مصحف المدينة النبوية (رواية حفص)',
+    region: 'Madinah / Quranly App Standard',
+    sampleText: 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ',
+    description: 'The exact high-definition master calligraphy of Uthman Taha from the King Fahd Complex and Quranly app with authentic ligatures, waslas, small ya, and stop signs.',
+    fontFamily: "'KFGQPC Uthmanic Script HAFS', 'KFGQPC Uthman Taha Naskh', 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', serif",
     previewClass: 'font-quran-madani'
   },
   {
@@ -34,7 +34,7 @@ export const QURAN_FONT_STYLES: ArabicFontMeta[] = [
     region: 'India, Pakistan, Bangladesh',
     sampleText: 'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ',
     description: 'Prominent, bold Tajweed markings and elevated diacritics designed for non-Arabic speakers across the Subcontinent.',
-    fontFamily: "'Lateef', 'Amiri', serif",
+    fontFamily: "'Lateef', 'Scheherazade New', 'Amiri', serif",
     previewClass: 'font-quran-indopak'
   },
   {

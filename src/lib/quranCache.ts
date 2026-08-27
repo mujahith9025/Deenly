@@ -1,7 +1,7 @@
 import type { SurahDetail } from '../types/quran'
 
-const DB_NAME = 'deenly_quran_cache'
-const DB_VERSION = 1
+const DB_NAME = 'deenly_quran_cache_v2'
+const DB_VERSION = 2
 const STORE_SURAHS = 'surahs'
 
 // In-memory runtime cache for hot access

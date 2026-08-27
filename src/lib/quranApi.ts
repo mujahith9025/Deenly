@@ -8,7 +8,7 @@ const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/fawazahmed0/quran-api
 
 // Standard Edition IDs in fawazahmed0/quran-api
 export const EDITION_CODES: Record<string, string> = {
-  ar: 'ara-quranacademy',              // High-quality Uthmani text with diacritics
+  ar: 'ara-quranuthmanihaf',           // Official King Fahd Complex Uthmanic Hafs text with Quranly diacritics, waslas & pause marks
   en: 'eng-ummmuhammad',              // Sahih International (Default)
   en_sahih: 'eng-ummmuhammad',        // Sahih International
   en_khattab: 'eng-mustafakhattaba',   // The Clear Quran (Dr. Mustafa Khattab)
