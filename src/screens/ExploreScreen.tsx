@@ -28,11 +28,12 @@ const DhikrAnalyticsView = lazy(() =>
   import('../components/DhikrAnalyticsView').then((m) => ({ default: m.DhikrAnalyticsView }))
 )
 
-export type ExploreCategoryKey = 'dhikr' | 'analytics' | 'hisnul_muslim' | 'asmaul_husna'
+export type ExploreCategoryKey = 'dhikr' | 'hisnul_muslim' | 'asmaul_husna'
 
 export const ExploreScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const currentCategory = (searchParams.get('cat') as ExploreCategoryKey | null)
+  const [tasbihTab, setTasbihTab] = useState<'counter' | 'analytics'>('counter')
 
   const user = useAuthStore((state) => state.user)
   const appLanguage = useI18nStore((state) => state.appLanguage)
@@ -71,7 +72,10 @@ export const ExploreScreen: React.FC = () => {
   const [asmaulSearch, setAsmaulSearch] = useState<string>('')
 
   // Category navigation handlers
-  const handleSelectCategory = (catKey: ExploreCategoryKey) => {
+  const handleSelectCategory = (catKey: ExploreCategoryKey, defaultTab: 'counter' | 'analytics' = 'counter') => {
+    if (catKey === 'dhikr') {
+      setTasbihTab(defaultTab)
+    }
     setSearchParams({ cat: catKey })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -126,45 +130,29 @@ export const ExploreScreen: React.FC = () => {
     })
   }, [asmaulSearch])
 
-  // Category Configuration for Square Grid Cards (Crisp & Punchy Copy)
+  // Category Configuration (3 Core Islamic Treasures)
   const CATEGORIES = [
     {
       key: 'dhikr' as ExploreCategoryKey,
-      titleEn: 'Digital Tasbih Studio',
-      titleTa: 'திக்ர் & தஸ்பீஹ் அரங்கம்',
-      arabicScript: 'سُبْحَانَ ٱللَّهِ • الحَمْدُ لِلَّهِ',
-      descEn: 'Touch counter, daily targets & Sunnah cycles.',
-      descTa: 'தொடு உணர்வு தஸ்பீஹ், தினசரி இலக்குகள் & சுன்னத் திக்ருகள்.',
+      titleEn: 'Digital Tasbih & Dhikr Analytics',
+      titleTa: 'டிஜிட்டல் தஸ்பீஹ் & திக்ர் பகுப்பாய்வு',
+      arabicScript: 'سُبْحَانَ ٱللَّهِ • الحَمْدُ لِلَّهِ • إِحْصَاءُ الذِّكْرِ',
+      descEn: 'Touch counter dial, Sunnah presets, 7/14/30-day streak & habit charts.',
+      descTa: 'தொடு உணர்வு தஸ்பீஹ், சுன்னத் திக்ருகள், தொடர் பழக்க வரைபடங்கள் & சாதனைகள்.',
       icon: Sparkles,
       gradient: 'from-emerald-500/20 via-emerald-500/5 to-transparent',
       borderColor: 'border-emerald-500/30 hover:border-emerald-500/60',
-      iconBg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-      statPill: `${todayTotal}/${dailyGoal} ${isTamil ? 'இன்று' : 'Today'}`,
-      badge: totalLifetime > 0 ? `${totalLifetime.toLocaleString()} ${isTamil ? 'ஓதப்பட்டது' : 'Recited'}` : `${totalPresetsCount} ${isTamil ? 'திக்ருகள்' : 'Presets'}`,
-      btnText: isTamil ? 'தஸ்பீஹ் அரங்கம்' : 'Open Studio',
-    },
-    {
-      key: 'analytics' as ExploreCategoryKey,
-      titleEn: 'Dhikr Analytics',
-      titleTa: 'திக்ர் பகுப்பாய்வு',
-      arabicScript: 'إِحْصَاءُ الذِّكْرِ وَالْمُتَابَعَةُ',
-      descEn: 'Habit charts, streak tracking & milestone badges.',
-      descTa: 'திக்ர் வரைபடம், தொடர் பழக்கம் & ஆன்மீகச் சாதனைகள்.',
-      icon: BarChart3,
-      gradient: 'from-amber-500/20 via-amber-500/5 to-transparent',
-      borderColor: 'border-amber-500/30 hover:border-amber-500/60',
-      iconBg: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-      statPill: `🔥 ${currentStreak} ${isTamil ? 'நாள் தொடர்' : 'Day Streak'}`,
-      badge: `${completedDhikrsCount}/${totalPresetsCount} ${isTamil ? 'இலக்குகள்' : 'Goals Met'}`,
-      btnText: isTamil ? 'பகுப்பாய்வு' : 'View Analytics',
+      statPill: `🔥 ${currentStreak}d • ${todayTotal}/${dailyGoal}`,
+      badge: totalLifetime > 0 ? `${totalLifetime.toLocaleString()} ${isTamil ? 'ஓதப்பட்டது' : 'Total'}` : `${completedDhikrsCount}/${totalPresetsCount} ${isTamil ? 'இலக்குகள்' : 'Goals Met'}`,
+      btnText: isTamil ? 'அரங்கம் & வரைபடம்' : 'Open Studio & Charts',
     },
     {
       key: 'hisnul_muslim' as ExploreCategoryKey,
-      titleEn: 'Hisnul Muslim',
+      titleEn: 'Hisnul Muslim (Daily Duas)',
       titleTa: 'ஹிஸ்னுல் முஸ்லிம் (கவச துஆக்கள்)',
       arabicScript: 'حِصْنُ الْمُسْلِمِ مِنَ الْأَذْகாரِ',
-      descEn: 'Authentic daily supplications from the Sunnah.',
-      descTa: 'ஆதாரப்பூர்வமான தினசரி சுன்னத் துஆக்கள்.',
+      descEn: '132 authentic daily supplications from the Quran & Sunnah.',
+      descTa: 'குர்ஆன் மற்றும் சுன்னாவிலிருந்து பெறப்பட்ட 132 ஆதாரப்பூர்வ சுன்னத் துஆக்கள்.',
       icon: Shield,
       gradient: 'from-cyan-500/20 via-cyan-500/5 to-transparent',
       borderColor: 'border-cyan-500/30 hover:border-cyan-500/60',
@@ -179,7 +167,7 @@ export const ExploreScreen: React.FC = () => {
       titleTa: 'அல்லாஹ்வின் 99 திருநாமங்கள்',
       arabicScript: 'أَسْمَاءُ اللَّهِ الْحُسْنَىٰ',
       descEn: '99 Divine Names, meanings & Quranic citations.',
-      descTa: 'அல்லாஹ்வின் 99 திருநாமங்களும் பொருள்களும்.',
+      descTa: 'அல்லாஹ்வின் 99 அழகிய திருநாமங்களும் தமிழ்ப் பொருள்களும்.',
       icon: Star,
       gradient: 'from-purple-500/20 via-purple-500/5 to-transparent',
       borderColor: 'border-purple-500/30 hover:border-purple-500/60',
@@ -212,8 +200,8 @@ export const ExploreScreen: React.FC = () => {
 
           <p className="text-xs sm:text-sm text-on-surface-variant font-medium leading-relaxed">
             {isTamil 
-              ? 'டிஜிட்டல் தஸ்பீஹ், திக்ர் வரைபடம், ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்கள்.' 
-              : 'Interactive Digital Tasbih, Dhikr activity charts, authentic Hisnul Muslim supplications, and all 99 Names of Allah.'
+              ? 'டிஜிட்டல் தஸ்பீஹ் & திக்ர் பகுப்பாய்வு, ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்கள்.' 
+              : 'Interactive Digital Tasbih with habit analytics, authentic Hisnul Muslim supplications, and all 99 Names of Allah.'
             }
           </p>
         </div>
@@ -262,7 +250,7 @@ export const ExploreScreen: React.FC = () => {
       ) : null}
 
       {/* ========================================================================= */}
-      {/* 🌟 3. MAIN EXPLORE 2-PER-ROW SQUARE-SHAPED CATEGORY GRID VIEW             */}
+      {/* 🌟 3. MAIN EXPLORE 3-CARD BALANCED CATEGORY GRID VIEW                     */}
       {/* ========================================================================= */}
       {!currentCategory && (
         <div className="space-y-4">
@@ -271,24 +259,24 @@ export const ExploreScreen: React.FC = () => {
               {isTamil ? 'பிரிவுகளைத் தேர்வு செய்க' : 'Select an Explore Category'}
             </h2>
             <span className="text-xs text-primary font-semibold">
-              4 {isTamil ? 'முக்கியப் பிரிவுகள் (வரிசைக்கு 2)' : 'Core Categories (2 in a Row)'}
+              3 {isTamil ? 'முக்கியப் பொக்கிஷங்கள்' : 'Core Islamic Treasures'}
             </span>
           </div>
 
-          {/* 🌟 2 CATEGORIES IN A ROW (SQUARE-SHAPED CARDS) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-7">
+          {/* 🌟 3 CARDS RESPONSIVE GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon
               return (
                 <div
                   key={cat.key}
                   onClick={() => handleSelectCategory(cat.key)}
-                  className={`min-h-[290px] sm:min-h-[320px] p-6 sm:p-8 rounded-3xl glass-card border ${cat.borderColor} bg-linear-to-b ${cat.gradient} flex flex-col justify-between shadow-md hover:shadow-2xl transition-all duration-300 group cursor-pointer hover:-translate-y-1.5 relative overflow-hidden`}
+                  className={`min-h-[300px] sm:min-h-[330px] p-6 sm:p-7 rounded-3xl glass-card border ${cat.borderColor} bg-linear-to-b ${cat.gradient} flex flex-col justify-between shadow-md hover:shadow-2xl transition-all duration-300 group cursor-pointer hover:-translate-y-1.5 relative overflow-hidden`}
                 >
-                  {/* Top: Square Icon Badge & Stat Pill */}
-                  <div className="space-y-4">
+                  {/* Top: Icon Badge & Stat Pill */}
+                  <div className="space-y-3.5">
                     <div className="flex items-center justify-between">
-                      <div className={`w-13 h-13 rounded-2xl ${cat.iconBg} border flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
+                      <div className={`w-12 h-12 rounded-2xl ${cat.iconBg} border flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
                         <Icon className="w-6 h-6" />
                       </div>
                       
@@ -299,7 +287,7 @@ export const ExploreScreen: React.FC = () => {
 
                     {/* Arabic Scripture Preview */}
                     <p 
-                      className="text-base sm:text-lg text-right text-outline/80 group-hover:text-on-surface/90 transition-colors select-none pt-1"
+                      className="text-sm sm:text-base text-right text-outline/80 group-hover:text-on-surface/90 transition-colors select-none pt-1"
                       style={{ fontFamily: arabicFontFamily }}
                       dir="rtl"
                     >
@@ -307,11 +295,11 @@ export const ExploreScreen: React.FC = () => {
                     </p>
 
                     {/* Titles */}
-                    <div className="space-y-1.5">
-                      <h3 className="text-lg sm:text-xl font-black text-on-surface tracking-tight group-hover:text-primary transition-colors leading-snug">
+                    <div className="space-y-1">
+                      <h3 className="text-base sm:text-lg font-black text-on-surface tracking-tight group-hover:text-primary transition-colors leading-snug">
                         {isTamil ? cat.titleTa : cat.titleEn}
                       </h3>
-                      <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed line-clamp-2">
+                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
                         {isTamil ? cat.descTa : cat.descEn}
                       </p>
                     </div>
@@ -323,7 +311,7 @@ export const ExploreScreen: React.FC = () => {
                       {cat.badge}
                     </span>
 
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-container-high/90 border border-outline-variant/30 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all duration-200 shadow-2xs">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high/90 border border-outline-variant/30 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all duration-200 shadow-2xs">
                       <span>{cat.btnText}</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </div>
@@ -342,20 +330,46 @@ export const ExploreScreen: React.FC = () => {
       {/* 🌟 4. CATEGORY DETAIL VIEWS (WHEN A CATEGORY IS CLICKED)                  */}
       {/* ========================================================================= */}
 
-      {/* 📿 CATEGORY 1: DIGITAL TASBIH & DHIKR STUDIO */}
+      {/* 📿 UNIFIED CATEGORY 1: DIGITAL TASBIH STUDIO & DHIKR ANALYTICS */}
       {currentCategory === 'dhikr' && (
         <div className="space-y-6">
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <DigitalTasbihEngine onOpenAnalytics={() => handleSelectCategory('analytics')} />
-          </Suspense>
-        </div>
-      )}
+          {/* Sub-Navigation Segmented Controller: Counter vs Analytics */}
+          <div className="flex items-center justify-center">
+            <div className="p-1.5 rounded-2xl bg-surface-container border border-outline-variant/30 inline-flex items-center gap-1.5 shadow-sm">
+              <button
+                onClick={() => setTasbihTab('counter')}
+                className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer ${
+                  tasbihTab === 'counter'
+                    ? 'bg-primary text-on-primary shadow-xs'
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>{isTamil ? 'தஸ்பீஹ் அரங்கம்' : 'Tasbih Counter'}</span>
+              </button>
 
-      {/* 📊 CATEGORY 2: DHIKR ANALYTICS & MULTI-DAY TRENDS */}
-      {currentCategory === 'analytics' && (
-        <div className="space-y-6">
+              <button
+                onClick={() => setTasbihTab('analytics')}
+                className={`px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer ${
+                  tasbihTab === 'analytics'
+                    ? 'bg-primary text-on-primary shadow-xs'
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>{isTamil ? 'பகுப்பாய்வு & வரைபடம்' : 'Analytics & Habits'}</span>
+              </button>
+            </div>
+          </div>
+
           <Suspense fallback={<RouteLoadingFallback />}>
-            <DhikrAnalyticsView />
+            {tasbihTab === 'counter' ? (
+              <DigitalTasbihEngine onOpenAnalytics={() => setTasbihTab('analytics')} />
+            ) : (
+              <div className="space-y-6">
+                <DhikrAnalyticsView />
+              </div>
+            )}
           </Suspense>
         </div>
       )}
