@@ -5,7 +5,6 @@ import {
   Sparkles, 
   BookOpen, 
   Clock, 
-  ChevronRight, 
   Play, 
   Bookmark, 
   Calendar, 
@@ -121,9 +120,12 @@ const DAILY_VERSES = [
   }
 ]
 
-// 🌟 Daily Rotating Hadiths (with Arabic, English, and Authentic Tamil Translations)
+// 🌟 Daily Rotating Hadiths (with Arabic, English, Authentic Tamil Translations, Book & Hadith Numbers)
 const DAILY_HADITHS = [
   {
+    bookEn: 'Sahih al-Bukhari',
+    bookTa: 'ஸஹீஹ் அல்-புகாரி',
+    hadithNum: 1,
     reference: 'Sahih al-Bukhari 1',
     referenceTa: 'ஸஹீஹ் புகாரி 1',
     arabic: 'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى',
@@ -131,6 +133,9 @@ const DAILY_HADITHS = [
     translationTa: 'செயல்கள் அனைத்தும் எண்ணங்களைப் பொருத்தே அமைகின்றன. ஒவ்வொரு மனிதருக்கும் அவர் எண்ணியதே கிடைக்கிறது.',
   },
   {
+    bookEn: 'Sahih al-Bukhari',
+    bookTa: 'ஸஹீஹ் அல்-புகாரி',
+    hadithNum: 5027,
     reference: 'Sahih al-Bukhari 5027',
     referenceTa: 'ஸஹீஹ் புகாரி 5027',
     arabic: 'خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ',
@@ -138,6 +143,9 @@ const DAILY_HADITHS = [
     translationTa: 'உங்களில் சிறந்தவர் குர்ஆனைக் கற்று, பிறருக்கும் கற்றுக் கொடுப்பவரே ஆவார்.',
   },
   {
+    bookEn: 'Sunan at-Tirmidhi',
+    bookTa: 'ஜாமிவுத் திர்மிதி',
+    hadithNum: 2910,
     reference: 'Sunan at-Tirmidhi 2910',
     referenceTa: 'திர்மிதி 2910',
     arabic: 'مَنْ قَرَأَ حَرْفًا مِنْ كِتَابِ اللَّهِ فَلَهُ بِهِ حَسَنَةٌ وَالْحَسَنَةُ بِعَشْرِ أَمْثَالِهَا',
@@ -145,6 +153,9 @@ const DAILY_HADITHS = [
     translationTa: 'அல்லாஹ்வின் வேதத்திலிருந்து ஓர் எழுத்தை ஓதுகிறவருக்கு ஒரு நன்மை உண்டு; அந்த ஒரு நன்மை பத்து நன்மைகளாகப் பெருகும்.',
   },
   {
+    bookEn: 'Sahih Muslim',
+    bookTa: 'ஸஹீஹ் முஸ்லிம்',
+    hadithNum: 223,
     reference: 'Sahih Muslim 223',
     referenceTa: 'ஸஹீஹ் முஸ்லிம் 223',
     arabic: 'الطُّهُورُ شَطْرُ الإِيمَانِ، وَالْحَمْدُ لِلَّهِ تَمْلأُ الْمِيزَانَ',
@@ -152,6 +163,9 @@ const DAILY_HADITHS = [
     translationTa: 'சுத்தம் ஈமானின் பாதியாகும்; "அல்ஹம்துலில்லாஹ்" நன்மைகளின் தராசை நிரப்பும்.',
   },
   {
+    bookEn: 'Jami` at-Tirmidhi',
+    bookTa: 'ஜாமிவுத் திர்மிதி',
+    hadithNum: 1956,
     reference: 'Jami` at-Tirmidhi 1956',
     referenceTa: 'திர்மிதி 1956',
     arabic: 'تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ لَكَ صَدَقَةٌ',
@@ -159,6 +173,9 @@ const DAILY_HADITHS = [
     translationTa: 'உன் சகோதரனின் முகத்தைப் பார்த்து நீ புன்னகைப்பதும் உனக்கு ஒரு தர்மமாகும்.',
   },
   {
+    bookEn: 'Sahih al-Bukhari',
+    bookTa: 'ஸஹீஹ் அல்-புகாரி',
+    hadithNum: 6407,
     reference: 'Sahih al-Bukhari 6407',
     referenceTa: 'ஸஹீஹ் புகாரி 6407',
     arabic: 'كَلِمَتَانِ حَبِيبَتَانِ إِلَى الرَّحْمَنِ، خَفِيفَتَانِ عَلَى اللِّسَانِ، ثَقِيلَتَانِ فِي الْمِيزَانِ: سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ',
@@ -166,6 +183,9 @@ const DAILY_HADITHS = [
     translationTa: 'இரண்டு வாக்கியங்கள் நாவிற்கு எளிதானவை, தராசில் கனமானவை, கருணையாளன் அல்லாஹ்விற்குப் பிரியமானவை: "ஸுப்ஹானல்லாஹி வபிஹம்திஹி, ஸுப்ஹானல்லாஹில் அழீம்".',
   },
   {
+    bookEn: 'Sahih Muslim',
+    bookTa: 'ஸஹீஹ் முஸ்லிம்',
+    hadithNum: 2699,
     reference: 'Sahih Muslim 2699',
     referenceTa: 'ஸஹீஹ் முஸ்லிம் 2699',
     arabic: 'مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ',
@@ -173,6 +193,9 @@ const DAILY_HADITHS = [
     translationTa: 'எவர் கல்வியைத் தேடி ஒரு வழியில் செல்கிறாரோ, அவருக்கு அல்லாஹ் சொர்க்கத்தின் பாதையை எளிதாக்குகிறான்.',
   },
   {
+    bookEn: 'Sahih al-Bukhari',
+    bookTa: 'ஸஹீஹ் அல்-புகாரி',
+    hadithNum: 13,
     reference: 'Sahih al-Bukhari 13',
     referenceTa: 'ஸஹீஹ் புகாரி 13',
     arabic: 'لاَ يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ',
@@ -180,6 +203,9 @@ const DAILY_HADITHS = [
     translationTa: 'தமக்கு விரும்புவதையே தம் சகோதரனுக்கும் விரும்பாத வரை உங்களில் எவரும் முழுமையான இறைநம்பிக்கையாளராக முடியாது.',
   },
   {
+    bookEn: 'Sahih Muslim',
+    bookTa: 'ஸஹீஹ் முஸ்லிம்',
+    hadithNum: 782,
     reference: 'Sahih Muslim 782',
     referenceTa: 'ஸஹீஹ் முஸ்லிம் 782',
     arabic: 'أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ',
@@ -187,6 +213,9 @@ const DAILY_HADITHS = [
     translationTa: 'நற்செயல்களில் அல்லாஹ்விற்கு மிகவும் விருப்பமானது, குறைவாக இருந்தாலும் தொடர்ந்து செய்யப்படுவதேயாகும்.',
   },
   {
+    bookEn: 'Jami` at-Tirmidhi',
+    bookTa: 'ஜாமிவுத் திர்மிதி',
+    hadithNum: 1987,
     reference: 'Jami` at-Tirmidhi 1987',
     referenceTa: 'திர்மிதி 1987',
     arabic: 'اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا، وَخَالِقِ النَّاسَ بِخُلُقٍ حَسَنٍ',
@@ -706,27 +735,48 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 4. 🌟 INSPIRATIONS: VERSE OF THE DAY & HADITH OF THE DAY (BELOW METRICS)   */}
+      {/* 4. 📿 INTERACTIVE DIGITAL TASBIH WIDGET (IN THE MIDDLE BELOW METRICS)     */}
+      {/* ========================================================================= */}
+      <div className="space-y-2">
+        <DashboardTasbihWidget />
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 5. 🌟 DAILY INSPIRATIONS: VERSE OF THE DAY & HADITH OF THE DAY (BELOW)    */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         
         {/* 📖 VERSE OF THE DAY */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden">
-          <div className="space-y-3">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden bg-surface-container-low/80">
+          <div className="space-y-3.5">
+            {/* Header: Title & Prominent Verse Number Badge */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider font-label-caps">
                 <Bookmark className="w-4 h-4" />
                 <span>{isTamil ? 'தினசரி திருவசனம்' : 'Verse of the Day'}</span>
               </div>
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">
-                {isTamil ? dailyVerse.surahNameTa : dailyVerse.surahName} {dailyVerse.surahNum}:{dailyVerse.ayahNum}
+              
+              {/* Highlighted Verse Number Badge */}
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary shadow-2xs">
+                {isTamil 
+                  ? `அத்தியாயம் ${dailyVerse.surahNum} • வசனம் #${dailyVerse.ayahNum}` 
+                  : `Surah ${dailyVerse.surahNum} • Ayah #${dailyVerse.ayahNum}`}
               </span>
             </div>
 
-            {/* Arabic Script */}
+            {/* Clear Chapter & Ayah Identification Subtitle */}
+            <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium border-b border-outline-variant/20 pb-2.5">
+              <span className="font-semibold text-on-surface text-xs sm:text-sm">
+                {dailyVerse.surahNum}. {isTamil ? `சூரா ${dailyVerse.surahNameTa}` : `Surah ${dailyVerse.surahName}`}
+              </span>
+              <span className="text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-md text-[11px]">
+                {isTamil ? `வசன எண்: ${dailyVerse.ayahNum}` : `Ayah No: ${dailyVerse.ayahNum}`}
+              </span>
+            </div>
+
+            {/* Arabic Scripture */}
             <p 
-              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1" 
+              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1 select-all" 
               style={{ fontFamily: arabicFontFamily }}
               dir="rtl"
             >
@@ -734,40 +784,54 @@ export const DashboardScreen: React.FC = () => {
             </p>
 
             {/* Dynamic Translation (Tamil / English) */}
-            <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed">
+            <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed pt-0.5">
               "{isTamilTranslation ? dailyVerse.translationTa : dailyVerse.translationEn}"
             </p>
           </div>
 
-          {/* Action Link to Reader */}
-          <div className="pt-2">
-            <Link
-              to={`/reading?surah=${dailyVerse.surahNum}&ayah=${dailyVerse.ayahNum}`}
-              className="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-primary text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
-            >
-              <span>{isTamil ? 'அத்தியாயத்தை ஓதுக' : 'Read Surah'}</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
+          {/* Clean Scripture Attribution Footer (No Read Surah Button) */}
+          <div className="pt-3 border-t border-outline-variant/20 flex items-center justify-between text-[11px] text-outline font-medium">
+            <span className="flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-primary/70" />
+              <span>{isTamil ? 'புனித அல்-குர்ஆன்' : 'The Holy Quran'}</span>
+            </span>
+            <span className="text-primary/90 font-bold font-mono bg-surface-container px-2 py-0.5 rounded-md border border-outline-variant/30">
+              {dailyVerse.surahNum} : {dailyVerse.ayahNum}
+            </span>
           </div>
         </div>
 
         {/* 📜 HADITH OF THE DAY */}
-        <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden">
-          <div className="space-y-3">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden bg-surface-container-low/80">
+          <div className="space-y-3.5">
+            {/* Header: Title & Prominent Hadith Number Badge */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2 text-secondary font-bold text-xs uppercase tracking-wider font-label-caps">
                 <BookMarked className="w-4 h-4" />
                 <span>{isTamil ? 'தினசரி நபிமொழி' : 'Hadith of the Day'}</span>
               </div>
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-secondary/10 border border-secondary/20 text-secondary">
-                {isTamil ? dailyHadith.referenceTa : dailyHadith.reference}
+              
+              {/* Highlighted Hadith Number Badge */}
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-secondary/15 border border-secondary/30 text-secondary shadow-2xs">
+                {isTamil 
+                  ? `ஹதீஸ் எண்: #${dailyHadith.hadithNum}` 
+                  : `Hadith #${dailyHadith.hadithNum}`}
               </span>
             </div>
 
-            {/* Arabic Script */}
+            {/* Clear Book & Hadith Number Identification Subtitle */}
+            <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium border-b border-outline-variant/20 pb-2.5">
+              <span className="font-semibold text-on-surface text-xs sm:text-sm">
+                {isTamil ? dailyHadith.bookTa : dailyHadith.bookEn}
+              </span>
+              <span className="text-secondary font-bold bg-secondary/10 px-2 py-0.5 rounded-md text-[11px]">
+                {isTamil ? `எண்: ${dailyHadith.hadithNum}` : `No: ${dailyHadith.hadithNum}`}
+              </span>
+            </div>
+
+            {/* Arabic Scripture */}
             <p 
-              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1" 
+              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1 select-all" 
               style={{ fontFamily: arabicFontFamily }}
               dir="rtl"
             >
@@ -775,29 +839,24 @@ export const DashboardScreen: React.FC = () => {
             </p>
 
             {/* Dynamic Translation (Tamil / English) */}
-            <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed">
+            <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed pt-0.5">
               "{isTamilTranslation ? dailyHadith.translationTa : dailyHadith.translationEn}"
             </p>
           </div>
 
-          {/* Action Link to Hadiths */}
-          <div className="pt-2">
-            <Link
-              to="/hadith"
-              className="w-full py-2.5 px-4 rounded-2xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-secondary text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
-            >
-              <span>{isTamil ? 'நபிமொழியைப் பார்க்க' : 'View Hadith'}</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
+          {/* Clean Hadith Attribution Footer (No View Hadith Button) */}
+          <div className="pt-3 border-t border-outline-variant/20 flex items-center justify-between text-[11px] text-outline font-medium">
+            <span className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-secondary/70" />
+              <span>{isTamil ? 'குதுபுஸ் ஸித்தாஹ் (ஆதாரப்பூர்வம்)' : 'Kutub al-Sittah Tradition'}</span>
+            </span>
+            <span className="text-secondary/90 font-bold font-mono bg-surface-container px-2 py-0.5 rounded-md border border-outline-variant/30">
+              {isTamil ? dailyHadith.referenceTa : dailyHadith.reference}
+            </span>
           </div>
         </div>
 
       </div>
-
-      {/* ========================================================================= */}
-      {/* 5. 📿 INTERACTIVE DIGITAL TASBIH CIRCULAR WIDGET (COMPACT COUNTING)       */}
-      {/* ========================================================================= */}
-      <DashboardTasbihWidget />
 
     </div>
   )
