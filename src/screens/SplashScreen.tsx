@@ -6,7 +6,6 @@ import { useAuthStore } from '../store/useAuthStore'
 export const SplashScreen: React.FC = () => {
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  const isLoading = useAuthStore((state) => state.isLoading)
   const signInAsGuest = useAuthStore((state) => state.signInAsGuest)
 
   useEffect(() => {
@@ -54,14 +53,19 @@ export const SplashScreen: React.FC = () => {
         </p>
       </main>
 
-      {/* Bottom Area: Only show action buttons for unauthenticated visitors when auth loading is finished */}
+      {/* Bottom Area: Action buttons for visitors or transition for returning reciters */}
       <div className="w-full max-w-sm mx-auto space-y-3 z-10 pb-6 min-h-[110px] flex flex-col justify-end">
-        {!isAuthenticated && !isLoading && (
+        {isAuthenticated ? (
+          <div className="text-center py-4 space-y-2 animate-fade-in">
+            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-primary font-medium">Opening your sanctuary...</p>
+          </div>
+        ) : (
           <div className="space-y-3 animate-fade-in">
             <Link
               to="/dashboard"
               onClick={handleGuestEntry}
-              className="w-full primary-gradient-btn text-white py-3.5 px-6 rounded-full font-semibold text-sm flex items-center justify-center gap-2 transition hover:opacity-95 shadow-lg"
+              className="w-full primary-gradient-btn text-white py-3.5 px-6 rounded-full font-semibold text-sm flex items-center justify-center gap-2 transition hover:opacity-95 shadow-lg active:scale-98"
             >
               <span>Get Started</span>
               <ArrowRight className="w-4 h-4" />
@@ -70,14 +74,14 @@ export const SplashScreen: React.FC = () => {
             <div className="grid grid-cols-2 gap-2.5">
               <Link
                 to="/login"
-                className="py-3 px-4 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface text-center font-medium text-xs transition"
+                className="py-3 px-4 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface text-center font-medium text-xs transition active:scale-98"
               >
                 Log In
               </Link>
               <button
                 type="button"
                 onClick={handleGuestEntry}
-                className="py-3 px-4 rounded-full bg-secondary-container/60 hover:bg-secondary-container border border-secondary/30 text-secondary text-center font-medium text-xs transition cursor-pointer"
+                className="py-3 px-4 rounded-full bg-secondary-container/60 hover:bg-secondary-container border border-secondary/30 text-secondary text-center font-medium text-xs transition cursor-pointer active:scale-98"
               >
                 Guest Demo
               </button>

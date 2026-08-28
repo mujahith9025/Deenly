@@ -247,59 +247,70 @@ export const authService = {
   async getInitialUser(): Promise<UserProfile | null> {
     if (isConfigured) {
       try {
-        const { data } = await supabase.auth.getSession()
-        if (data?.session?.user) {
-          const user = data.session.user
-          
-          // Fetch real profile row from database
-          try {
-            const { data: profileRow } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single()
+        // Fast timeout guard for mobile networks (max 1800ms)
+        const fetchRemoteSession = async () => {
+          const { data } = await supabase.auth.getSession()
+          if (data?.session?.user) {
+            const user = data.session.user
+            
+            // Fetch real profile row from database
+            try {
+              const { data: profileRow } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single()
 
-            if (profileRow) {
-              const row = profileRow as unknown as ProfileRow
-              const profile: UserProfile = {
-                id: row.id,
-                uid: row.uid || row.id,
-                name: row.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Seeker',
-                email: row.email || user.email || '',
-                photoUrl: row.photo_url || user.user_metadata?.avatar_url || null,
-                createdAt: row.created_at || new Date().toISOString(),
-                preferredTranslation: row.preferred_translation || 'english',
-                dailyGoalVerses: row.daily_goal_verses ?? 10,
-                hasanat: row.hasanat ?? 0,
-                verses: row.verses ?? 0,
-                time: row.time ?? 0,
-                pages: row.pages ?? 0,
-                currentStreak: row.current_streak ?? 0,
-                bestStreak: row.best_streak ?? 0,
-                lastReadSurah: row.last_read_surah ?? 1,
-                lastReadAyah: row.last_read_ayah ?? 1,
-                arabicFontSize: 28,
-                prayerNotifications: true,
-                readingReminders: true,
+              if (profileRow) {
+                const row = profileRow as unknown as ProfileRow
+                const profile: UserProfile = {
+                  id: row.id,
+                  uid: row.uid || row.id,
+                  name: row.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Seeker',
+                  email: row.email || user.email || '',
+                  photoUrl: row.photo_url || user.user_metadata?.avatar_url || null,
+                  createdAt: row.created_at || new Date().toISOString(),
+                  preferredTranslation: row.preferred_translation || 'english',
+                  dailyGoalVerses: row.daily_goal_verses ?? 10,
+                  hasanat: row.hasanat ?? 0,
+                  verses: row.verses ?? 0,
+                  time: row.time ?? 0,
+                  pages: row.pages ?? 0,
+                  currentStreak: row.current_streak ?? 0,
+                  bestStreak: row.best_streak ?? 0,
+                  lastReadSurah: row.last_read_surah ?? 1,
+                  lastReadAyah: row.last_read_ayah ?? 1,
+                  arabicFontSize: 28,
+                  prayerNotifications: true,
+                  readingReminders: true,
+                }
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(profile))
+                return profile
               }
-              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(profile))
-              return profile
+            } catch (fetchErr) {
+              console.warn('Could not load profile from table, creating default:', fetchErr)
             }
-          } catch (fetchErr) {
-            console.warn('Could not load profile from table, creating default:', fetchErr)
-          }
 
-          const stored = this.getStoredProfile()
-          if (stored && stored.id === user.id) {
-            return stored
+            const stored = this.getStoredProfile()
+            if (stored && stored.id === user.id) {
+              return stored
+            }
+            return createDefaultProfile({
+              uid: user.id,
+              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Seeker',
+              email: user.email || '',
+              photoUrl: user.user_metadata?.avatar_url || null,
+            })
           }
-          return createDefaultProfile({
-            uid: user.id,
-            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Seeker',
-            email: user.email || '',
-            photoUrl: user.user_metadata?.avatar_url || null,
-          })
+          return null
         }
+
+        const timeoutPromise = new Promise<null>((resolve) => 
+          setTimeout(() => resolve(null), 1800)
+        )
+
+        const remoteUser = await Promise.race([fetchRemoteSession(), timeoutPromise])
+        if (remoteUser) return remoteUser
       } catch (err) {
         console.warn('Session restoration error:', err)
       }

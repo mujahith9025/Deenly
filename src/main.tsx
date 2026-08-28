@@ -3,12 +3,23 @@ import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 import App from './App.tsx'
+import { ErrorBoundary } from './components/ErrorBoundary'
+
+// Handle Vite dynamic chunk preloading errors smoothly when deployments change
+window.addEventListener('vite:preloadError', () => {
+  const lastReload = sessionStorage.getItem('deenly_preload_reload')
+  const now = Date.now()
+  if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+    sessionStorage.setItem('deenly_preload_reload', now.toString())
+    window.location.reload()
+  }
+})
 
 // Auto-register and auto-update PWA service worker whenever user enters the app
 const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
-    // Force reload to activate new deployment immediately
+    // Update service worker in background
     updateSW(true)
   },
   onOfflineReady() {
@@ -16,9 +27,7 @@ const updateSW = registerSW({
   },
   onRegistered(registration) {
     if (registration) {
-      // Check for updates on entry / window focus / visibility change
-      registration.update().catch(() => {})
-
+      // Check for updates on entry / window focus
       const handleCheckUpdate = () => {
         registration.update().catch(() => {})
       }
@@ -29,28 +38,14 @@ const updateSW = registerSW({
           handleCheckUpdate()
         }
       })
-
-      // Periodically check for updates
-      setInterval(() => {
-        registration.update().catch(() => {})
-      }, 5 * 60 * 1000)
     }
   },
 })
 
-// Listen to service worker controller changes for instant seamless reload
-if ('serviceWorker' in navigator) {
-  let refreshing = false
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!refreshing) {
-      refreshing = true
-      window.location.reload()
-    }
-  })
-}
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

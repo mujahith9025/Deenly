@@ -23,16 +23,22 @@ const SettingsScreen = lazy(() => import('./screens/SettingsScreen').then((m) =>
 function prefetchKeyRoutes() {
   if (typeof window === 'undefined') return
   const prefetch = () => {
-    import('./screens/DashboardScreen')
-    import('./screens/ReadingScreen')
-    import('./screens/QuranScreen')
-    import('./screens/ExploreScreen')
+    try {
+      import('./screens/DashboardScreen').catch(() => {})
+      import('./screens/ReadingScreen').catch(() => {})
+      import('./screens/QuranScreen').catch(() => {})
+      import('./screens/ExploreScreen').catch(() => {})
+    } catch {}
   }
 
-  if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(prefetch, { timeout: 2500 })
-  } else {
-    setTimeout(prefetch, 1200)
+  try {
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(prefetch, { timeout: 3000 })
+    } else {
+      setTimeout(prefetch, 1500)
+    }
+  } catch {
+    setTimeout(prefetch, 1500)
   }
 }
 
