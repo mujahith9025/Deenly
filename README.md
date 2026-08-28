@@ -142,7 +142,7 @@
 
 ### ✨ Screen-by-Screen Modernization & Crisp Copywriting
 - **Dashboard Screen (`/dashboard`)**: Dynamic greeting with real-time target status (`12/20 Ayahs • 60%`), Hero Recitation & Weekly Consistency cards, **Interactive Digital Tasbih dial positioned in the middle below Spiritual Metrics**, and **Daily Inspirations (Verse of the Day & Hadith of the Day)** positioned below with prominent chapter/verse numbering and canonical Hadith badges.
-- **Explore Hub (`/explore`)**: Sleek 4-card square grid with 1-line descriptions (`Digital Tasbih Studio`, `Dhikr Analytics`, `Hisnul Muslim`, `99 Names of Allah`) and simplified category pills.
+- **Explore Hub (`/explore`)**: Sleek **2-in-a-row square-shaped category cards** (`Digital Tasbih Studio`, `Dhikr Analytics`, `Hisnul Muslim`, `99 Names of Allah`) with instant focused single-category drilldown upon selection and seamless back-to-grid navigation.
 - **Quran Catalog (`/quran`)**: High-contrast summary metrics (`114 Surahs • 6,236 Ayahs • 30 Juz`), modern Quranly Surah cards with squircle numbers and calligraphy, and clean action buttons (`▶ Play Surah` / `📖 Recite & Track`).
 - **Quran Reading Screen (`/reading`)**: Enlarged fixed header & footer with monospace timer, letter rewards, dynamic font-size scrolling down to 54px, and clean bilingual translation badges (`English • Sahih` / `தமிழ் • பாகவி`).
 - **Hadith Collections (`/hadith`)**: Scholarly book cards, smart interval search, and concise Hadith reader stream with segmented translation switchers (`English`, `தமிழ்`, `Dual`).

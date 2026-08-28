@@ -262,7 +262,7 @@ export const ExploreScreen: React.FC = () => {
       ) : null}
 
       {/* ========================================================================= */}
-      {/* 🌟 3. MAIN EXPLORE GRID VIEW (SQUARE-SHAPED BOXES FOR EACH CATEGORY)      */}
+      {/* 🌟 3. MAIN EXPLORE 2-PER-ROW SQUARE-SHAPED CATEGORY GRID VIEW             */}
       {/* ========================================================================= */}
       {!currentCategory && (
         <div className="space-y-4">
@@ -271,34 +271,35 @@ export const ExploreScreen: React.FC = () => {
               {isTamil ? 'பிரிவுகளைத் தேர்வு செய்க' : 'Select an Explore Category'}
             </h2>
             <span className="text-xs text-primary font-semibold">
-              4 {isTamil ? 'முக்கியப் பிரிவுகள்' : 'Core Categories'}
+              4 {isTamil ? 'முக்கியப் பிரிவுகள் (வரிசைக்கு 2)' : 'Core Categories (2 in a Row)'}
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+          {/* 🌟 2 CATEGORIES IN A ROW (SQUARE-SHAPED CARDS) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-7">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon
               return (
                 <div
                   key={cat.key}
                   onClick={() => handleSelectCategory(cat.key)}
-                  className={`min-h-[320px] sm:min-h-[350px] p-6 sm:p-7 rounded-3xl glass-card border ${cat.borderColor} bg-linear-to-b ${cat.gradient} flex flex-col justify-between shadow-md hover:shadow-2xl transition-all duration-300 group cursor-pointer hover:-translate-y-1.5 relative overflow-hidden`}
+                  className={`min-h-[290px] sm:min-h-[320px] p-6 sm:p-8 rounded-3xl glass-card border ${cat.borderColor} bg-linear-to-b ${cat.gradient} flex flex-col justify-between shadow-md hover:shadow-2xl transition-all duration-300 group cursor-pointer hover:-translate-y-1.5 relative overflow-hidden`}
                 >
-                  {/* Top Row: Icon Badge & Stat Pill */}
+                  {/* Top: Square Icon Badge & Stat Pill */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className={`w-12 h-12 rounded-2xl ${cat.iconBg} border flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
+                      <div className={`w-13 h-13 rounded-2xl ${cat.iconBg} border flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
                         <Icon className="w-6 h-6" />
                       </div>
                       
-                      <span className="px-2.5 py-1 rounded-xl bg-surface-container-high/90 border border-outline-variant/30 text-[11px] font-extrabold text-on-surface shadow-2xs">
+                      <span className="px-3 py-1 rounded-xl bg-surface-container-high/90 border border-outline-variant/30 text-xs font-extrabold text-on-surface shadow-2xs">
                         {cat.statPill}
                       </span>
                     </div>
 
                     {/* Arabic Scripture Preview */}
                     <p 
-                      className="text-sm sm:text-base text-right text-outline/80 group-hover:text-on-surface/90 transition-colors select-none pt-1"
+                      className="text-base sm:text-lg text-right text-outline/80 group-hover:text-on-surface/90 transition-colors select-none pt-1"
                       style={{ fontFamily: arabicFontFamily }}
                       dir="rtl"
                     >
@@ -306,25 +307,25 @@ export const ExploreScreen: React.FC = () => {
                     </p>
 
                     {/* Titles */}
-                    <div className="space-y-1">
-                      <h3 className="text-base sm:text-lg font-black text-on-surface tracking-tight group-hover:text-primary transition-colors leading-snug">
+                    <div className="space-y-1.5">
+                      <h3 className="text-lg sm:text-xl font-black text-on-surface tracking-tight group-hover:text-primary transition-colors leading-snug">
                         {isTamil ? cat.titleTa : cat.titleEn}
                       </h3>
-                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-3">
+                      <p className="text-xs sm:text-sm text-on-surface-variant leading-relaxed line-clamp-2">
                         {isTamil ? cat.descTa : cat.descEn}
                       </p>
                     </div>
                   </div>
 
-                  {/* Bottom Row: Badge & Action Arrow */}
+                  {/* Bottom: Badge & Action Pill */}
                   <div className="pt-4 mt-2 border-t border-outline-variant/20 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-outline uppercase tracking-wider font-label-caps">
+                    <span className="text-[11px] font-bold text-outline uppercase tracking-wider font-label-caps">
                       {cat.badge}
                     </span>
 
-                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-container-high/90 border border-outline-variant/30 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all duration-200 shadow-2xs">
                       <span>{cat.btnText}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </div>
                   </div>
 
