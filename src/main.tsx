@@ -15,6 +15,24 @@ window.addEventListener('vite:preloadError', () => {
   }
 })
 
+// Build & Cache Invalidator on new deployments
+const APP_BUILD_VERSION = '2026.08.28-v3'
+if (typeof window !== 'undefined') {
+  const storedVersion = localStorage.getItem('deenly_app_version')
+  if (storedVersion !== APP_BUILD_VERSION) {
+    localStorage.setItem('deenly_app_version', APP_BUILD_VERSION)
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        keys.forEach((key) => {
+          if (!key.includes('audio') && !key.includes('font')) {
+            caches.delete(key)
+          }
+        })
+      })
+    }
+  }
+}
+
 // Auto-register and auto-update PWA service worker whenever user enters the app
 const updateSW = registerSW({
   immediate: true,
