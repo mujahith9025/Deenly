@@ -9,7 +9,8 @@ import {
   Bookmark, 
   Calendar, 
   Check,
-  BookMarked
+  BookMarked,
+  Copy
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { useReadingStore } from '../store/useReadingStore'
@@ -349,6 +350,24 @@ export const DashboardScreen: React.FC = () => {
 
   const dailyVerse = DAILY_VERSES[dayOfYear % DAILY_VERSES.length]
   const dailyHadith = DAILY_HADITHS[dayOfYear % DAILY_HADITHS.length]
+
+  // User Interactivity: 1-Tap Copy Verse & Hadith with Instant Visual Feedback
+  const [copiedVerse, setCopiedVerse] = useState(false)
+  const [copiedHadith, setCopiedHadith] = useState(false)
+
+  const handleCopyVerse = () => {
+    const verseText = `${dailyVerse.arabic}\n\n"${isTamilTranslation ? dailyVerse.translationTa : dailyVerse.translationEn}"\n— Surah ${dailyVerse.surahName} (${dailyVerse.surahNum}:${dailyVerse.ayahNum})`
+    navigator.clipboard.writeText(verseText)
+    setCopiedVerse(true)
+    setTimeout(() => setCopiedVerse(false), 2000)
+  }
+
+  const handleCopyHadith = () => {
+    const hadithText = `${dailyHadith.arabic}\n\n"${isTamilTranslation ? dailyHadith.translationTa : dailyHadith.translationEn}"\n— ${dailyHadith.bookEn} (Hadith #${dailyHadith.hadithNum})`
+    navigator.clipboard.writeText(hadithText)
+    setCopiedHadith(true)
+    setTimeout(() => setCopiedHadith(false), 2000)
+  }
 
   const isStartingFresh = lastSurah === 1 && lastAyah === 1 && (user?.verses || 0) === 0
 
@@ -749,34 +768,24 @@ export const DashboardScreen: React.FC = () => {
         {/* 📖 VERSE OF THE DAY */}
         <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden bg-surface-container-low/80">
           <div className="space-y-3.5">
-            {/* Header: Title & Prominent Verse Number Badge */}
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+            {/* Header: Title & Single-Occurrence Chapter & Verse Badge */}
+            <div className="flex items-center justify-between gap-2 flex-wrap pb-1 border-b border-outline-variant/15">
               <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider font-label-caps">
                 <Bookmark className="w-4 h-4" />
                 <span>{isTamil ? 'தினசரி திருவசனம்' : 'Verse of the Day'}</span>
               </div>
               
-              {/* Highlighted Verse Number Badge */}
+              {/* Single Prominent Chapter & Verse Reference Badge */}
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary shadow-2xs">
                 {isTamil 
-                  ? `அத்தியாயம் ${dailyVerse.surahNum} • வசனம் #${dailyVerse.ayahNum}` 
-                  : `Surah ${dailyVerse.surahNum} • Ayah #${dailyVerse.ayahNum}`}
-              </span>
-            </div>
-
-            {/* Clear Chapter & Ayah Identification Subtitle */}
-            <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium border-b border-outline-variant/20 pb-2.5">
-              <span className="font-semibold text-on-surface text-xs sm:text-sm">
-                {dailyVerse.surahNum}. {isTamil ? `சூரா ${dailyVerse.surahNameTa}` : `Surah ${dailyVerse.surahName}`}
-              </span>
-              <span className="text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-md text-[11px]">
-                {isTamil ? `வசன எண்: ${dailyVerse.ayahNum}` : `Ayah No: ${dailyVerse.ayahNum}`}
+                  ? `சூரா ${dailyVerse.surahNameTa} (${dailyVerse.surahNum}:${dailyVerse.ayahNum})` 
+                  : `Surah ${dailyVerse.surahName} (${dailyVerse.surahNum}:${dailyVerse.ayahNum})`}
               </span>
             </div>
 
             {/* Arabic Scripture */}
             <p 
-              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1 select-all" 
+              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1.5 select-all" 
               style={{ fontFamily: arabicFontFamily }}
               dir="rtl"
             >
@@ -789,49 +798,55 @@ export const DashboardScreen: React.FC = () => {
             </p>
           </div>
 
-          {/* Clean Scripture Attribution Footer (No Read Surah Button) */}
+          {/* Clean Interactive Footer */}
           <div className="pt-3 border-t border-outline-variant/20 flex items-center justify-between text-[11px] text-outline font-medium">
             <span className="flex items-center gap-1.5">
               <BookOpen className="w-3.5 h-3.5 text-primary/70" />
               <span>{isTamil ? 'புனித அல்-குர்ஆன்' : 'The Holy Quran'}</span>
             </span>
-            <span className="text-primary/90 font-bold font-mono bg-surface-container px-2 py-0.5 rounded-md border border-outline-variant/30">
-              {dailyVerse.surahNum} : {dailyVerse.ayahNum}
-            </span>
+
+            {/* Interactive 1-Tap Copy Button */}
+            <button
+              onClick={handleCopyVerse}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-[11px] font-semibold text-on-surface transition cursor-pointer active:scale-95 shadow-2xs"
+              title={isTamil ? 'வசனத்தை நகலெடு' : 'Copy Verse'}
+            >
+              {copiedVerse ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-emerald-400 font-bold">{isTamil ? 'நகலெடுக்கப்பட்டது!' : 'Copied!'}</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-outline" />
+                  <span>{isTamil ? 'நகலெடு' : 'Copy'}</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
         {/* 📜 HADITH OF THE DAY */}
         <div className="p-6 sm:p-7 rounded-3xl glass-card border border-outline-variant/30 shadow-md flex flex-col justify-between space-y-4 relative overflow-hidden bg-surface-container-low/80">
           <div className="space-y-3.5">
-            {/* Header: Title & Prominent Hadith Number Badge */}
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+            {/* Header: Title & Single-Occurrence Hadith Number Badge */}
+            <div className="flex items-center justify-between gap-2 flex-wrap pb-1 border-b border-outline-variant/15">
               <div className="flex items-center gap-2 text-secondary font-bold text-xs uppercase tracking-wider font-label-caps">
                 <BookMarked className="w-4 h-4" />
                 <span>{isTamil ? 'தினசரி நபிமொழி' : 'Hadith of the Day'}</span>
               </div>
               
-              {/* Highlighted Hadith Number Badge */}
+              {/* Single Prominent Book & Hadith Number Reference Badge */}
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-secondary/15 border border-secondary/30 text-secondary shadow-2xs">
                 {isTamil 
-                  ? `ஹதீஸ் எண்: #${dailyHadith.hadithNum}` 
-                  : `Hadith #${dailyHadith.hadithNum}`}
-              </span>
-            </div>
-
-            {/* Clear Book & Hadith Number Identification Subtitle */}
-            <div className="flex items-center justify-between text-xs text-on-surface-variant font-medium border-b border-outline-variant/20 pb-2.5">
-              <span className="font-semibold text-on-surface text-xs sm:text-sm">
-                {isTamil ? dailyHadith.bookTa : dailyHadith.bookEn}
-              </span>
-              <span className="text-secondary font-bold bg-secondary/10 px-2 py-0.5 rounded-md text-[11px]">
-                {isTamil ? `எண்: ${dailyHadith.hadithNum}` : `No: ${dailyHadith.hadithNum}`}
+                  ? `${dailyHadith.bookTa} • ஹதீஸ் ${dailyHadith.hadithNum}` 
+                  : `${dailyHadith.bookEn} • Hadith #${dailyHadith.hadithNum}`}
               </span>
             </div>
 
             {/* Arabic Scripture */}
             <p 
-              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1 select-all" 
+              className="text-lg sm:text-xl text-on-surface text-right leading-relaxed pt-1.5 select-all" 
               style={{ fontFamily: arabicFontFamily }}
               dir="rtl"
             >
@@ -844,15 +859,31 @@ export const DashboardScreen: React.FC = () => {
             </p>
           </div>
 
-          {/* Clean Hadith Attribution Footer (No View Hadith Button) */}
+          {/* Clean Interactive Footer */}
           <div className="pt-3 border-t border-outline-variant/20 flex items-center justify-between text-[11px] text-outline font-medium">
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-secondary/70" />
-              <span>{isTamil ? 'குதுபுஸ் ஸித்தாஹ் (ஆதாரப்பூர்வம்)' : 'Kutub al-Sittah Tradition'}</span>
+              <span>{isTamil ? 'குதுபுஸ் ஸித்தாஹ்' : 'Kutub al-Sittah'}</span>
             </span>
-            <span className="text-secondary/90 font-bold font-mono bg-surface-container px-2 py-0.5 rounded-md border border-outline-variant/30">
-              {isTamil ? dailyHadith.referenceTa : dailyHadith.reference}
-            </span>
+
+            {/* Interactive 1-Tap Copy Button */}
+            <button
+              onClick={handleCopyHadith}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-[11px] font-semibold text-on-surface transition cursor-pointer active:scale-95 shadow-2xs"
+              title={isTamil ? 'ஹதீஸை நகலெடு' : 'Copy Hadith'}
+            >
+              {copiedHadith ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-emerald-400 font-bold">{isTamil ? 'நகலெடுக்கப்பட்டது!' : 'Copied!'}</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-outline" />
+                  <span>{isTamil ? 'நகலெடு' : 'Copy'}</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
