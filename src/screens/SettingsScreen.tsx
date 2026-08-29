@@ -591,6 +591,71 @@ export const SettingsScreen: React.FC = () => {
           </p>
         </div>
 
+        {/* 🌟 Audio Controls on TOP: Playback Speed & Hifz Loop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Playback Speed Card */}
+          <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+                {appLanguage === 'ta' ? 'ஓதும் வேகம்' : 'Default Playback Speed'}
+              </span>
+              <span className="text-xs font-mono font-bold text-primary">{playbackRate}x</span>
+            </div>
+
+            <div className="grid grid-cols-5 gap-1.5 pt-1">
+              {[0.75, 1.0, 1.25, 1.5, 2.0].map((spd) => (
+                <button
+                  key={spd}
+                  type="button"
+                  onClick={() => setPlaybackRate(spd)}
+                  className={`py-2 rounded-xl text-xs font-bold font-mono transition cursor-pointer border text-center ${
+                    playbackRate === spd
+                      ? 'primary-gradient-btn text-white shadow-sm'
+                      : 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface hover:border-primary/40'
+                  }`}
+                >
+                  {spd}x
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Hifz Repeat Preset Card */}
+          <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
+                {appLanguage === 'ta' ? 'மனன சுழற்சி (Hifz Repeat)' : 'Hifz Memorization Repeats'}
+              </span>
+              <span className="text-xs font-bold text-primary">
+                {hifzRepeatCount === Infinity ? '∞ Loop' : hifzRepeatCount === 1 ? '1x (Off)' : `${hifzRepeatCount}x`}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-5 gap-1.5 pt-1">
+              {[
+                { val: 1, label: '1x' },
+                { val: 3, label: '3x' },
+                { val: 5, label: '5x' },
+                { val: 10, label: '10x' },
+                { val: Infinity, label: '∞' },
+              ].map((rpt) => (
+                <button
+                  key={rpt.label}
+                  type="button"
+                  onClick={() => setHifzRepeatCount(rpt.val)}
+                  className={`py-2 rounded-xl text-xs font-bold transition cursor-pointer border text-center ${
+                    hifzRepeatCount === rpt.val
+                      ? 'primary-gradient-btn text-white shadow-sm'
+                      : 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface hover:border-primary/40'
+                  }`}
+                >
+                  {rpt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* 🌟 13 World-Renowned Qaris Grid */}
         <div className="space-y-3.5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -701,71 +766,6 @@ export const SettingsScreen: React.FC = () => {
                 </div>
               )
             })}
-          </div>
-        </div>
-
-        {/* 🌟 Audio Controls: Playback Speed & Hifz Loop */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Playback Speed Card */}
-          <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
-                {appLanguage === 'ta' ? 'ஓதும் வேகம்' : 'Default Playback Speed'}
-              </span>
-              <span className="text-xs font-mono font-bold text-primary">{playbackRate}x</span>
-            </div>
-
-            <div className="grid grid-cols-5 gap-1.5 pt-1">
-              {[0.75, 1.0, 1.25, 1.5, 2.0].map((spd) => (
-                <button
-                  key={spd}
-                  type="button"
-                  onClick={() => setPlaybackRate(spd)}
-                  className={`py-2 rounded-xl text-xs font-bold font-mono transition cursor-pointer border text-center ${
-                    playbackRate === spd
-                      ? 'primary-gradient-btn text-white shadow-sm'
-                      : 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface hover:border-primary/40'
-                  }`}
-                >
-                  {spd}x
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Hifz Repeat Preset Card */}
-          <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-outline uppercase tracking-wider font-label-caps block">
-                {appLanguage === 'ta' ? 'மனன சுழற்சி (Hifz Repeat)' : 'Hifz Memorization Repeats'}
-              </span>
-              <span className="text-xs font-bold text-primary">
-                {hifzRepeatCount === Infinity ? '∞ Loop' : hifzRepeatCount === 1 ? '1x (Off)' : `${hifzRepeatCount}x`}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-5 gap-1.5 pt-1">
-              {[
-                { val: 1, label: '1x' },
-                { val: 3, label: '3x' },
-                { val: 5, label: '5x' },
-                { val: 10, label: '10x' },
-                { val: Infinity, label: '∞' },
-              ].map((rpt) => (
-                <button
-                  key={rpt.label}
-                  type="button"
-                  onClick={() => setHifzRepeatCount(rpt.val)}
-                  className={`py-2 rounded-xl text-xs font-bold transition cursor-pointer border text-center ${
-                    hifzRepeatCount === rpt.val
-                      ? 'primary-gradient-btn text-white shadow-sm'
-                      : 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface hover:border-primary/40'
-                  }`}
-                >
-                  {rpt.label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
