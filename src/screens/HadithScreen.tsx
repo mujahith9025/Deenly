@@ -8,7 +8,6 @@ import {
   Check, 
   Loader2, 
   ChevronRight, 
-  ShieldCheck, 
   Bookmark
 } from 'lucide-react'
 import { hadithApi, type HadithChapter, type HadithItem } from '../lib/hadithApi'
@@ -205,40 +204,10 @@ export const HadithScreen: React.FC = () => {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-24">
       {/* ========================================================================= */}
-      {/* SCREEN LEVEL 1: THE 6 MAJOR BOOKS (KUTUB AL-SITTAH) DIRECTORY             */}
+      {/* SCREEN LEVEL 1: THE 6 MAJOR BOOKS DIRECTORY                               */}
       {/* ========================================================================= */}
       {viewMode === 'books' && (
         <div className="space-y-6 animate-fade-in">
-          {/* Header Banner */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-7 rounded-3xl cosmic-gradient border border-outline-variant/30 relative overflow-hidden shadow-xl">
-            <div className="space-y-2 relative z-10">
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-bold tracking-wider font-label-caps uppercase">
-                  {appLanguage === 'ta' ? 'குதுப் அல்-சித்தா' : 'Kutub al-Sittah'}
-                </span>
-                <span className="text-xs text-tertiary font-bold flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> {appLanguage === 'ta' ? 'ஸஹீஹ் தொகுப்புகள்' : 'Authentic Sunnah'}
-                </span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-h1 text-on-surface">
-                {appLanguage === 'ta' ? 'ஆறு முக்கிய நபிமொழி நூல்கள்' : 'The Six Books of Hadith'}
-              </h1>
-              <p className="text-xs sm:text-sm text-on-surface-variant max-w-2xl font-medium leading-relaxed">
-                {appLanguage === 'ta' 
-                  ? 'நபி (ஸல்) அவர்களின் சொல், செயல் மற்றும் அங்கீகாரங்கள் (அரபு மூலம் & தமிழ் விளக்கம்).' 
-                  : 'Authentic traditions of the Prophet (ﷺ) with Arabic script and English & Tamil translations.'}
-              </p>
-            </div>
-
-            {/* Quick Arabic Calligraphy */}
-            <div className="text-right shrink-0 opacity-85 hidden md:block">
-              <p className="font-noto-serif text-2xl lg:text-3xl text-primary-fixed-dim" dir="rtl">
-                كُتُبُ السِّتَّةِ النَّبَوِيَّة
-              </p>
-              <p className="text-[11px] text-outline mt-1 font-medium">Bukhari, Muslim, Tirmidhi, Abu Dawood, Nasai & Ibn Majah</p>
-            </div>
-          </div>
-
           {/* Search & Filter Bar */}
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-outline" />
@@ -277,11 +246,6 @@ export const HadithScreen: React.FC = () => {
                     {book.arabicName}
                   </span>
                 </div>
-
-                {/* Description */}
-                <p className="text-xs text-outline line-clamp-2 leading-relaxed">
-                  {appLanguage === 'ta' ? (book.descriptionTa || book.description) : book.description}
-                </p>
 
                 {/* Footer Badges & Action */}
                 <div className="pt-3 border-t border-outline-variant/20 flex items-center justify-between">

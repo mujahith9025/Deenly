@@ -8,7 +8,7 @@ import {
   Search, 
   Shield, 
   BarChart3,
-  ArrowRight
+  ChevronRight
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { useTasbihStore } from '../store/useTasbihStore'
@@ -177,66 +177,56 @@ export const ExploreScreen: React.FC = () => {
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in pb-16">
       {/* ========================================================================= */}
-      {/* 🌟 MAIN EXPLORE 3-CARD BALANCED CATEGORY GRID VIEW                        */}
+      {/* 🌟 MAIN EXPLORE CATEGORY DIRECTORY                                       */}
       {/* ========================================================================= */}
       {!currentCategory && (
-        <div className="space-y-4">
-          {/* 🌟 3 CARDS RESPONSIVE GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7">
+        <div className="space-y-4 animate-fade-in">
+          {/* 🌟 RECTANGULAR CARDS RESPONSIVE GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon
               return (
                 <div
                   key={cat.key}
                   onClick={() => handleSelectCategory(cat.key)}
-                  className={`min-h-[300px] sm:min-h-[330px] p-6 sm:p-7 rounded-3xl glass-card border ${cat.borderColor} bg-linear-to-b ${cat.gradient} flex flex-col justify-between shadow-md hover:shadow-2xl transition-all duration-300 group cursor-pointer hover:-translate-y-1.5 relative overflow-hidden`}
+                  className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 hover:border-primary/60 transition-all duration-300 cursor-pointer group flex flex-col justify-between space-y-3.5 shadow-md hover:-translate-y-1 hover:shadow-xl relative overflow-hidden"
                 >
-                  {/* Top: Icon Badge & Stat Pill */}
-                  <div className="space-y-3.5">
-                    <div className="flex items-center justify-between">
-                      <div className={`w-12 h-12 rounded-2xl ${cat.iconBg} border flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
-                        <Icon className="w-6 h-6" />
+                  {/* Decorative Top Pill & Arabic Title */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-11 h-11 rounded-2xl ${cat.iconBg} border flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0 mt-0.5`}>
+                        <Icon className="w-5 h-5" />
                       </div>
-                      
-                      <span className="px-3 py-1 rounded-xl bg-surface-container-high/90 border border-outline-variant/30 text-xs font-extrabold text-on-surface shadow-2xs">
-                        {cat.statPill}
-                      </span>
+                      <div>
+                        <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary border border-outline-variant/30 font-bold uppercase tracking-wider font-label-caps">
+                          {cat.statPill}
+                        </span>
+                        <h2 className="text-lg font-bold text-on-surface group-hover:text-primary transition mt-1.5 font-h2">
+                          {isTamil ? cat.titleTa : cat.titleEn}
+                        </h2>
+                      </div>
                     </div>
 
-                    {/* Arabic Scripture Preview */}
-                    <p 
-                      className="text-sm sm:text-base text-right text-outline/80 group-hover:text-on-surface/90 transition-colors select-none pt-1"
+                    <span 
+                      className="font-arabic text-sm text-primary-fixed-dim shrink-0 opacity-80"
                       style={{ fontFamily: arabicFontFamily }}
                       dir="rtl"
                     >
-                      {cat.arabicScript}
-                    </p>
-
-                    {/* Titles */}
-                    <div className="space-y-1">
-                      <h3 className="text-base sm:text-lg font-black text-on-surface tracking-tight group-hover:text-primary transition-colors leading-snug">
-                        {isTamil ? cat.titleTa : cat.titleEn}
-                      </h3>
-                      <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-2">
-                        {isTamil ? cat.descTa : cat.descEn}
-                      </p>
-                    </div>
+                      {cat.arabicScript.split('•')[0].trim()}
+                    </span>
                   </div>
 
-                  {/* Bottom: Badge & Action Pill */}
-                  <div className="pt-4 mt-2 border-t border-outline-variant/20 flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-outline uppercase tracking-wider font-label-caps">
+                  {/* Footer Badges & Action */}
+                  <div className="pt-3 border-t border-outline-variant/20 flex items-center justify-between">
+                    <span className="text-xs text-outline font-semibold">
                       {cat.badge}
                     </span>
 
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high/90 border border-outline-variant/30 text-xs font-bold text-primary group-hover:bg-primary group-hover:text-on-primary group-hover:border-primary transition-all duration-200 shadow-2xs">
+                    <div className="flex items-center gap-1 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
                       <span>{cat.btnText}</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      <ChevronRight className="w-4 h-4" />
                     </div>
                   </div>
-
-                  {/* Ambient Bottom Backlight */}
-                  <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-primary/10 blur-xl pointer-events-none group-hover:bg-primary/20 transition-all" />
                 </div>
               )
             })}
