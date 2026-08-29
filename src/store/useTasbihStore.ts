@@ -57,6 +57,7 @@ interface TasbihState {
   resetSessionCount: () => void
   resetDhikrForToday: (dhikrId: string) => void
   resetAllForToday: () => void
+  resetAllTasbihStatsToZero: () => void
   
   applyRemoteDhikrDelta: (data: { dhikrId: string; deltaCount: number; dateStr: string }) => void
   
@@ -440,6 +441,40 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
     }
     set(nextState)
     persistData(nextState)
+  },
+
+  resetAllTasbihStatsToZero: () => {
+    const state = get()
+    const todayStr = getLocalDateString(new Date())
+    const defaultTargets = getDefaultDhikrTargets()
+    const cleanState = {
+      ...state,
+      sessionCount: 0,
+      sessionLaps: 0,
+      todayDhikrCounts: {},
+      lifetimeDhikrCounts: {},
+      dailyHistory: {},
+      currentStreak: 0,
+      bestStreak: 0,
+    }
+    set(cleanState)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem('deenly_tasbih_storage_v2')
+      localStorage.removeItem('deenly_tasbih_storage_v1')
+      localStorage.removeItem('deenly_tasbih_session')
+      const dataToSave: StoredData = {
+        dailyGoal: state.dailyGoal,
+        dhikrTargets: defaultTargets,
+        soundEnabled: state.soundEnabled,
+        hapticsEnabled: state.hapticsEnabled,
+        todayDhikrCounts: {},
+        lifetimeDhikrCounts: {},
+        dailyHistory: {},
+        lastDateStr: todayStr,
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
+    }
   },
 
   applyRemoteDhikrDelta: (data: { dhikrId: string; deltaCount: number; dateStr: string }) => {

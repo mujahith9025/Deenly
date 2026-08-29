@@ -138,7 +138,7 @@
 
 ### 🛡️ Safety & Account Controls
 - **Fresh Zero-Data Default**: All new accounts (Google OAuth, Email & Guest) start with a clean 0-stat state.
-- **Safety Confirmation Modals**: Built-in warning dialogs with confirmation before resetting reading stats or deleting accounts.
+- **Full Progress Reset & Safety Dialogs**: Built-in warning dialogs before resetting. "Reset to Zero" cleanly resets all Quran recitation records, reading streaks, accumulated Hasanat points, reading positions, and Digital Tasbih & Dhikr counts, history & analytics across local storage, Supabase cloud profiles, and real-time connected devices.
 
 ### ✨ Screen-by-Screen Modernization & Crisp Copywriting
 - **Dashboard Screen (`/dashboard`)**: Dynamic greeting with real-time target status (`12/20 Ayahs • 60%`), Hero Recitation & Weekly Consistency cards, **Interactive Digital Tasbih dial positioned in the middle below Spiritual Metrics**, and **Daily Inspirations (Verse of the Day & Hadith of the Day)** positioned below with prominent chapter/verse numbering and canonical Hadith badges.

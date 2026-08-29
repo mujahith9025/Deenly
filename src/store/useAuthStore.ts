@@ -471,20 +471,27 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       lastReadAyah: 1,
     }
 
-    // 1. Clear local storage
+    // 1. Reset Digital Tasbih & Dhikr Records & Analytics to zero
+    useTasbihStore.getState().resetAllTasbihStatsToZero()
+
+    // 2. Clear local storage for all recitation, daily history and dhikr
     if (typeof window !== 'undefined') {
       localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
       localStorage.removeItem('deenly_last_position')
       localStorage.removeItem('deenly_offline_sync_queue')
+      localStorage.removeItem('deenly_tasbih_storage_v3')
+      localStorage.removeItem('deenly_tasbih_storage_v2')
+      localStorage.removeItem('deenly_tasbih_storage_v1')
+      localStorage.removeItem('deenly_tasbih_session')
       localStorage.setItem('deenly_auth_session', JSON.stringify(cleanedUser))
       Object.keys(localStorage).forEach((k) => {
-        if (k.startsWith('deenly_habits_')) {
+        if (k.startsWith('deenly_habits_') || k.startsWith('deenly_dhikr_')) {
           localStorage.removeItem(k)
         }
       })
     }
 
-    // 2. Reset Supabase table row
+    // 3. Reset Supabase table row
     if (isConfigured && (currentUser.id || currentUser.uid)) {
       try {
         await supabase
@@ -506,10 +513,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       }
     }
 
-    // 3. Broadcast zero reset to other devices (Desktop, Tablets, Other Tabs)
+    // 4. Broadcast zero reset to other devices (Desktop, Tablets, Other Tabs)
     await syncService.publishResetStats(currentUser.uid || currentUser.id)
 
     useReadingStore.getState().setCurrentPosition(1, 1)
+    useReadingStore.getState().resetSession()
 
     set({
       user: cleanedUser,
@@ -517,7 +525,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       syncStatus: 'synced',
       lastSyncedAt: new Date().toISOString(),
     })
-    logger.info('User stats and reading history reset to zero and broadcasted across devices.')
+    logger.info('User stats, Quran progress, and Digital Tasbih records reset to zero and broadcasted across devices.')
   },
 
   applyRemoteReset: () => {
@@ -536,14 +544,22 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       lastReadAyah: 1,
     }
 
+    // Reset Digital Tasbih & Dhikr Records on this device
+    useTasbihStore.getState().resetAllTasbihStatsToZero()
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem(DAILY_HISTORY_STORAGE_KEY)
       localStorage.removeItem('deenly_last_position')
       localStorage.removeItem('deenly_offline_sync_queue')
+      localStorage.removeItem('deenly_tasbih_storage_v3')
+      localStorage.removeItem('deenly_tasbih_storage_v2')
+      localStorage.removeItem('deenly_tasbih_storage_v1')
+      localStorage.removeItem('deenly_tasbih_session')
       localStorage.setItem('deenly_auth_session', JSON.stringify(cleanedUser))
     }
 
     useReadingStore.getState().setCurrentPosition(1, 1)
+    useReadingStore.getState().resetSession()
 
     set({
       user: cleanedUser,
@@ -551,7 +567,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       syncStatus: 'synced',
       lastSyncedAt: new Date().toISOString(),
     })
-    logger.info('Applied remote zero reset from another device.')
+    logger.info('Applied remote zero reset (Quran + Digital Tasbih) from another device.')
   },
 
   deleteAccount: async () => {

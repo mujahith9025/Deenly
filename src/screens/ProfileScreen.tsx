@@ -668,10 +668,10 @@ export const ProfileScreen: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/20">
               <div>
                 <span className="text-xs font-bold text-on-surface block">
-                  {isTamil ? 'ஓதும் முன்னேற்றத்தை மீட்டமை' : 'Reset Recitation Progress'}
+                  {isTamil ? 'அனைத்து முன்னேற்றத்தையும் மீட்டமை' : 'Reset All Progress & Stats'}
                 </span>
                 <span className="text-[11px] text-on-surface-variant">
-                  {isTamil ? 'தொடர் மற்றும் புள்ளிகளை 0 ஆக மாற்றும்' : 'Reset reading counters, streak, and Hasanat points to 0'}
+                  {isTamil ? 'குர்ஆன் ஓதுதல், ஹஸனாத் மற்றும் தஸ்பீஹ் திக்ர் பதிவுகளை 0 ஆக மாற்றும்' : 'Reset Quran recitation, streaks, Hasanat points, and Digital Tasbih records to 0'}
                 </span>
               </div>
               <button
@@ -737,10 +737,12 @@ export const ProfileScreen: React.FC = () => {
 
               <div className="text-center space-y-1.5">
                 <h3 className="text-lg font-bold font-h2 text-on-surface">
-                  {isTamil ? 'அனைத்து புள்ளிவிவரங்களையும் மீட்டமைக்கவா?' : 'Reset All Stats to Zero?'}
+                  {isTamil ? 'அனைத்து முன்னேற்றங்களையும் 0 ஆக மீட்டமைக்கவா?' : 'Reset All Progress to Zero?'}
                 </h3>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  {isTamil ? 'இது உங்கள் ஹஸனாத், வசனங்கள் மற்றும் தொடரை மீட்டமைக்கும்.' : 'This will reset your Hasanat points, verses, pages, and streaks to zero.'}
+                  {isTamil 
+                    ? 'இது உங்கள் குர்ஆன் ஓதும் பதிவுகள், தொடர், ஹஸனாத் நன்மைகள் மற்றும் டிஜிட்டல் தஸ்பீஹ் எண்ணிக்கைகள் அனைத்தையும் முழுமையாக 0 ஆக மீட்டமைக்கும்.' 
+                    : 'This will reset all your Quran recitation records, streaks, Hasanat points, and Digital Tasbih counts & analytics to zero.'}
                 </p>
               </div>
 
