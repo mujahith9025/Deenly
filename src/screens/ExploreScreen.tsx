@@ -2,7 +2,6 @@ import React, { useState, useMemo, Suspense, lazy } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { 
   Sparkles, 
-  Compass, 
   Check, 
   Copy, 
   Star, 
@@ -31,31 +30,32 @@ export type ExploreCategoryKey = 'dhikr' | 'hisnul_muslim' | 'asmaul_husna'
 
 export const ExploreScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const currentCategory = (searchParams.get('cat') as ExploreCategoryKey | null)
+  const currentCategory = (searchParams.get('cat') as ExploreCategoryKey) || null
   const [tasbihTab, setTasbihTab] = useState<'counter' | 'analytics'>('counter')
 
-  const user = useAuthStore((state) => state.user)
   const appLanguage = useI18nStore((state) => state.appLanguage)
   const isTamil = appLanguage === 'ta'
+
+  const user = useAuthStore((state) => state.user)
   const isTamilTranslation = appLanguage === 'ta' || user?.preferredTranslation === 'tamil'
   const fontStyle: ArabicFontStyle = user?.arabicFontStyle || 'madani'
   const arabicFontFamily = getArabicFontFamily(fontStyle)
 
-  // Tasbih store live metrics for preview in square cards
+  // Tasbih store data for quick summary counters
   const {
-    dailyGoal,
     todayDhikrCounts,
     lifetimeDhikrCounts,
+    dailyGoal,
     currentStreak,
     getCompletedDhikrsCount,
   } = useTasbihStore()
 
   const todayTotal = useMemo(() => {
-    return Object.values(todayDhikrCounts).reduce((acc, v) => acc + v, 0)
+    return Object.values(todayDhikrCounts).reduce((a, b) => a + b, 0)
   }, [todayDhikrCounts])
 
   const totalLifetime = useMemo(() => {
-    return Object.values(lifetimeDhikrCounts).reduce((acc, v) => acc + v, 0)
+    return Object.values(lifetimeDhikrCounts).reduce((a, b) => a + b, 0)
   }, [lifetimeDhikrCounts])
 
   const completedDhikrsCount = getCompletedDhikrsCount()
@@ -91,7 +91,8 @@ export const ExploreScreen: React.FC = () => {
   // Filtered Hisnul Muslim Duas
   const filteredHisnulDuas = useMemo(() => {
     return HISNUL_MUSLIM_DUAS.filter((dua) => {
-      const matchCat = hisnulCategory === 'all' || dua.chapterId === hisnulCategory
+      const matchCat =
+        hisnulCategory === 'all' || dua.chapterId === hisnulCategory
       if (!matchCat) return false
 
       if (!hisnulSearch.trim()) return true
@@ -128,8 +129,8 @@ export const ExploreScreen: React.FC = () => {
   const CATEGORIES = [
     {
       key: 'dhikr' as ExploreCategoryKey,
-      titleEn: 'Digital Tasbih & Dhikr Analytics',
-      titleTa: 'டிஜிட்டல் தஸ்பீஹ் & திக்ர் பகுப்பாய்வு',
+      titleEn: 'Tasbih & Dhikr',
+      titleTa: 'தஸ்பீஹ் & திக்ர்',
       arabicScript: 'سُبْحَانَ ٱللَّهِ • الحَمْدُ لِلَّهِ • إِحْصَاءُ الذِّكْرِ',
       descEn: 'Touch counter dial, Sunnah presets, 7/14/30-day streak & habit charts.',
       descTa: 'தொடு உணர்வு தஸ்பீஹ், சுன்னத் திக்ருகள், தொடர் பழக்க வரைபடங்கள் & சாதனைகள்.',
@@ -139,6 +140,7 @@ export const ExploreScreen: React.FC = () => {
       statPill: `🔥 ${currentStreak}d • ${todayTotal}/${dailyGoal}`,
       badge: totalLifetime > 0 ? `${totalLifetime.toLocaleString()} ${isTamil ? 'ஓதப்பட்டது' : 'Total'}` : `${completedDhikrsCount}/${totalPresetsCount} ${isTamil ? 'இலக்குகள்' : 'Goals Met'}`,
       btnText: isTamil ? 'அரங்கம் & வரைபடம்' : 'Open Studio & Charts',
+      iconBg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
     },
     {
       key: 'hisnul_muslim' as ExploreCategoryKey,
@@ -180,19 +182,14 @@ export const ExploreScreen: React.FC = () => {
       {/* ========================================================================= */}
       <div className="p-6 sm:p-7 rounded-3xl bg-linear-to-br from-primary/15 via-surface-container to-surface-container-high border border-primary/25 relative overflow-hidden shadow-md">
         <div className="relative z-10 space-y-2 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold font-label-caps border border-primary/30 shadow-xs">
-            <Compass className="w-3.5 h-3.5" />
-            <span>{isTamil ? 'இஸ்லாமிய பொக்கிஷங்கள்' : 'Islamic Explorer'}</span>
-          </div>
-
           <h1 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight font-headline">
             {isTamil ? 'ஆன்மீக அரங்கம் & துஆக்கள்' : 'Spiritual Sanctuary & Daily Duas'}
           </h1>
 
           <p className="text-xs sm:text-sm text-on-surface-variant font-medium leading-relaxed">
             {isTamil 
-              ? 'டிஜிட்டல் தஸ்பீஹ் & திக்ர் பகுப்பாய்வு, ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்கள்.' 
-              : 'Interactive Digital Tasbih with habit analytics, authentic Hisnul Muslim supplications, and all 99 Names of Allah.'
+              ? 'தஸ்பீஹ் & திக்ர், ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்கள்.' 
+              : 'Interactive Tasbih & Dhikr with habit analytics, authentic Hisnul Muslim supplications, and all 99 Names of Allah.'
             }
           </p>
         </div>
@@ -206,15 +203,6 @@ export const ExploreScreen: React.FC = () => {
       {/* ========================================================================= */}
       {!currentCategory && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-sm font-bold text-outline uppercase tracking-wider font-label-caps">
-              {isTamil ? 'பிரிவுகளைத் தேர்வு செய்க' : 'Select an Explore Category'}
-            </h2>
-            <span className="text-xs text-primary font-semibold">
-              3 {isTamil ? 'முக்கியப் பொக்கிஷங்கள்' : 'Core Islamic Treasures'}
-            </span>
-          </div>
-
           {/* 🌟 3 CARDS RESPONSIVE GRID */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7">
             {CATEGORIES.map((cat) => {
