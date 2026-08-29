@@ -283,11 +283,11 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
               </span>
               
               <div className="flex items-center gap-2">
-                {/* Single Language Toggle Button for Virtue & Translation */}
+                {/* 🌟 Single Language Toggle for Translation & Hadith Virtues */}
                 <button
                   onClick={() => setVirtueLanguage(virtueLanguage === 'en' ? 'ta' : 'en')}
-                  className="h-7 px-2.5 rounded-xl bg-surface-container border border-outline-variant/30 text-[11px] font-black text-primary hover:border-primary transition cursor-pointer shadow-2xs flex items-center gap-1 active:scale-95"
-                  title={isTamil ? 'மொழியை மாற்றுக' : 'Switch language'}
+                  className="px-3 py-1 rounded-xl glass-card border border-primary/40 text-xs font-bold text-primary hover:bg-primary hover:text-white transition-all cursor-pointer shadow-2xs flex items-center gap-1 active:scale-95"
+                  title="Switch translation language between English and தமிழ்"
                 >
                   <span>{virtueLanguage === 'ta' ? 'தமிழ்' : 'English'}</span>
                 </button>

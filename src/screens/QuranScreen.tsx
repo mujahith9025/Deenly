@@ -443,15 +443,6 @@ export const QuranScreen: React.FC = () => {
                   )}
                 </button>
 
-                {/* 🌟 Dedicated Tracked Recitation Session Button */}
-                <button
-                  onClick={() => handleOpenFocusedReader(currentSurahMeta.number, 1)}
-                  className="px-3.5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-md bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95"
-                  title={appLanguage === 'ta' ? 'ஹஸனாத் புள்ளிகளுடன் ஓதுங்கள்' : 'Recite with Hasanat tracking'}
-                >
-                  <BookOpen className="w-4 h-4" />
-                  <span>{appLanguage === 'ta' ? 'ஓதும் அமர்வு' : 'Recite & Track'}</span>
-                </button>
 
                 {/* Jump To Verse Form */}
                 <form onSubmit={handleJumpToAyah} className="flex items-center gap-1.5">
