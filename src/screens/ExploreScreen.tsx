@@ -176,30 +176,8 @@ export const ExploreScreen: React.FC = () => {
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in pb-16">
-      
       {/* ========================================================================= */}
-      {/* 🌟 1. HERO HEADER BANNER (CRISP & CLEAN)                                  */}
-      {/* ========================================================================= */}
-      <div className="p-6 sm:p-7 rounded-3xl bg-linear-to-br from-primary/15 via-surface-container to-surface-container-high border border-primary/25 relative overflow-hidden shadow-md">
-        <div className="relative z-10 space-y-2 max-w-3xl">
-          <h1 className="text-2xl sm:text-3xl font-black text-on-surface tracking-tight font-headline">
-            {isTamil ? 'ஆன்மீக அரங்கம் & துஆக்கள்' : 'Spiritual Sanctuary & Daily Duas'}
-          </h1>
-
-          <p className="text-xs sm:text-sm text-on-surface-variant font-medium leading-relaxed">
-            {isTamil 
-              ? 'தஸ்பீஹ் & திக்ர், ஹிஸ்னுல் முஸ்லிம் துஆக்கள் மற்றும் அல்லாஹ்வின் 99 திருநாமங்கள்.' 
-              : 'Interactive Tasbih & Dhikr with habit analytics, authentic Hisnul Muslim supplications, and all 99 Names of Allah.'
-            }
-          </p>
-        </div>
-
-        {/* Ambient Decorative Background Orb */}
-        <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 🌟 2. MAIN EXPLORE 3-CARD BALANCED CATEGORY GRID VIEW                     */}
+      {/* 🌟 MAIN EXPLORE 3-CARD BALANCED CATEGORY GRID VIEW                        */}
       {/* ========================================================================= */}
       {!currentCategory && (
         <div className="space-y-4">

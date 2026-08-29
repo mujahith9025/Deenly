@@ -59,8 +59,8 @@ export const TRANSLATIONS_DICT = {
     searchSurah: 'Search Surah...',
     noRecitationYet: 'No recitation yet today. Begin your journey!',
 
-    // Quran Explorer
-    quranExplorer: 'Quran Explorer',
+    // Quran
+    quranExplorer: 'Quran',
     quranExplorerSub: '114 Surahs • 6,236 Ayahs • 30 Juz',
     searchSurahPlaceholder: 'Search Surah name, number, or meaning...',
     allChapters: 'All Chapters',
@@ -224,8 +224,8 @@ export const TRANSLATIONS_DICT = {
     searchSurah: 'அத்தியாயத்தைத் தேடுங்கள்...',
     noRecitationYet: 'இன்று இன்னும் ஓதவில்லை. இப்பொழுதே தொடங்குங்கள்!',
 
-    // Quran Explorer
-    quranExplorer: 'திருக்குர்ஆன் உலாவி',
+    // Quran
+    quranExplorer: 'திருக்குர்ஆன்',
     quranExplorerSub: '114 அத்தியாயங்கள் • 6,236 வசனங்கள் • 30 ஜுஸ்',
     searchSurahPlaceholder: 'அத்தியாயத்தின் பெயர், எண் அல்லது பொருள் மூலம் தேடவும்...',
     allChapters: 'அனைத்து அத்தியாயங்களும் (114)',

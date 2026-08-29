@@ -257,28 +257,30 @@ export const QuranScreen: React.FC = () => {
           </p>
         </div>
 
-        {/* Translation Language Toggle */}
-        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-          {appLanguage === 'en' ? (
-            <button
-              onClick={() => setTranslationLanguage(effectiveTranslationLanguage === 'en' ? 'ta' : 'en')}
-              className="px-3.5 py-1.5 rounded-full glass-card border border-outline-variant/40 text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center gap-1.5"
-              title="Switch translation language"
-            >
-              <span>{effectiveTranslationLanguage === 'ta' ? 'தமிழ்' : 'English'}</span>
-              <span className="text-[10px] text-outline font-normal">
-                ({effectiveTranslationLanguage === 'ta' ? getTranslationMeta(currentTamilTranslation).badge : getTranslationMeta(currentEnglishTranslation).badge})
-              </span>
-            </button>
-          ) : (
-            <div className="px-3.5 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-xs font-bold text-primary shadow-sm flex items-center gap-1.5">
-              <span>தமிழ்</span>
-              <span className="text-[10px] text-outline font-normal">
-                ({getTranslationMeta(currentTamilTranslation).badge})
-              </span>
-            </div>
-          )}
-        </div>
+        {/* Translation Language Toggle (Shown only inside a specific chapter) */}
+        {selectedSurahNumber && (
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            {appLanguage === 'en' ? (
+              <button
+                onClick={() => setTranslationLanguage(effectiveTranslationLanguage === 'en' ? 'ta' : 'en')}
+                className="px-3.5 py-1.5 rounded-full glass-card border border-outline-variant/40 text-xs font-bold text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center gap-1.5"
+                title="Switch translation language"
+              >
+                <span>{effectiveTranslationLanguage === 'ta' ? 'தமிழ்' : 'English'}</span>
+                <span className="text-[10px] text-outline font-normal">
+                  ({effectiveTranslationLanguage === 'ta' ? getTranslationMeta(currentTamilTranslation).badge : getTranslationMeta(currentEnglishTranslation).badge})
+                </span>
+              </button>
+            ) : (
+              <div className="px-3.5 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-xs font-bold text-primary shadow-sm flex items-center gap-1.5">
+                <span>தமிழ்</span>
+                <span className="text-[10px] text-outline font-normal">
+                  ({getTranslationMeta(currentTamilTranslation).badge})
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ========================================================================= */}
