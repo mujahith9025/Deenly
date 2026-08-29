@@ -65,6 +65,12 @@ interface TasbihState {
   getCompletedDhikrsCount: () => number
   getAllDhikrsCompleted: () => boolean
   getAllDhikrProgress: () => DhikrProgressItem[]
+  getOverallDailyProgress: () => {
+    totalTargetSum: number
+    totalCappedCount: number
+    totalActualCount: number
+    percentage: number
+  }
   getActiveDhikr: () => DhikrItem
   getActiveDhikrTarget: () => number
 }
@@ -221,13 +227,22 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
 
   setDailyGoal: (goal: number) => {
     const state = get()
-    const newStreaks = calculateDhikrStreak(state.dailyHistory, goal)
-    set({ 
+    const updatedTargets: Record<string, number> = {}
+    for (const item of DHIKR_PRESETS) {
+      updatedTargets[item.id] = goal
+    }
+    const totalGoal = goal * DHIKR_PRESETS.length
+    const newStreaks = calculateDhikrStreak(state.dailyHistory, totalGoal)
+    const nextState = {
+      ...state,
       dailyGoal: goal,
+      dhikrTargets: updatedTargets,
+      target: goal,
       currentStreak: newStreaks.currentStreak,
-      bestStreak: newStreaks.bestStreak
-    })
-    persistData({ ...state, dailyGoal: goal })
+      bestStreak: newStreaks.bestStreak,
+    }
+    set(nextState)
+    persistData(nextState)
   },
 
   setDhikrTarget: (dhikrId: string, target: number) => {
@@ -237,11 +252,13 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
       [dhikrId]: target,
     }
     const currentActiveTarget = state.activeDhikrId === dhikrId ? target : state.target
-    set({
+    const nextState = {
+      ...state,
       target: currentActiveTarget,
       dhikrTargets: updatedTargets,
-    })
-    persistData({ ...state, target: currentActiveTarget, dhikrTargets: updatedTargets })
+    }
+    set(nextState)
+    persistData(nextState)
   },
 
   setAllDhikrTargets: (target: number) => {
@@ -250,11 +267,18 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
     for (const item of DHIKR_PRESETS) {
       updatedTargets[item.id] = target
     }
-    set({
-      target,
+    const totalGoal = target * DHIKR_PRESETS.length
+    const newStreaks = calculateDhikrStreak(state.dailyHistory, totalGoal)
+    const nextState = {
+      ...state,
+      dailyGoal: target,
       dhikrTargets: updatedTargets,
-    })
-    persistData({ ...state, target, dhikrTargets: updatedTargets })
+      target: target,
+      currentStreak: newStreaks.currentStreak,
+      bestStreak: newStreaks.bestStreak,
+    }
+    set(nextState)
+    persistData(nextState)
   },
 
   toggleSound: () => {
@@ -571,6 +595,27 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
         percentage,
       }
     })
+  },
+
+  getOverallDailyProgress: () => {
+    const state = get()
+    let totalTargetSum = 0
+    let totalCappedCount = 0
+    let totalActualCount = 0
+    for (const dhikr of DHIKR_PRESETS) {
+      const target = state.dhikrTargets[dhikr.id] || dhikr.defaultTarget || 33
+      const count = state.todayDhikrCounts[dhikr.id] || 0
+      totalTargetSum += target
+      totalCappedCount += Math.min(count, target)
+      totalActualCount += count
+    }
+    const percentage = totalTargetSum > 0 ? Math.min(100, Math.round((totalCappedCount / totalTargetSum) * 100)) : 0
+    return {
+      totalTargetSum,
+      totalCappedCount,
+      totalActualCount,
+      percentage,
+    }
   },
 
   getActiveDhikr: () => {

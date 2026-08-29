@@ -9,7 +9,6 @@ import {
   Search, 
   Shield, 
   BarChart3,
-  ArrowLeft,
   ArrowRight
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
@@ -77,11 +76,6 @@ export const ExploreScreen: React.FC = () => {
       setTasbihTab(defaultTab)
     }
     setSearchParams({ cat: catKey })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const handleBackToGrid = () => {
-    setSearchParams({})
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -178,9 +172,6 @@ export const ExploreScreen: React.FC = () => {
     },
   ]
 
-  // Find active category item if any
-  const activeCategoryItem = CATEGORIES.find((c) => c.key === currentCategory)
-
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in pb-16">
       
@@ -211,46 +202,7 @@ export const ExploreScreen: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 🌟 2. TOP NAVIGATION / BREADCRUMB (WHEN INSIDE A SPECIFIC CATEGORY)       */}
-      {/* ========================================================================= */}
-      {currentCategory && activeCategoryItem ? (
-        <div className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-          
-          {/* Back to Grid Button */}
-          <button
-            onClick={handleBackToGrid}
-            className="px-4 py-2 rounded-2xl bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/30 text-xs sm:text-sm font-bold text-on-surface flex items-center gap-2 transition cursor-pointer group shadow-xs"
-          >
-            <ArrowLeft className="w-4 h-4 text-primary group-hover:-translate-x-1 transition-transform" />
-            <span>{isTamil ? 'அனைத்துப் பிரிவுகளுக்கும் திரும்பு' : 'Back to Categories'}</span>
-          </button>
-
-          {/* Quick Category Switcher Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {CATEGORIES.map((cat) => {
-              const Icon = cat.icon
-              const isSelected = cat.key === currentCategory
-              return (
-                <button
-                  key={cat.key}
-                  onClick={() => handleSelectCategory(cat.key)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 border ${
-                    isSelected
-                      ? 'bg-primary text-on-primary border-primary shadow-xs'
-                      : 'bg-surface-container/70 text-on-surface-variant border-outline-variant/20 hover:bg-surface-container-high'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{isTamil ? cat.titleTa.split(' ')[0] : cat.titleEn.split(' ')[0]}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      ) : null}
-
-      {/* ========================================================================= */}
-      {/* 🌟 3. MAIN EXPLORE 3-CARD BALANCED CATEGORY GRID VIEW                     */}
+      {/* 🌟 2. MAIN EXPLORE 3-CARD BALANCED CATEGORY GRID VIEW                     */}
       {/* ========================================================================= */}
       {!currentCategory && (
         <div className="space-y-4">

@@ -102,28 +102,27 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
     currentStreak,
     setActiveDhikrId,
     setTarget,
-    setDailyGoal,
     setAllDhikrTargets,
     toggleSound,
     toggleHaptics,
     incrementCount,
     decrementCount,
     resetSessionCount,
-    getTodayTotalCount,
     getCompletedDhikrsCount,
     getAllDhikrsCompleted,
+    getOverallDailyProgress,
     getActiveDhikr,
   } = useTasbihStore()
 
   const [showVirtue, setShowVirtue] = useState<boolean>(true)
+  const [virtueViewMode, setVirtueViewMode] = useState<'auto' | 'ta' | 'en' | 'dual'>('auto')
   const [isCompletedAnim, setIsCompletedAnim] = useState<boolean>(false)
   const [activeCategory, setActiveCategory] = useState<string>('all')
   const [showGoalEditor, setShowGoalEditor] = useState<boolean>(false)
   const [customGoalInput, setCustomGoalInput] = useState<string>(dailyGoal.toString())
 
   const activeDhikr = getActiveDhikr()
-  const todayTotal = getTodayTotalCount()
-  const dailyGoalPercent = Math.min(100, Math.round((todayTotal / Math.max(1, dailyGoal)) * 100))
+  const { totalTargetSum, totalActualCount, percentage: dailyProgressPercent } = getOverallDailyProgress()
   
   const completedCount = getCompletedDhikrsCount()
   const totalPresets = DHIKR_PRESETS.length
@@ -171,10 +170,11 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
     }
   }, [incrementCount, soundEnabled, hapticsEnabled, resetSessionCount])
 
-  // Save Goal
+  // Save Goal for All Dhikrs
   const handleSaveGoal = (val: number) => {
     if (val > 0) {
-      setDailyGoal(val)
+      setAllDhikrTargets(val)
+      setCustomGoalInput(val.toString())
       setShowGoalEditor(false)
     }
   }
@@ -202,6 +202,9 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
     }
   }
 
+  const showTamilVirtue = virtueViewMode === 'ta' || (virtueViewMode === 'auto' && isTamilTranslation) || virtueViewMode === 'dual'
+  const showEnglishVirtue = virtueViewMode === 'en' || (virtueViewMode === 'auto' && !isTamilTranslation) || virtueViewMode === 'dual'
+
   return (
     <div className="space-y-8">
       
@@ -221,8 +224,10 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
                   </span>
                 )}
               </h2>
-              <p className="text-xs text-on-surface-variant">
-                {isTamil ? 'இறை நினைவூட்டல், அனைத்து திக்ர் இலக்குகள் மற்றும் நபிகளாரின் சுன்னத் திக்ருகள்' : 'Track daily targets across all Dhikrs, Sunnah remembrance, and authentic Hadith virtues'}
+              <p className="text-xs text-on-surface-variant font-medium">
+                {isTamil 
+                  ? 'தினசரி திக்ர் இலக்குகள், சுன்னத் நினைவுகள் மற்றும் ஆதாரப்பூர்வ ஹதீஸ் சிறப்புகள்.' 
+                  : 'Track daily targets across all Dhikrs, Sunnah remembrance, and authentic Hadith virtues'}
               </p>
             </div>
           </div>
@@ -273,21 +278,21 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
           </div>
         </div>
 
-        {/* Dual Progress: (A) Global Aggregate + (B) All-Dhikr Completion */}
+        {/* Dual Progress: (A) Daily Progress across all Dhikrs + (B) All-Dhikr Goals Met */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          {/* Card A: Global Daily Total Progress */}
+          {/* Card A: Daily Progress (Calculated across all Dhikrs) */}
           <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/25 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2 font-bold text-on-surface">
                 <Target className="w-4 h-4 text-primary" />
-                <span>{isTamil ? 'மொத்த தினசரி திக்ர் இலக்கு' : 'Daily Aggregate Target'}</span>
+                <span>{isTamil ? 'தினசரி முன்னேற்றம்' : 'Daily Progress'}</span>
               </div>
               <div className="font-extrabold text-primary">
-                <span>{todayTotal}</span>
-                <span className="text-outline font-normal"> / {dailyGoal}</span>
+                <span>{totalActualCount}</span>
+                <span className="text-outline font-normal"> / {totalTargetSum}</span>
                 <span className="ml-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px]">
-                  {dailyGoalPercent}%
+                  {dailyProgressPercent}%
                 </span>
               </div>
             </div>
@@ -295,7 +300,7 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
             <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
               <div
                 className="bg-linear-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${dailyGoalPercent}%` }}
+                style={{ width: `${dailyProgressPercent}%` }}
               />
             </div>
           </div>
@@ -341,7 +346,7 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
         {showGoalEditor && (
           <div className="p-4 rounded-2xl bg-surface-container-high/90 border border-primary/30 space-y-3">
             <div className="flex items-center justify-between text-xs font-bold text-on-surface">
-              <span>{isTamil ? 'தினசரி திக்ர் இலக்குகளை அமைக்கவும்' : 'Configure Daily Targets'}</span>
+              <span>{isTamil ? 'அனைத்து திக்ருகளுக்குமான தினசரி இலக்கை அமைக்கவும்' : 'Set Target for All Dhikrs'}</span>
               <button 
                 onClick={() => setShowGoalEditor(false)}
                 className="text-outline hover:text-on-surface cursor-pointer"
@@ -352,33 +357,39 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
             
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-outline font-semibold">
-                {isTamil ? 'அனைத்திற்கும் ஒரே இலக்கு:' : 'Universal Goal for all:'}
+                {isTamil ? 'அனைத்து திக்ர்களுக்கும்:' : 'Apply to all dhikrs:'}
               </span>
               {[33, 100, 300].map((preset) => (
                 <button
                   key={preset}
-                  onClick={() => setAllDhikrTargets(preset)}
-                  className="px-3 py-1 rounded-xl text-xs font-bold bg-surface-container hover:bg-surface-container-highest border border-outline-variant/30 text-on-surface cursor-pointer"
+                  onClick={() => {
+                    handleSaveGoal(preset)
+                  }}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                    dailyGoal === preset 
+                      ? 'bg-primary text-on-primary border-primary shadow-xs'
+                      : 'bg-surface-container hover:bg-surface-container-highest border-outline-variant/30 text-on-surface'
+                  }`}
                 >
                   {preset}x
                 </button>
               ))}
 
               <div className="flex items-center gap-1.5 ml-auto">
-                <span className="text-xs text-outline font-semibold">{isTamil ? 'மொத்த இலக்கு' : 'Daily Goal'}:</span>
+                <span className="text-xs text-outline font-semibold">{isTamil ? 'இலக்கு' : 'Target'}:</span>
                 <input
                   type="number"
-                  min="10"
+                  min="1"
                   max="10000"
                   value={customGoalInput}
                   onChange={(e) => setCustomGoalInput(e.target.value)}
                   className="w-20 px-2 py-1 rounded-xl bg-surface-container border border-outline-variant/30 text-xs font-bold text-on-surface focus:outline-none focus:border-primary text-center"
                 />
                 <button
-                  onClick={() => handleSaveGoal(parseInt(customGoalInput, 10) || 300)}
+                  onClick={() => handleSaveGoal(parseInt(customGoalInput, 10) || 100)}
                   className="px-3 py-1 rounded-xl bg-primary text-on-primary text-xs font-bold cursor-pointer"
                 >
-                  {isTamil ? 'சேமி' : 'Save'}
+                  {isTamil ? 'அனைத்திற்கும் சேமி' : 'Set All'}
                 </button>
               </div>
             </div>
@@ -448,15 +459,69 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
 
             {/* Expandable Authentic Virtue & Reference */}
             {showVirtue && (
-              <div className="pt-3 mt-2 border-t border-outline-variant/25 text-xs text-on-surface space-y-1.5 bg-surface-container-high/60 p-4 rounded-2xl">
-                <p className="font-medium leading-relaxed">
-                  <span className="text-primary font-bold">{isTamil ? 'ஆன்மீகச் சிறப்பு' : 'Virtue'}: </span>
-                  {isTamil ? activeDhikr.virtueTa : activeDhikr.virtueEn}
-                </p>
-                <p className="text-[11px] text-outline font-semibold">
-                  <span>{isTamil ? 'ஆதாரம்' : 'Reference'}: </span>
-                  {isTamil ? activeDhikr.referenceTa : activeDhikr.reference}
-                </p>
+              <div className="pt-3 mt-2 border-t border-outline-variant/25 text-xs text-on-surface space-y-2 bg-surface-container-high/60 p-4 rounded-2xl">
+                <div className="flex items-center justify-between pb-1 border-b border-outline-variant/15">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-primary font-label-caps flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5" />
+                    <span>{isTamil ? 'ஹதீஸ் சிறப்புகள் & ஆதாரம்' : 'Hadith Virtues & Reference'}</span>
+                  </span>
+
+                  {/* Language switch pills */}
+                  <div className="flex items-center gap-1 bg-surface-container p-0.5 rounded-xl border border-outline-variant/20">
+                    <button
+                      onClick={() => setVirtueViewMode('ta')}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                        showTamilVirtue && !showEnglishVirtue ? 'bg-primary text-on-primary shadow-2xs' : 'text-outline hover:text-on-surface'
+                      }`}
+                    >
+                      தமிழ்
+                    </button>
+                    <button
+                      onClick={() => setVirtueViewMode('en')}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                        showEnglishVirtue && !showTamilVirtue ? 'bg-primary text-on-primary shadow-2xs' : 'text-outline hover:text-on-surface'
+                      }`}
+                    >
+                      English
+                    </button>
+                    <button
+                      onClick={() => setVirtueViewMode('dual')}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                        virtueViewMode === 'dual' ? 'bg-primary text-on-primary shadow-2xs' : 'text-outline hover:text-on-surface'
+                      }`}
+                    >
+                      Dual
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tamil Virtue & Reference */}
+                {showTamilVirtue && (
+                  <div className="space-y-1">
+                    <p className="font-medium leading-relaxed">
+                      <span className="text-primary font-bold">ஆன்மீகச் சிறப்பு: </span>
+                      {activeDhikr.virtueTa}
+                    </p>
+                    <p className="text-[11px] text-outline font-semibold">
+                      <span>ஆதாரம்: </span>
+                      {activeDhikr.referenceTa}
+                    </p>
+                  </div>
+                )}
+
+                {/* English Virtue & Reference */}
+                {showEnglishVirtue && (
+                  <div className={`space-y-1 ${showTamilVirtue ? 'pt-2 border-t border-outline-variant/15' : ''}`}>
+                    <p className="font-medium leading-relaxed">
+                      <span className="text-primary font-bold">Virtue: </span>
+                      {activeDhikr.virtueEn}
+                    </p>
+                    <p className="text-[11px] text-outline font-semibold">
+                      <span>Reference: </span>
+                      {activeDhikr.reference}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
