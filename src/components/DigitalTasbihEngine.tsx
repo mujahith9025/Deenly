@@ -115,9 +115,8 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
   } = useTasbihStore()
 
   const [showVirtue, setShowVirtue] = useState<boolean>(true)
-  const [virtueViewMode, setVirtueViewMode] = useState<'auto' | 'ta' | 'en' | 'dual'>('auto')
+  const [virtueLanguage, setVirtueLanguage] = useState<'en' | 'ta'>(isTamilTranslation ? 'ta' : 'en')
   const [isCompletedAnim, setIsCompletedAnim] = useState<boolean>(false)
-  const [activeCategory, setActiveCategory] = useState<string>('all')
   const [showGoalEditor, setShowGoalEditor] = useState<boolean>(false)
   const [customGoalInput, setCustomGoalInput] = useState<string>(dailyGoal.toString())
 
@@ -127,11 +126,6 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
   const completedCount = getCompletedDhikrsCount()
   const totalPresets = DHIKR_PRESETS.length
   const allDhikrsDone = getAllDhikrsCompleted()
-
-  // Filtered Dhikr presets
-  const filteredPresets = activeCategory === 'all' 
-    ? DHIKR_PRESETS 
-    : DHIKR_PRESETS.filter((d) => d.category === activeCategory)
 
   // Switch Dhikr
   const handleSelectDhikr = (dhikr: DhikrItem) => {
@@ -202,228 +196,82 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
     }
   }
 
-  const showTamilVirtue = virtueViewMode === 'ta' || (virtueViewMode === 'auto' && isTamilTranslation) || virtueViewMode === 'dual'
-  const showEnglishVirtue = virtueViewMode === 'en' || (virtueViewMode === 'auto' && !isTamilTranslation) || virtueViewMode === 'dual'
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       
-      {/* 🌟 1. HERO BANNER: DAILY GOALS & ALL-DHIKR PROGRESSION */}
-      <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-6 shadow-md relative overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-outline-variant/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shadow-sm">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
-                <span>{isTamil ? 'டிஜிட்டல் தஸ்பீஹ் & தினசரி திக்ர் அரங்கம்' : 'Digital Tasbih & Daily Dhikr Studio'}</span>
-                {currentStreak > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 text-[10px] font-extrabold border border-amber-500/30">
-                    🔥 {currentStreak} {isTamil ? 'நாள் தொடர்' : 'Day Streak'}
-                  </span>
-                )}
-              </h2>
-              <p className="text-xs text-on-surface-variant font-medium">
-                {isTamil 
-                  ? 'தினசரி திக்ர் இலக்குகள், சுன்னத் நினைவுகள் மற்றும் ஆதாரப்பூர்வ ஹதீஸ் சிறப்புகள்.' 
-                  : 'Track daily targets across all Dhikrs, Sunnah remembrance, and authentic Hadith virtues'}
-              </p>
-            </div>
+      {/* 🌟 1. TOP HEADER & CONTROL BAR */}
+      <div className="p-4 sm:p-5 rounded-3xl glass-card border border-outline-variant/30 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shadow-sm shrink-0">
+            <Sparkles className="w-5 h-5" />
           </div>
-
-          {/* Audio, Haptic & Goal Controls */}
-          <div className="flex items-center gap-2">
-            {onOpenAnalytics && (
-              <button
-                onClick={onOpenAnalytics}
-                className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-primary/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer text-primary shadow-xs"
-              >
-                <BarChart3 className="w-3.5 h-3.5" />
-                <span>{isTamil ? 'பகுப்பாய்வு' : 'Analytics'}</span>
-              </button>
-            )}
-
-            <button
-              onClick={() => setShowGoalEditor(!showGoalEditor)}
-              className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer text-on-surface shadow-xs"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>{isTamil ? 'இலக்குகளை மாற்று' : 'Set Targets'}</span>
-            </button>
-
-            <button
-              onClick={toggleSound}
-              className={`p-2 rounded-xl border transition cursor-pointer ${
-                soundEnabled 
-                  ? 'bg-surface-container-high text-primary border-primary/30' 
-                  : 'bg-surface-container text-outline border-outline-variant/30 opacity-60'
-              }`}
-              title={soundEnabled ? 'Mute Chime' : 'Enable Chime'}
-            >
-              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </button>
-
-            <button
-              onClick={toggleHaptics}
-              className={`p-2 rounded-xl border transition cursor-pointer ${
-                hapticsEnabled 
-                  ? 'bg-surface-container-high text-secondary border-secondary/30' 
-                  : 'bg-surface-container text-outline border-outline-variant/30 opacity-60'
-              }`}
-              title={hapticsEnabled ? 'Disable Vibration' : 'Enable Vibration'}
-            >
-              <Smartphone className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Dual Progress: (A) Daily Progress across all Dhikrs + (B) All-Dhikr Goals Met */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          {/* Card A: Daily Progress (Calculated across all Dhikrs) */}
-          <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/25 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 font-bold text-on-surface">
-                <Target className="w-4 h-4 text-primary" />
-                <span>{isTamil ? 'தினசரி முன்னேற்றம்' : 'Daily Progress'}</span>
-              </div>
-              <div className="font-extrabold text-primary">
-                <span>{totalActualCount}</span>
-                <span className="text-outline font-normal"> / {totalTargetSum}</span>
-                <span className="ml-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px]">
-                  {dailyProgressPercent}%
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
+              <span>{isTamil ? 'தஸ்பீஹ் & திக்ர் அரங்கம்' : 'Tasbih & Dhikr Studio'}</span>
+              {currentStreak > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 text-[10px] font-extrabold border border-amber-500/30">
+                  🔥 {currentStreak} {isTamil ? 'நாள் தொடர்' : 'Day Streak'}
                 </span>
-              </div>
-            </div>
-
-            <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
-              <div
-                className="bg-linear-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${dailyProgressPercent}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Card B: All Dhikr Completion Rate */}
-          <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/25 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 font-bold text-on-surface">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>{isTamil ? 'அனைத்து திக்ர் இலக்குகள் நிறைவு' : 'All-Dhikr Goals Met'}</span>
-              </div>
-              <div className="font-extrabold text-emerald-500">
-                <span>{completedCount}</span>
-                <span className="text-outline font-normal"> / {totalPresets} {isTamil ? 'திக்ருகள்' : 'Dhikrs'}</span>
-                <span className="ml-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 text-[10px]">
-                  {Math.round((completedCount / totalPresets) * 100)}%
-                </span>
-              </div>
-            </div>
-
-            <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
-              <div
-                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${(completedCount / totalPresets) * 100}%` }}
-              />
-            </div>
-          </div>
-
-        </div>
-
-        {allDhikrsDone && (
-          <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-500 font-bold">
-            <Award className="w-4 h-4 text-amber-500 shrink-0" />
-            <span>
+              )}
+            </h2>
+            <p className="text-xs text-on-surface-variant font-medium">
               {isTamil 
-                ? 'மாஷா அல்லாஹ்! இன்றைய அனைத்து திக்ர் இலக்குகளையும் வெற்றிகரமாக நிறைவு செய்துள்ளீர்கள்!' 
-                : 'Māshā’Allāh! You have completed the daily target for every single Dhikr in the studio!'}
-            </span>
+                ? 'தினசரி திக்ர் இலக்குகள், சுன்னத் நினைவுகள் மற்றும் ஆதாரப்பூர்வ ஹதீஸ் சிறப்புகள்.' 
+                : 'Track daily targets across all Dhikrs, Sunnah remembrance, and authentic Hadith virtues'}
+            </p>
           </div>
-        )}
+        </div>
 
-        {/* Goal Customizer Modal / Tray */}
-        {showGoalEditor && (
-          <div className="p-4 rounded-2xl bg-surface-container-high/90 border border-primary/30 space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold text-on-surface">
-              <span>{isTamil ? 'அனைத்து திக்ருகளுக்குமான தினசரி இலக்கை அமைக்கவும்' : 'Set Target for All Dhikrs'}</span>
-              <button 
-                onClick={() => setShowGoalEditor(false)}
-                className="text-outline hover:text-on-surface cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-outline font-semibold">
-                {isTamil ? 'அனைத்து திக்ர்களுக்கும்:' : 'Apply to all dhikrs:'}
-              </span>
-              {[33, 100, 300].map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => {
-                    handleSaveGoal(preset)
-                  }}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer border ${
-                    dailyGoal === preset 
-                      ? 'bg-primary text-on-primary border-primary shadow-xs'
-                      : 'bg-surface-container hover:bg-surface-container-highest border-outline-variant/30 text-on-surface'
-                  }`}
-                >
-                  {preset}x
-                </button>
-              ))}
+        {/* Audio, Haptic, Goal & Analytics Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {onOpenAnalytics && (
+            <button
+              onClick={onOpenAnalytics}
+              className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-primary/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer text-primary shadow-xs"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>{isTamil ? 'பகுப்பாய்வு' : 'Analytics'}</span>
+            </button>
+          )}
 
-              <div className="flex items-center gap-1.5 ml-auto">
-                <span className="text-xs text-outline font-semibold">{isTamil ? 'இலக்கு' : 'Target'}:</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="10000"
-                  value={customGoalInput}
-                  onChange={(e) => setCustomGoalInput(e.target.value)}
-                  className="w-20 px-2 py-1 rounded-xl bg-surface-container border border-outline-variant/30 text-xs font-bold text-on-surface focus:outline-none focus:border-primary text-center"
-                />
-                <button
-                  onClick={() => handleSaveGoal(parseInt(customGoalInput, 10) || 100)}
-                  className="px-3 py-1 rounded-xl bg-primary text-on-primary text-xs font-bold cursor-pointer"
-                >
-                  {isTamil ? 'அனைத்திற்கும் சேமி' : 'Set All'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 🌟 2. CATEGORY FILTER TABS */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {[
-          { id: 'all', labelEn: 'All Remembrance', labelTa: 'அனைத்து திக்ர்' },
-          { id: 'after_prayer', labelEn: 'After Salah (Sunnah 33-33-34)', labelTa: 'தொழுகைக்குப் பின் (சுன்னத்)' },
-          { id: 'forgiveness', labelEn: 'Istighfar & Forgiveness', labelTa: 'பாவமன்னிப்பு' },
-          { id: 'daily', labelEn: 'Daily Divine Praise', labelTa: 'தினசரி துதி' },
-          { id: 'salawat', labelEn: 'Durood / Salawat', labelTa: 'ஸலவாத்' },
-        ].map((cat) => (
           <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-              activeCategory === cat.id
-                ? 'bg-primary text-on-primary border-primary shadow-sm font-bold'
-                : 'bg-surface-container/70 text-on-surface-variant border-outline-variant/20 hover:bg-surface-container-high'
-            }`}
+            onClick={() => setShowGoalEditor(!showGoalEditor)}
+            className="px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/30 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer text-on-surface shadow-xs"
           >
-            {isTamil ? cat.labelTa : cat.labelEn}
+            <Sliders className="w-3.5 h-3.5" />
+            <span>{isTamil ? 'இலக்குகளை மாற்று' : 'Set Targets'}</span>
           </button>
-        ))}
+
+          <button
+            onClick={toggleSound}
+            className={`p-2 rounded-xl border transition cursor-pointer ${
+              soundEnabled 
+                ? 'bg-surface-container-high text-primary border-primary/30' 
+                : 'bg-surface-container text-outline border-outline-variant/30 opacity-60'
+            }`}
+            title={soundEnabled ? 'Mute Chime' : 'Enable Chime'}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
+          <button
+            onClick={toggleHaptics}
+            className={`p-2 rounded-xl border transition cursor-pointer ${
+              hapticsEnabled 
+                ? 'bg-surface-container-high text-secondary border-secondary/30' 
+                : 'bg-surface-container text-outline border-outline-variant/30 opacity-60'
+            }`}
+            title={hapticsEnabled ? 'Disable Vibration' : 'Enable Vibration'}
+          >
+            <Smartphone className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* 🌟 3. MAIN INTERACTIVE TASBIH & DHIKR ENGINE */}
+      {/* 🌟 2. MAIN INTERACTIVE TASBIH & DHIKR ENGINE (POSITIONED AT TOP) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* LEFT: SCRIPT, AUTHENTIC VIRTUES & CITATIONS (7 COLS) */}
+        {/* LEFT: SCRIPT, TRANSLATION, AUTHENTIC VIRTUES & CITATIONS (7 COLS) */}
         <div className="lg:col-span-7 space-y-4">
           
           {/* Active Dhikr Card */}
@@ -434,13 +282,24 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
                 {activeDhikr.transliteration}
               </span>
               
-              <button
-                onClick={() => setShowVirtue(!showVirtue)}
-                className="text-xs text-secondary hover:underline flex items-center gap-1 font-semibold cursor-pointer"
-              >
-                <Info className="w-4 h-4" />
-                <span>{showVirtue ? (isTamil ? 'சிறப்புகளை மறைக்க' : 'Hide Virtues') : (isTamil ? 'சிறப்புகள் & ஆதாரம்' : 'View Virtues & Hadith')}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Single Language Toggle Button for Virtue & Translation */}
+                <button
+                  onClick={() => setVirtueLanguage(virtueLanguage === 'en' ? 'ta' : 'en')}
+                  className="h-7 px-2.5 rounded-xl bg-surface-container border border-outline-variant/30 text-[11px] font-black text-primary hover:border-primary transition cursor-pointer shadow-2xs flex items-center gap-1 active:scale-95"
+                  title={isTamil ? 'மொழியை மாற்றுக' : 'Switch language'}
+                >
+                  <span>{virtueLanguage === 'ta' ? 'தமிழ்' : 'English'}</span>
+                </button>
+
+                <button
+                  onClick={() => setShowVirtue(!showVirtue)}
+                  className="text-xs text-secondary hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                >
+                  <Info className="w-4 h-4" />
+                  <span>{showVirtue ? (isTamil ? 'சிறப்புகளை மறைக்க' : 'Hide Virtues') : (isTamil ? 'சிறப்புகள் & ஆதாரம்' : 'View Virtues & Hadith')}</span>
+                </button>
+              </div>
             </div>
 
             {/* Arabic Script */}
@@ -452,133 +311,38 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
               {activeDhikr.arabic}
             </p>
 
-            {/* Translation Text */}
+            {/* Translation Text (Contextual according to single toggle) */}
             <p className="text-xs sm:text-sm text-on-surface-variant italic leading-relaxed">
-              "{isTamilTranslation ? activeDhikr.translationTa : activeDhikr.translationEn}"
+              "{virtueLanguage === 'ta' ? activeDhikr.translationTa : activeDhikr.translationEn}"
             </p>
 
             {/* Expandable Authentic Virtue & Reference */}
             {showVirtue && (
-              <div className="pt-3 mt-2 border-t border-outline-variant/25 text-xs text-on-surface space-y-2 bg-surface-container-high/60 p-4 rounded-2xl">
+              <div className="pt-3 mt-2 border-t border-outline-variant/25 text-xs text-on-surface space-y-2 bg-surface-container-high/60 p-4 rounded-2xl animate-fade-in">
                 <div className="flex items-center justify-between pb-1 border-b border-outline-variant/15">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-primary font-label-caps flex items-center gap-1.5">
                     <Award className="w-3.5 h-3.5" />
-                    <span>{isTamil ? 'ஹதீஸ் சிறப்புகள் & ஆதாரம்' : 'Hadith Virtues & Reference'}</span>
+                    <span>{virtueLanguage === 'ta' ? 'ஹதீஸ் சிறப்புகள் & ஆதாரம்' : 'Hadith Virtues & Reference'}</span>
                   </span>
 
-                  {/* Language switch pills */}
-                  <div className="flex items-center gap-1 bg-surface-container p-0.5 rounded-xl border border-outline-variant/20">
-                    <button
-                      onClick={() => setVirtueViewMode('ta')}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
-                        showTamilVirtue && !showEnglishVirtue ? 'bg-primary text-on-primary shadow-2xs' : 'text-outline hover:text-on-surface'
-                      }`}
-                    >
-                      தமிழ்
-                    </button>
-                    <button
-                      onClick={() => setVirtueViewMode('en')}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
-                        showEnglishVirtue && !showTamilVirtue ? 'bg-primary text-on-primary shadow-2xs' : 'text-outline hover:text-on-surface'
-                      }`}
-                    >
-                      English
-                    </button>
-                    <button
-                      onClick={() => setVirtueViewMode('dual')}
-                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
-                        virtueViewMode === 'dual' ? 'bg-primary text-on-primary shadow-2xs' : 'text-outline hover:text-on-surface'
-                      }`}
-                    >
-                      Dual
-                    </button>
-                  </div>
+                  <span className="text-[10px] text-outline font-semibold">
+                    {virtueLanguage === 'ta' ? 'தமிழ் விளக்கம்' : 'English Translation'}
+                  </span>
                 </div>
 
-                {/* Tamil Virtue & Reference */}
-                {showTamilVirtue && (
-                  <div className="space-y-1">
-                    <p className="font-medium leading-relaxed">
-                      <span className="text-primary font-bold">ஆன்மீகச் சிறப்பு: </span>
-                      {activeDhikr.virtueTa}
-                    </p>
-                    <p className="text-[11px] text-outline font-semibold">
-                      <span>ஆதாரம்: </span>
-                      {activeDhikr.referenceTa}
-                    </p>
-                  </div>
-                )}
-
-                {/* English Virtue & Reference */}
-                {showEnglishVirtue && (
-                  <div className={`space-y-1 ${showTamilVirtue ? 'pt-2 border-t border-outline-variant/15' : ''}`}>
-                    <p className="font-medium leading-relaxed">
-                      <span className="text-primary font-bold">Virtue: </span>
-                      {activeDhikr.virtueEn}
-                    </p>
-                    <p className="text-[11px] text-outline font-semibold">
-                      <span>Reference: </span>
-                      {activeDhikr.reference}
-                    </p>
-                  </div>
-                )}
+                {/* Virtue Text & Reference */}
+                <div className="space-y-1">
+                  <p className="font-medium leading-relaxed">
+                    <span className="text-primary font-bold">{virtueLanguage === 'ta' ? 'ஆன்மீகச் சிறப்பு: ' : 'Virtue: '}</span>
+                    {virtueLanguage === 'ta' ? activeDhikr.virtueTa : activeDhikr.virtueEn}
+                  </p>
+                  <p className="text-[11px] text-outline font-semibold">
+                    <span>{virtueLanguage === 'ta' ? 'ஆதாரம்: ' : 'Reference: '}</span>
+                    {virtueLanguage === 'ta' ? activeDhikr.referenceTa : activeDhikr.reference}
+                  </p>
+                </div>
               </div>
             )}
-          </div>
-
-          {/* Presets List in this Category with Per-Dhikr Goal Badges */}
-          <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3 shadow-md">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-outline font-label-caps">
-                {isTamil ? 'திக்ர் பட்டியல் & இலக்குகள்' : 'Dhikr Library & Targets'}
-              </h4>
-              <span className="text-[11px] text-primary font-semibold">
-                {completedCount} / {totalPresets} {isTamil ? 'நிறைவு' : 'completed'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {filteredPresets.map((dhikr) => {
-                const currentToday = todayDhikrCounts[dhikr.id] || 0
-                const currentTarget = dhikrTargets[dhikr.id] || dhikr.defaultTarget || 33
-                const isDone = currentToday >= currentTarget && currentTarget > 0
-
-                return (
-                  <div
-                    key={dhikr.id}
-                    onClick={() => handleSelectDhikr(dhikr)}
-                    className={`p-3 rounded-2xl flex items-center justify-between border cursor-pointer transition ${
-                      activeDhikrId === dhikr.id
-                        ? 'bg-secondary/15 border-secondary/40 text-on-surface shadow-xs'
-                        : isDone
-                        ? 'bg-primary/10 border-primary/30 text-on-surface'
-                        : 'bg-surface-container/60 border-outline-variant/20 text-on-surface-variant hover:border-primary/40'
-                    }`}
-                  >
-                    <div className="truncate min-w-0 pr-2">
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-xs font-bold truncate text-on-surface">
-                          {dhikr.transliteration}
-                        </p>
-                        {isDone && <Check className="w-3 h-3 text-primary stroke-[3]" />}
-                      </div>
-                      <p className="text-[10px] text-outline truncate">
-                        {isTamilTranslation ? dhikr.translationTa : dhikr.translationEn}
-                      </p>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      <span className={`text-xs font-extrabold block ${isDone ? 'text-emerald-500' : 'text-primary'}`}>
-                        {currentToday} / {currentTarget}
-                      </span>
-                      <span className="text-[9px] text-outline">
-                        {isDone ? (isTamil ? 'நிறைவு' : 'Target Done') : `${currentTarget - currentToday} left`}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
           </div>
 
           {/* Sunnah Post-Prayer Sequence Navigation */}
@@ -736,6 +500,181 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
 
         </div>
 
+      </div>
+
+      {/* 🌟 3. DUAL PROGRESS & GOAL CUSTOMIZER */}
+      <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* Card A: Daily Progress (Calculated across all Dhikrs) */}
+          <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/25 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 font-bold text-on-surface">
+                <Target className="w-4 h-4 text-primary" />
+                <span>{isTamil ? 'தினசரி முன்னேற்றம்' : 'Daily Progress'}</span>
+              </div>
+              <div className="font-extrabold text-primary">
+                <span>{totalActualCount}</span>
+                <span className="text-outline font-normal"> / {totalTargetSum}</span>
+                <span className="ml-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px]">
+                  {dailyProgressPercent}%
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+              <div
+                className="bg-linear-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${dailyProgressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Card B: All Dhikr Completion Rate */}
+          <div className="p-4 rounded-2xl bg-surface-container/70 border border-outline-variant/25 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 font-bold text-on-surface">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span>{isTamil ? 'அனைத்து திக்ர் இலக்குகள் நிறைவு' : 'All-Dhikr Goals Met'}</span>
+              </div>
+              <div className="font-extrabold text-emerald-500">
+                <span>{completedCount}</span>
+                <span className="text-outline font-normal"> / {totalPresets} {isTamil ? 'திக்ருகள்' : 'Dhikrs'}</span>
+                <span className="ml-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 text-[10px]">
+                  {Math.round((completedCount / totalPresets) * 100)}%
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full bg-surface-container-highest h-2.5 rounded-full overflow-hidden">
+              <div
+                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${(completedCount / totalPresets) * 100}%` }}
+              />
+            </div>
+          </div>
+
+        </div>
+
+        {allDhikrsDone && (
+          <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-500 font-bold">
+            <Award className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>
+              {isTamil 
+                ? 'மாஷா அல்லாஹ்! இன்றைய அனைத்து திக்ர் இலக்குகளையும் வெற்றிகரமாக நிறைவு செய்துள்ளீர்கள்!' 
+                : 'Māshā’Allāh! You have completed the daily target for every single Dhikr in the studio!'}
+            </span>
+          </div>
+        )}
+
+        {/* Goal Customizer Modal / Tray */}
+        {showGoalEditor && (
+          <div className="p-4 rounded-2xl bg-surface-container-high/90 border border-primary/30 space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold text-on-surface">
+              <span>{isTamil ? 'அனைத்து திக்ருகளுக்குமான தினசரி இலக்கை அமைக்கவும்' : 'Set Target for All Dhikrs'}</span>
+              <button 
+                onClick={() => setShowGoalEditor(false)}
+                className="text-outline hover:text-on-surface cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-outline font-semibold">
+                {isTamil ? 'அனைத்து திக்ர்களுக்கும்:' : 'Apply to all dhikrs:'}
+              </span>
+              {[33, 100, 300].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => {
+                    handleSaveGoal(preset)
+                  }}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                    dailyGoal === preset 
+                      ? 'bg-primary text-on-primary border-primary shadow-xs'
+                      : 'bg-surface-container hover:bg-surface-container-highest border-outline-variant/30 text-on-surface'
+                  }`}
+                >
+                  {preset}x
+                </button>
+              ))}
+
+              <div className="flex items-center gap-1.5 ml-auto">
+                <span className="text-xs text-outline font-semibold">{isTamil ? 'இலக்கு' : 'Target'}:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="10000"
+                  value={customGoalInput}
+                  onChange={(e) => setCustomGoalInput(e.target.value)}
+                  className="w-20 px-2 py-1 rounded-xl bg-surface-container border border-outline-variant/30 text-xs font-bold text-on-surface focus:outline-none focus:border-primary text-center"
+                />
+                <button
+                  onClick={() => handleSaveGoal(parseInt(customGoalInput, 10) || 100)}
+                  className="px-3 py-1 rounded-xl bg-primary text-on-primary text-xs font-bold cursor-pointer"
+                >
+                  {isTamil ? 'அனைத்திற்கும் சேமி' : 'Set All'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 🌟 4. ALL DHIKRS LIBRARY (SHOWING ALL 8 PRESETS - NO CATEGORY TABS) */}
+      <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-3.5 shadow-md">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-outline font-label-caps">
+            {isTamil ? 'அனைத்து திக்ர் பட்டியல் & இலக்குகள்' : 'All Dhikr Library & Targets'}
+          </h4>
+          <span className="text-xs text-primary font-semibold">
+            {completedCount} / {totalPresets} {isTamil ? 'நிறைவு' : 'completed'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {DHIKR_PRESETS.map((dhikr) => {
+            const currentToday = todayDhikrCounts[dhikr.id] || 0
+            const currentTarget = dhikrTargets[dhikr.id] || dhikr.defaultTarget || 33
+            const isDone = currentToday >= currentTarget && currentTarget > 0
+
+            return (
+              <div
+                key={dhikr.id}
+                onClick={() => handleSelectDhikr(dhikr)}
+                className={`p-3.5 rounded-2xl flex items-center justify-between border cursor-pointer transition duration-200 ${
+                  activeDhikrId === dhikr.id
+                    ? 'bg-secondary/15 border-secondary/40 text-on-surface shadow-xs ring-1 ring-secondary/30'
+                    : isDone
+                    ? 'bg-primary/10 border-primary/30 text-on-surface'
+                    : 'bg-surface-container/60 border-outline-variant/20 text-on-surface-variant hover:border-primary/40'
+                }`}
+              >
+                <div className="truncate min-w-0 pr-2">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs sm:text-sm font-bold truncate text-on-surface">
+                      {dhikr.transliteration}
+                    </p>
+                    {isDone && <Check className="w-3.5 h-3.5 text-primary stroke-[3]" />}
+                  </div>
+                  <p className="text-[11px] text-outline truncate mt-0.5">
+                    {virtueLanguage === 'ta' ? dhikr.translationTa : dhikr.translationEn}
+                  </p>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <span className={`text-xs font-extrabold block ${isDone ? 'text-emerald-500' : 'text-primary'}`}>
+                    {currentToday} / {currentTarget}
+                  </span>
+                  <span className="text-[10px] text-outline">
+                    {isDone ? (isTamil ? 'நிறைவு' : 'Target Done') : `${currentTarget - currentToday} left`}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
     </div>

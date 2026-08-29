@@ -202,7 +202,7 @@ export const HadithScreen: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-24">
+    <div className="space-y-6 w-full pb-24 animate-fade-in">
       {/* ========================================================================= */}
       {/* SCREEN LEVEL 1: THE 6 MAJOR BOOKS DIRECTORY                               */}
       {/* ========================================================================= */}
