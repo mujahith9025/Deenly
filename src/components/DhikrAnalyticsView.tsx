@@ -5,7 +5,6 @@ import {
   Flame, 
   Trophy, 
   Target, 
-  Award, 
   Sparkles,
   Sliders,
   Check
@@ -16,8 +15,7 @@ import { useI18nStore } from '../lib/i18n'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { 
   getDhikrHistoryRange, 
-  getDhikrDistribution, 
-  getDhikrMilestones 
+  getDhikrDistribution 
 } from '../lib/dhikrAnalyticsEngine'
 import { DHIKR_PRESETS } from '../lib/dhikrData'
 
@@ -69,15 +67,6 @@ export const DhikrAnalyticsView: React.FC = () => {
   const distribution = useMemo(() => {
     return getDhikrDistribution(lifetimeDhikrCounts)
   }, [lifetimeDhikrCounts])
-
-  const milestones = useMemo(() => {
-    return getDhikrMilestones(
-      totalLifetime,
-      currentStreak,
-      completedDhikrsCount,
-      totalPresetsCount
-    )
-  }, [totalLifetime, currentStreak, completedDhikrsCount, totalPresetsCount])
 
   // Max value in history for chart scaling
   const maxHistoryVal = Math.max(dailyGoal, ...historyRange.map((d) => d.totalCount), 50)
@@ -401,82 +390,29 @@ export const DhikrAnalyticsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 🌟 4. DHIKR DISTRIBUTION & MILESTONES */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Dhikr Distribution Breakdown (6 cols) */}
-        <div className="lg:col-span-6 p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <span>{isTamil ? 'திக்ர் பகிர்வு & விருப்பங்கள்' : 'Remembrance Share Distribution'}</span>
-          </h3>
+      {/* 🌟 4. DHIKR DISTRIBUTION BREAKDOWN */}
+      <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
+        <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-primary" />
+          <span>{isTamil ? 'திக்ர் பகிர்வு & விருப்பங்கள்' : 'Remembrance Share Distribution'}</span>
+        </h3>
 
-          <div className="space-y-3 pt-1">
-            {distribution.map(({ dhikr, count, percentage }) => (
-              <div key={dhikr.id} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-on-surface truncate">{dhikr.transliteration}</span>
-                  <span className="text-outline font-semibold">{count} ({percentage}%)</span>
-                </div>
-                <div className="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary rounded-full transition-all duration-300" 
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+          {distribution.map(({ dhikr, count, percentage }) => (
+            <div key={dhikr.id} className="space-y-1.5 p-3 rounded-2xl bg-surface-container/50 border border-outline-variant/20">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-on-surface truncate">{dhikr.transliteration}</span>
+                <span className="text-outline font-semibold">{count} ({percentage}%)</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Milestones & Badges (6 cols) */}
-        <div className="lg:col-span-6 p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
-          <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
-            <Award className="w-4 h-4 text-amber-500" />
-            <span>{isTamil ? 'ஆன்மீக சாதனைகள் & பதக்கங்கள்' : 'Spiritual Milestones & Badges'}</span>
-          </h3>
-
-          <div className="space-y-3 pt-1">
-            {milestones.map((m) => (
-              <div
-                key={m.id}
-                className={`p-3.5 rounded-2xl border transition flex items-center gap-3.5 ${
-                  m.unlocked 
-                    ? 'bg-amber-500/10 border-amber-500/30' 
-                    : 'bg-surface-container/50 border-outline-variant/20 opacity-80'
-                }`}
-              >
-                <div className="text-2xl shrink-0">{m.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-bold text-on-surface truncate">
-                      {isTamil ? m.titleTa : m.titleEn}
-                    </p>
-                    {m.unlocked ? (
-                      <span className="text-[10px] font-bold text-amber-500 bg-amber-500/15 px-2 py-0.2 rounded-full">
-                        {isTamil ? 'அடைந்தது' : 'Unlocked'}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-semibold text-outline">
-                        {m.currentVal}/{m.targetVal}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-outline truncate">
-                    {isTamil ? m.descTa : m.descEn}
-                  </p>
-                  
-                  {!m.unlocked && (
-                    <div className="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden mt-1.5">
-                      <div className="h-full bg-amber-500 rounded-full" style={{ width: `${m.progress}%` }} />
-                    </div>
-                  )}
-                </div>
+              <div className="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary rounded-full transition-all duration-300" 
+                  style={{ width: `${percentage}%` }}
+                />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-
       </div>
 
       {/* 🌟 5. TARGET CONFIGURATION MODAL */}
