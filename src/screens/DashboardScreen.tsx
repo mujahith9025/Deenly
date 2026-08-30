@@ -12,9 +12,7 @@ import {
   BookMarked,
   Copy,
   Download,
-  X,
-  Heart,
-  Compass
+  X
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { useReadingStore } from '../store/useReadingStore'
@@ -31,7 +29,6 @@ import { DashboardTasbihWidget } from '../components/DashboardTasbihWidget'
 import { usePWAInstall } from '../hooks/usePWAInstall'
 import { PWAInstallModal } from '../components/PWAInstallModal'
 import { initNotificationScheduler } from '../lib/notificationService'
-import { triggerHapticLight } from '../lib/haptics'
 
 type TimeframeFilter = 'today' | 'week' | 'all'
 
@@ -519,86 +516,6 @@ export const DashboardScreen: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* ========================================================================= */}
-      {/* ⚡ INSTANT QUICK ACTIONS DOCK (1-TAP SPEED BAR)                            */}
-      {/* ========================================================================= */}
-      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5 sm:gap-3.5">
-        {/* 1. Quick Quran */}
-        <Link
-          to={`/reading?surah=${lastSurah}&ayah=${lastAyah}`}
-          onClick={() => triggerHapticLight()}
-          className="p-3 sm:p-3.5 rounded-2xl glass-card border border-outline-variant/30 hover:border-primary/50 text-center transition group cursor-pointer shadow-xs active:scale-95 flex flex-col items-center gap-1.5"
-        >
-          <div className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center group-hover:scale-110 transition shadow-2xs">
-            <BookOpen className="w-5 h-5" />
-          </div>
-          <span className="text-[11px] sm:text-xs font-bold text-on-surface truncate block">
-            {isTamil ? 'குர்ஆன்' : 'Quran'}
-          </span>
-        </Link>
-
-        {/* 2. Instant Tasbih Counter */}
-        <button
-          onClick={() => {
-            triggerHapticLight()
-            const el = document.getElementById('dashboard-tasbih')
-            if (el) {
-              el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            }
-          }}
-          className="p-3 sm:p-3.5 rounded-2xl glass-card border border-outline-variant/30 hover:border-primary/50 text-center transition group cursor-pointer shadow-xs active:scale-95 flex flex-col items-center gap-1.5"
-        >
-          <div className="w-10 h-10 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center group-hover:scale-110 transition shadow-2xs">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <span className="text-[11px] sm:text-xs font-bold text-on-surface truncate block">
-            {isTamil ? 'தஸ்பீஹ்' : 'Tasbih'}
-          </span>
-        </button>
-
-        {/* 3. Daily Duas (Hisnul Muslim) */}
-        <Link
-          to="/explore?tab=hisnul"
-          onClick={() => triggerHapticLight()}
-          className="p-3 sm:p-3.5 rounded-2xl glass-card border border-outline-variant/30 hover:border-primary/50 text-center transition group cursor-pointer shadow-xs active:scale-95 flex flex-col items-center gap-1.5"
-        >
-          <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition shadow-2xs">
-            <Heart className="w-5 h-5" />
-          </div>
-          <span className="text-[11px] sm:text-xs font-bold text-on-surface truncate block">
-            {isTamil ? 'துஆக்கள்' : 'Duas'}
-          </span>
-        </Link>
-
-        {/* 4. Bookmarks */}
-        <Link
-          to="/profile?tab=bookmarks"
-          onClick={() => triggerHapticLight()}
-          className="p-3 sm:p-3.5 rounded-2xl glass-card border border-outline-variant/30 hover:border-primary/50 text-center transition group cursor-pointer shadow-xs active:scale-95 flex flex-col items-center gap-1.5"
-        >
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center group-hover:scale-110 transition shadow-2xs">
-            <Bookmark className="w-5 h-5" />
-          </div>
-          <span className="text-[11px] sm:text-xs font-bold text-on-surface truncate block">
-            {isTamil ? 'குறிப்புகள்' : 'Saved'}
-          </span>
-        </Link>
-
-        {/* 5. Hadith Library (Desktop / Tablet) */}
-        <Link
-          to="/hadith"
-          onClick={() => triggerHapticLight()}
-          className="p-3 sm:p-3.5 rounded-2xl glass-card border border-outline-variant/30 hover:border-primary/50 text-center transition group cursor-pointer shadow-xs active:scale-95 hidden sm:flex flex-col items-center gap-1.5"
-        >
-          <div className="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center group-hover:scale-110 transition shadow-2xs">
-            <Compass className="w-5 h-5" />
-          </div>
-          <span className="text-[11px] sm:text-xs font-bold text-on-surface truncate block">
-            {isTamil ? 'ஹதீஸ்' : 'Hadith'}
-          </span>
-        </Link>
-      </div>
 
       {/* ========================================================================= */}
       {/* 2. 📱 MOBILE HERO: WEEKLY CONSISTENCY CIRCLES (TOP) + COMBINED GOAL/JOURNEY */}
