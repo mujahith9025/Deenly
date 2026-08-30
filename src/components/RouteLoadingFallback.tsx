@@ -6,13 +6,10 @@ export const RouteLoadingFallback: React.FC = () => {
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 animate-fade-in">
       <div className="relative flex items-center justify-center">
         {/* Ambient Glow */}
-        <div className="w-16 h-16 rounded-full bg-primary/20 blur-xl animate-pulse" />
-        
-        {/* Spinning Ring Symbol */}
-        <div className="absolute w-12 h-12 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+        <div className="w-14 h-14 rounded-full bg-primary/20 blur-xl animate-pulse" />
 
-        {/* Loading Spinner Symbol */}
-        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+        {/* Single Main Circular Loading Spinner */}
+        <Loader2 className="w-10 h-10 text-primary animate-spin" />
       </div>
 
       <p className="mt-4 text-xs font-bold uppercase tracking-widest text-primary/90 font-label-caps">
@@ -21,4 +18,3 @@ export const RouteLoadingFallback: React.FC = () => {
     </div>
   )
 }
-
