@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   Flame, 
@@ -10,7 +10,9 @@ import {
   Calendar, 
   Check,
   BookMarked,
-  Copy
+  Copy,
+  Download,
+  X
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { useReadingStore } from '../store/useReadingStore'
@@ -24,6 +26,9 @@ import {
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useI18nStore } from '../lib/i18n'
 import { DashboardTasbihWidget } from '../components/DashboardTasbihWidget'
+import { usePWAInstall } from '../hooks/usePWAInstall'
+import { PWAInstallModal } from '../components/PWAInstallModal'
+import { initNotificationScheduler } from '../lib/notificationService'
 
 type TimeframeFilter = 'today' | 'week' | 'all'
 
@@ -241,6 +246,26 @@ export const DashboardScreen: React.FC = () => {
   const isTamil = appLanguage === 'ta'
   const isTamilTranslation = appLanguage === 'ta' || user?.preferredTranslation === 'tamil'
 
+  // 📲 PWA Installation State & Modal
+  const { isStandalone, isInstallable, promptInstall, isDismissed, dismissPrompt } = usePWAInstall()
+  const [showInstallModal, setShowInstallModal] = useState(false)
+
+  // 🔔 Background Notification Scheduler Init
+  useEffect(() => {
+    initNotificationScheduler(isTamil)
+  }, [isTamil])
+
+  const handleInstallClick = async () => {
+    if (isInstallable) {
+      const accepted = await promptInstall()
+      if (!accepted) {
+        setShowInstallModal(true)
+      }
+    } else {
+      setShowInstallModal(true)
+    }
+  }
+
   const todayStr = getLocalDateString(new Date())
 
   // 1. Goal Calculations
@@ -432,12 +457,65 @@ export const DashboardScreen: React.FC = () => {
           </p>
         </div>
 
-        {/* Date Pill on Desktop */}
-        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full glass-card border border-outline-variant/30 text-on-surface-variant self-start">
-          <Calendar className="w-3.5 h-3.5 text-primary" />
-          <span>{new Date().toLocaleDateString(isTamil ? 'ta-IN' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+        <div className="flex items-center gap-2 self-start">
+          {/* Install App Button if not standalone */}
+          {!isStandalone && (
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full bg-primary/15 hover:bg-primary text-primary hover:text-on-primary border border-primary/40 transition cursor-pointer shadow-xs active:scale-95"
+              title={isTamil ? 'செயலியை நிறுவுக' : 'Install App'}
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{isTamil ? 'செயலியை நிறுவுக' : 'Install App'}</span>
+            </button>
+          )}
+
+          {/* Date Pill on Desktop */}
+          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full glass-card border border-outline-variant/30 text-on-surface-variant">
+            <Calendar className="w-3.5 h-3.5 text-primary" />
+            <span>{new Date().toLocaleDateString(isTamil ? 'ta-IN' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          </div>
         </div>
       </div>
+
+      {/* 🌟 PWA Install Quick Banner (Visible when app is not installed as PWA) */}
+      {!isStandalone && !isDismissed && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-primary/20 via-primary/10 to-surface-container-high border border-primary/30 flex items-center justify-between gap-4 shadow-sm relative overflow-hidden animate-fade-in">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-md">
+              <Download className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-on-surface flex items-center gap-2">
+                <span>{isTamil ? 'Deenly செயலியை முகப்புத் திரையில் நிறுவுக' : 'Install Deenly on your device'}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-bold hidden sm:inline-block">PWA</span>
+              </h3>
+              <p className="text-xs text-on-surface-variant truncate">
+                {isTamil
+                  ? 'ஆஃப்லைன் ஓதுதல், முழுத்திரை வேகம் & தினசரி நினைவூட்டல்களைப் பெறுக'
+                  : 'Fast offline recitation, fullscreen immersion, and daily reminders'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleInstallClick}
+              className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-xs font-bold transition shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{isTamil ? 'நிறுவுக' : 'Install'}</span>
+            </button>
+            <button
+              onClick={dismissPrompt}
+              className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-highest text-outline hover:text-on-surface transition cursor-pointer"
+              title="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 2. 📱 MOBILE HERO: WEEKLY CONSISTENCY CIRCLES (TOP) + COMBINED GOAL/JOURNEY */}
@@ -888,6 +966,13 @@ export const DashboardScreen: React.FC = () => {
         </div>
 
       </div>
+
+      {/* 📲 PWA Installation Guide Modal */}
+      <PWAInstallModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        isTamil={isTamil}
+      />
 
     </div>
   )

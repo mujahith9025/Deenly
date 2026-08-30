@@ -30,13 +30,21 @@ import {
   ExternalLink,
   Zap,
   Palette,
-  Compass
+  Compass,
+  Download,
+  Apple,
+  Monitor,
+  PlusSquare,
+  Share2,
+  WifiOff,
+  CheckCircle2
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useAuthStore } from '../store/useAuthStore'
 import { useThemeStore } from '../store/useThemeStore'
 import { useReadingStore } from '../store/useReadingStore'
 import { useQuranAudioStore } from '../store/useQuranAudioStore'
+import { usePWAInstall } from '../hooks/usePWAInstall'
 import { QARI_LIST, getQariById, type QariStyle } from '../lib/qariData'
 import { syncService } from '../lib/syncService'
 import { quranCache } from '../lib/quranCache'
@@ -53,6 +61,17 @@ import { TAJWEED_RULES } from '../lib/tajweed'
 import { TajweedArabicText } from '../components/TajweedArabicText'
 import { MUSHAF_THEMES, type MushafThemeId } from '../lib/mushafThemes'
 import { getArabicTransliteration } from '../lib/transliteration'
+import { 
+  loadNotificationConfig, 
+  saveNotificationConfig, 
+  requestNotificationPermission, 
+  getNotificationPermissionStatus,
+  triggerTestVerseNotification,
+  triggerTestHadithNotification,
+  triggerTestMorningReminder,
+  triggerTestEveningReminder,
+  type NotificationScheduleConfig 
+} from '../lib/notificationService'
 
 type SettingCategory = 
   | 'language'
@@ -64,6 +83,7 @@ type SettingCategory =
   | 'tajweed'
   | 'target' 
   | 'notifications' 
+  | 'install'
   | 'sync' 
   | 'about'
 
@@ -130,8 +150,6 @@ export const SettingsScreen: React.FC = () => {
   const showTransliteration = user?.showTransliteration !== undefined ? user.showTransliteration : storeShowTransliteration
   const transliterationLang = user?.transliterationLanguage || storeTransliterationLang || (appLanguage === 'ta' ? 'ta' : 'en')
   const currentGoal = user?.dailyGoalVerses || 10
-  const prayerAlerts = user?.prayerNotifications !== false
-  const readingAlerts = user?.readingReminders !== false
 
   // 🎙️ Qari Audio Store Hooks
   const selectedQariId = useQuranAudioStore((state) => state.selectedQariId)
@@ -145,6 +163,51 @@ export const SettingsScreen: React.FC = () => {
   const [settingsPreviewQariId, setSettingsPreviewQariId] = useState<string | null>(null)
   const settingsPreviewAudioRef = React.useRef<HTMLAudioElement | null>(null)
   const [tajweedRuleLang, setTajweedRuleLang] = useState<'en' | 'ta'>(appLanguage === 'ta' ? 'ta' : 'en')
+
+  // 📲 PWA Installation State
+  const { isStandalone, isInstallable, platform: pwaPlatform, promptInstall } = usePWAInstall()
+  const [selectedDeviceTab, setSelectedDeviceTab] = useState<'android' | 'ios' | 'desktop'>(() => {
+    if (pwaPlatform === 'ios') return 'ios'
+    if (pwaPlatform === 'windows' || pwaPlatform === 'mac') return 'desktop'
+    return 'android'
+  })
+  const [installPwaSuccess, setInstallPwaSuccess] = useState(false)
+
+  // 🔔 Advanced Notification State
+  const [notifConfig, setNotifConfig] = useState<NotificationScheduleConfig>(loadNotificationConfig)
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>(getNotificationPermissionStatus)
+  const [testNotificationFeedback, setTestNotificationFeedback] = useState<string | null>(null)
+
+  const handleUpdateNotifConfig = (updates: Partial<NotificationScheduleConfig>) => {
+    const updated = { ...notifConfig, ...updates }
+    setNotifConfig(updated)
+    saveNotificationConfig(updated)
+  }
+
+  const handleGrantNotificationPermission = async () => {
+    const granted = await requestNotificationPermission()
+    setNotifPermission(getNotificationPermissionStatus())
+    if (granted) {
+      handleUpdateNotifConfig({ enabled: true })
+    }
+  }
+
+  const handleTriggerNotificationTest = async (type: 'verse' | 'hadith' | 'morning' | 'evening') => {
+    setTestNotificationFeedback(type)
+    if (type === 'verse') await triggerTestVerseNotification(appLanguage === 'ta')
+    if (type === 'hadith') await triggerTestHadithNotification(appLanguage === 'ta')
+    if (type === 'morning') await triggerTestMorningReminder(appLanguage === 'ta')
+    if (type === 'evening') await triggerTestEveningReminder(appLanguage === 'ta')
+    setTimeout(() => setTestNotificationFeedback(null), 2500)
+  }
+
+  const handleOneTapPwaInstall = async () => {
+    const success = await promptInstall()
+    if (success) {
+      setInstallPwaSuccess(true)
+      setTimeout(() => setInstallPwaSuccess(false), 3000)
+    }
+  }
 
   const handleAppLanguageChange = (lang: AppLanguage) => {
     setAppLanguage(lang)
@@ -188,14 +251,6 @@ export const SettingsScreen: React.FC = () => {
 
   const handleGoalPreset = (val: number) => {
     updateUserSettings({ dailyGoalVerses: val })
-  }
-
-  const handleTogglePrayerNotifications = () => {
-    updateUserSettings({ prayerNotifications: !prayerAlerts })
-  }
-
-  const handleToggleReadingReminders = () => {
-    updateUserSettings({ readingReminders: !readingAlerts })
   }
 
   const handleSyncNow = async () => {
@@ -1547,73 +1602,623 @@ export const SettingsScreen: React.FC = () => {
     </div>
   )
 
-  // 5. Notifications Section
+  // 5. Notifications Section (Upgraded with Morning Verse, Staggered Hadith, Morning & Evening Quran Reminders)
   const renderNotificationsSection = () => (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
-          {appLanguage === 'ta' ? 'அறிவிப்புகள் & நினைவூட்டல்கள்' : 'Notifications & Reminders'}
+          {appLanguage === 'ta' ? 'அறிவிப்புகள் & தினசரி நினைவூட்டல்கள்' : 'Notifications & Daily Reminders'}
         </h2>
         <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
           {appLanguage === 'ta' 
-            ? 'தினசரி குர்ஆன் ஓதும் பழக்கத்தையும் தொழுகை நேர விழிப்புணர்வையும் பேண நினைவூட்டல்களை அமைக்கவும்.' 
-            : 'Configure spiritual reminders to maintain your daily Quran habit and prayer awareness.'}
+            ? 'தினசரி காலை திருக்குர்ஆன் வசனம், நபிமொழி, காலை மற்றும் மாலை வாசிப்பு நினைவூட்டல்களைத் திட்டமிடுங்கள்.' 
+            : 'Configure scheduled morning Verse of the Day, staggered Hadith of the Day, and morning/evening Quran recitation reminders.'}
         </p>
       </div>
 
-      <div className="rounded-3xl glass-card border border-outline-variant/30 overflow-hidden divide-y divide-outline-variant/20 shadow-sm">
-        {/* Daily Reading Reminder */}
-        <div className="p-5 flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <span className="text-base font-bold text-on-surface block">
-              {appLanguage === 'ta' ? 'தினசரி குர்ஆன் ஓதும் நினைவூட்டல்' : 'Daily Quran Recitation Alert'}
-            </span>
-            <span className="text-xs text-on-surface-variant block">
-              {appLanguage === 'ta' 
-                ? 'உங்கள் விருப்பமான வாசிப்பு நேரத்தில் மென்மையான நினைவூட்டல் அறிவிப்பைப் பெறுங்கள்' 
-                : 'Receive a gentle reminder notification at your preferred reading time'}
-            </span>
+      {/* Permission Status Banner if not granted */}
+      {notifPermission !== 'granted' && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+              <Bell className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-sm font-bold text-on-surface block">
+                {appLanguage === 'ta' ? 'அறிவிப்பு அனுமதி தேவை' : 'Notification Permission Required'}
+              </span>
+              <span className="text-xs text-on-surface-variant block">
+                {appLanguage === 'ta' ? 'நினைவூட்டல்களைப் பெற உங்கள் உலாவியில் அனுமதியை இயக்கவும்' : 'Allow notifications to receive daily verses, hadith & reminders'}
+              </span>
+            </div>
           </div>
           <button
             type="button"
-            onClick={handleToggleReadingReminders}
-            className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-              readingAlerts ? 'bg-primary' : 'bg-surface-container-highest'
+            onClick={handleGrantNotificationPermission}
+            className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold transition shadow-sm cursor-pointer shrink-0"
+          >
+            {appLanguage === 'ta' ? 'அனுமதிக்க' : 'Enable Now'}
+          </button>
+        </div>
+      )}
+
+      {/* Master Enable Card */}
+      <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 shadow-sm flex items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <span className="text-base font-bold text-on-surface block">
+            {appLanguage === 'ta' ? 'அனைத்து நினைவூட்டல்களையும் இயக்கு' : 'Enable Spiritual Reminders'}
+          </span>
+          <span className="text-xs text-on-surface-variant block">
+            {appLanguage === 'ta' ? 'திட்டமிடப்பட்ட நேரத்தில் மொபைல்/உலாவி அறிவிப்புகளைப் பெறுங்கள்' : 'Receive scheduled push notifications on mobile and desktop'}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (notifPermission !== 'granted') {
+              handleGrantNotificationPermission()
+            } else {
+              handleUpdateNotifConfig({ enabled: !notifConfig.enabled })
+            }
+          }}
+          className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+            notifConfig.enabled ? 'bg-primary' : 'bg-surface-container-highest'
+          }`}
+        >
+          <span
+            className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform ${
+              notifConfig.enabled ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Detailed Notification Cards Grid */}
+      <div className="space-y-4">
+        {/* 1. Morning Verse of the Day */}
+        <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3.5 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-on-surface">
+                  {appLanguage === 'ta' ? '📖 காலை திருக்குர்ஆன் வசனம்' : '📖 Morning Verse of the Day'}
+                </h3>
+                <p className="text-xs text-on-surface-variant">
+                  {appLanguage === 'ta' 
+                    ? 'ஒவ்வொரு காலையிலும் அமைதி தரும் குர்ஆன் வசன அறிவிப்பு' 
+                    : 'Inspiring daily Quranic verse delivered to your lock screen'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleUpdateNotifConfig({ verseOfTheDayEnabled: !notifConfig.verseOfTheDayEnabled })}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                notifConfig.verseOfTheDayEnabled ? 'bg-emerald-500' : 'bg-surface-container-highest'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  notifConfig.verseOfTheDayEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-2 border-t border-outline-variant/20 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-outline font-semibold">
+                {appLanguage === 'ta' ? 'அறிவிப்பு நேரம்:' : 'Delivery Time:'}
+              </span>
+              <input
+                type="time"
+                value={notifConfig.verseTime}
+                onChange={(e) => handleUpdateNotifConfig({ verseTime: e.target.value })}
+                className="px-3 py-1 rounded-xl bg-surface-container border border-outline-variant/40 text-xs font-bold text-on-surface focus:border-primary focus:outline-none font-mono"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleTriggerNotificationTest('verse')}
+              className="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-primary transition cursor-pointer flex items-center gap-1 active:scale-95"
+            >
+              <Bell className="w-3.5 h-3.5" />
+              <span>{testNotificationFeedback === 'verse' ? (appLanguage === 'ta' ? 'அனுப்பப்பட்டது!' : 'Sent!') : (appLanguage === 'ta' ? 'சோதனை அறிவிப்பு' : 'Test Notification')}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 2. Morning Hadith of the Day (Staggered Notification) */}
+        <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3.5 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-on-surface">
+                  {appLanguage === 'ta' ? '✨ காலை ஆதாரப்பூர்வ நபிமொழி' : '✨ Morning Hadith of the Day'}
+                </h3>
+                <p className="text-xs text-on-surface-variant">
+                  {appLanguage === 'ta' 
+                    ? 'வசனம் அனுப்பப்பட்ட சில நிமிடங்களுக்குப் பின் அனுப்பப்படும் நபிமொழி அறிவிப்பு' 
+                    : 'Authentic Hadith of the day sent staggered a few minutes after the morning verse'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleUpdateNotifConfig({ hadithOfTheDayEnabled: !notifConfig.hadithOfTheDayEnabled })}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                notifConfig.hadithOfTheDayEnabled ? 'bg-amber-500' : 'bg-surface-container-highest'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  notifConfig.hadithOfTheDayEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-2 border-t border-outline-variant/20 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-outline font-semibold">
+                {appLanguage === 'ta' ? 'அறிவிப்பு நேரம்:' : 'Delivery Time:'}
+              </span>
+              <input
+                type="time"
+                value={notifConfig.hadithTime}
+                onChange={(e) => handleUpdateNotifConfig({ hadithTime: e.target.value })}
+                className="px-3 py-1 rounded-xl bg-surface-container border border-outline-variant/40 text-xs font-bold text-on-surface focus:border-primary focus:outline-none font-mono"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleTriggerNotificationTest('hadith')}
+              className="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-amber-400 transition cursor-pointer flex items-center gap-1 active:scale-95"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{testNotificationFeedback === 'hadith' ? (appLanguage === 'ta' ? 'அனுப்பப்பட்டது!' : 'Sent!') : (appLanguage === 'ta' ? 'சோதனை அறிவிப்பு' : 'Test Notification')}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 3. Morning Quran Reading Reminder */}
+        <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3.5 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-sky-500/15 text-sky-400 border border-sky-500/30 flex items-center justify-center shrink-0">
+                <Sun className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-on-surface">
+                  {appLanguage === 'ta' ? '🌅 காலை குர்ஆன் ஓதும் நினைவூட்டல்' : '🌅 Morning Quran Recitation'}
+                </h3>
+                <p className="text-xs text-on-surface-variant">
+                  {appLanguage === 'ta' 
+                    ? 'காலை வேளையில் குர்ஆன் ஓதி ஹஸனாத் நன்மைகளைப் பெற நினைவூட்டல்' 
+                    : 'Morning reminder to start your day with Quran recitation and Hasanat tracking'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleUpdateNotifConfig({ morningQuranReminderEnabled: !notifConfig.morningQuranReminderEnabled })}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                notifConfig.morningQuranReminderEnabled ? 'bg-sky-500' : 'bg-surface-container-highest'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  notifConfig.morningQuranReminderEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-2 border-t border-outline-variant/20 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-outline font-semibold">
+                {appLanguage === 'ta' ? 'நினைவூட்டல் நேரம்:' : 'Reminder Time:'}
+              </span>
+              <input
+                type="time"
+                value={notifConfig.morningQuranTime}
+                onChange={(e) => handleUpdateNotifConfig({ morningQuranTime: e.target.value })}
+                className="px-3 py-1 rounded-xl bg-surface-container border border-outline-variant/40 text-xs font-bold text-on-surface focus:border-primary focus:outline-none font-mono"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleTriggerNotificationTest('morning')}
+              className="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-sky-400 transition cursor-pointer flex items-center gap-1 active:scale-95"
+            >
+              <Sun className="w-3.5 h-3.5" />
+              <span>{testNotificationFeedback === 'morning' ? (appLanguage === 'ta' ? 'அனுப்பப்பட்டது!' : 'Sent!') : (appLanguage === 'ta' ? 'சோதனை அறிவிப்பு' : 'Test Notification')}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 4. Evening Quran Reflection Reminder */}
+        <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 space-y-3.5 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-500/15 text-purple-400 border border-purple-500/30 flex items-center justify-center shrink-0">
+                <Moon className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-bold text-on-surface">
+                  {appLanguage === 'ta' ? '🌇 மாலை குர்ஆன் நினைவூட்டல்' : '🌇 Evening Quran Reflection'}
+                </h3>
+                <p className="text-xs text-on-surface-variant">
+                  {appLanguage === 'ta' 
+                    ? 'இன்றைய தினசரி வசன இலக்கை நிறைவு செய்ய மாலை நேர நினைவூட்டல்' 
+                    : 'Evening reminder to fulfill your daily recitation target before sleep'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleUpdateNotifConfig({ eveningQuranReminderEnabled: !notifConfig.eveningQuranReminderEnabled })}
+              className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                notifConfig.eveningQuranReminderEnabled ? 'bg-purple-500' : 'bg-surface-container-highest'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  notifConfig.eveningQuranReminderEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-2 border-t border-outline-variant/20 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-outline font-semibold">
+                {appLanguage === 'ta' ? 'நினைவூட்டல் நேரம்:' : 'Reminder Time:'}
+              </span>
+              <input
+                type="time"
+                value={notifConfig.eveningQuranTime}
+                onChange={(e) => handleUpdateNotifConfig({ eveningQuranTime: e.target.value })}
+                className="px-3 py-1 rounded-xl bg-surface-container border border-outline-variant/40 text-xs font-bold text-on-surface focus:border-primary focus:outline-none font-mono"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleTriggerNotificationTest('evening')}
+              className="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold text-purple-400 transition cursor-pointer flex items-center gap-1 active:scale-95"
+            >
+              <Moon className="w-3.5 h-3.5" />
+              <span>{testNotificationFeedback === 'evening' ? (appLanguage === 'ta' ? 'அனுப்பப்பட்டது!' : 'Sent!') : (appLanguage === 'ta' ? 'சோதனை அறிவிப்பு' : 'Test Notification')}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 5. Prayer Time Awareness */}
+        <div className="p-5 rounded-3xl glass-card border border-outline-variant/30 flex items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-teal-500/15 text-teal-400 border border-teal-500/30 flex items-center justify-center shrink-0">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-on-surface">
+                {appLanguage === 'ta' ? '🕌 தொழுகை நேர எச்சரிக்கை' : '🕌 Prayer Time Awareness'}
+              </h3>
+              <p className="text-xs text-on-surface-variant">
+                {appLanguage === 'ta' 
+                  ? 'உள்ளூர் தொழுகை நேரம் வரும்போது உடனடி எச்சரிக்கை அறிவிப்பு' 
+                  : 'Notifications when local prayer time arrives'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleUpdateNotifConfig({ prayerAwarenessEnabled: !notifConfig.prayerAwarenessEnabled })}
+            className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+              notifConfig.prayerAwarenessEnabled ? 'bg-teal-500' : 'bg-surface-container-highest'
             }`}
           >
             <span
-              className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform ${
-                readingAlerts ? 'translate-x-5' : 'translate-x-0'
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                notifConfig.prayerAwarenessEnabled ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
           </button>
         </div>
+      </div>
+    </div>
+  )
 
-        {/* Prayer Time Notifications */}
-        <div className="p-5 flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <span className="text-base font-bold text-on-surface block">
-              {appLanguage === 'ta' ? 'தொழுகை நேர & பாங்கு எச்சரிக்கை' : 'Prayer & Adhan Awareness'}
-            </span>
-            <span className="text-xs text-on-surface-variant block">
-              {appLanguage === 'ta' 
-                ? 'உள்ளூர் தொழுகை நேரம் வரும்போது உடனடி அறிவிப்பைப் பெறுங்கள்' 
-                : 'Notifications when local prayer time arrives'}
-            </span>
+  // 6. Install App Section (PWA Guide for All Devices)
+  const renderInstallSection = () => (
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold font-h1 text-on-surface">
+          {appLanguage === 'ta' ? 'Deenly செயலியை நிறுவுக (Install PWA)' : 'Install Deenly Web App (PWA)'}
+        </h2>
+        <p className="text-xs sm:text-sm text-on-surface-variant mt-1">
+          {appLanguage === 'ta' 
+            ? 'அனைத்து ஆண்ட்ராய்டு, ஐபோன் மற்றும் கணினி சாதனங்களில் முழுமையான நேட்டிவ் செயலி போல நிறுவி ஆஃப்லைனில் ஓதுங்கள்.' 
+            : 'Install Deenly directly onto your home screen or desktop for a fast, full-screen offline experience across all devices.'}
+        </p>
+      </div>
+
+      {/* PWA Status Badge Card */}
+      <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3.5">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-md ${
+              isStandalone ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-primary/20 text-primary border border-primary/40'
+            }`}>
+              <Download className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-base font-bold text-on-surface block">
+                {isStandalone 
+                  ? (appLanguage === 'ta' ? 'செயலி வெற்றிகரமாக நிறுவப்பட்டுள்ளது' : 'Installed as Standalone App') 
+                  : (appLanguage === 'ta' ? 'உலாவி முறையில் இயங்குகிறது' : 'Running in Web Browser Mode')}
+              </span>
+              <span className="text-xs text-on-surface-variant">
+                {isStandalone 
+                  ? (appLanguage === 'ta' ? 'முழுத்திரை மற்றும் ஆஃப்லைன் ஆதரவு செயலில் உள்ளது' : 'Full-screen mode and offline database caching active') 
+                  : (appLanguage === 'ta' ? 'கீழே உள்ள வழிகாட்டியைப் பின்பற்றி முகப்புத் திரையில் சேர்க்கவும்' : 'Follow the step-by-step guide below for your device')}
+              </span>
+            </div>
           </div>
+
+          {isInstallable && !isStandalone && (
+            <button
+              onClick={handleOneTapPwaInstall}
+              className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-xs font-bold transition shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              <span>{appLanguage === 'ta' ? 'இப்போதே நிறுவுக' : 'Install to Home Screen'}</span>
+            </button>
+          )}
+        </div>
+
+        {installPwaSuccess && (
+          <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-bold text-center animate-fade-in flex items-center justify-center gap-2">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>{appLanguage === 'ta' ? 'Deenly வெற்றிகரமாக நிறுவப்பட்டது!' : 'Deenly installed successfully!'}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Device Tab Selector */}
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-2 bg-surface-container p-1.5 rounded-2xl border border-outline-variant/20">
           <button
-            type="button"
-            onClick={handleTogglePrayerNotifications}
-            className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-              prayerAlerts ? 'bg-primary' : 'bg-surface-container-highest'
+            onClick={() => setSelectedDeviceTab('android')}
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+              selectedDeviceTab === 'android'
+                ? 'bg-surface-container-highest text-primary shadow-xs border border-primary/30'
+                : 'text-outline hover:text-on-surface'
             }`}
           >
-            <span
-              className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform ${
-                prayerAlerts ? 'translate-x-5' : 'translate-x-0'
-              }`}
-            />
+            <Smartphone className="w-4 h-4" />
+            <span>Android</span>
           </button>
+
+          <button
+            onClick={() => setSelectedDeviceTab('ios')}
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+              selectedDeviceTab === 'ios'
+                ? 'bg-surface-container-highest text-primary shadow-xs border border-primary/30'
+                : 'text-outline hover:text-on-surface'
+            }`}
+          >
+            <Apple className="w-4 h-4" />
+            <span>iPhone / iPad</span>
+          </button>
+
+          <button
+            onClick={() => setSelectedDeviceTab('desktop')}
+            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+              selectedDeviceTab === 'desktop'
+                ? 'bg-surface-container-highest text-primary shadow-xs border border-primary/30'
+                : 'text-outline hover:text-on-surface'
+            }`}
+          >
+            <Monitor className="w-4 h-4" />
+            <span>PC / Mac</span>
+          </button>
+        </div>
+
+        {/* Step-by-Step Device Guide Cards */}
+        <div className="rounded-3xl glass-card border border-outline-variant/30 p-6 space-y-4 shadow-sm">
+          {selectedDeviceTab === 'android' && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-outline-variant/20">
+                <Smartphone className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-sm font-bold text-on-surface">
+                  {appLanguage === 'ta' ? 'ஆண்ட்ராய்டு (Google Chrome / Samsung Internet)' : 'Android Installation Guide (Chrome / Samsung Internet)'}
+                </h3>
+              </div>
+
+              <div className="space-y-2.5">
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? 'Chrome அல்லது Samsung Internet உலாவியில் Deenly-ஐத் திறக்கவும்.' 
+                      : 'Open Deenly in Google Chrome or Samsung Internet browser.'}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? 'மேல் வலது மூலையில் உள்ள மூன்று புள்ளிகளைத் (⋮) தொடவும்.' 
+                      : 'Tap the three vertical dots menu (⋮) in the top-right corner of Chrome.'}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? 'மெனுவில் "Install app" அல்லது "Add to Home screen" என்பதைத் தேர்ந்தெடுக்கவும்.' 
+                      : 'Select "Install app" or "Add to Home screen" from the menu options.'}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">4</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? '"Install" என்பதை உறுதிசெய்து முடிக்கவும். உங்கள் முகப்புத் திரையில் Deenly தோன்றும்.' 
+                      : 'Tap "Install" to confirm. Deenly will now launch fullscreen without browser bars.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selectedDeviceTab === 'ios' && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-outline-variant/20">
+                <Apple className="w-4 h-4 text-sky-400" />
+                <h3 className="text-sm font-bold text-on-surface">
+                  {appLanguage === 'ta' ? 'ஐபோன் & ஐபேட் (Apple Safari வழிகாட்டி)' : 'iOS Installation Guide (Apple Safari)'}
+                </h3>
+              </div>
+
+              <div className="space-y-2.5">
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? 'Deenly இணைப்பை Apple Safari உலாவியில் திறக்கவும் (iOS-ல் Chrome மூலம் PWA நிறுவ முடியாது).' 
+                      : 'Open Deenly in Apple Safari browser (iOS requires Safari to install PWAs to home screen).'}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                  <div className="space-y-1">
+                    <p className="text-xs text-on-surface leading-relaxed flex items-center gap-1.5 flex-wrap">
+                      <span>{appLanguage === 'ta' ? 'கீழ் கருவிப்பட்டியில் உள்ள' : 'Tap the'}</span>
+                      <span className="inline-flex items-center gap-1 font-bold text-primary px-2 py-0.5 rounded-md bg-surface-container-highest border border-outline-variant/40">
+                        <Share2 className="w-3 h-3" />
+                        <span>{appLanguage === 'ta' ? 'பகிர் (Share) ஐகானைத் தொடவும்' : 'Share Button (Box with Up Arrow)'}</span>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                  <div className="space-y-1">
+                    <p className="text-xs text-on-surface leading-relaxed flex items-center gap-1.5 flex-wrap">
+                      <span>{appLanguage === 'ta' ? 'கீழே உருட்டி' : 'Scroll down and select'}</span>
+                      <span className="inline-flex items-center gap-1 font-bold text-secondary px-2 py-0.5 rounded-md bg-surface-container-highest border border-outline-variant/40">
+                        <PlusSquare className="w-3 h-3" />
+                        <span>{appLanguage === 'ta' ? '"Add to Home Screen"-ஐத் தொடவும்' : '"Add to Home Screen"'}</span>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">4</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? 'மேல் வலது மூலையில் உள்ள "Add" என்பதைக் கிளிக் செய்யவும். சொந்த ஆப் போலத் திறக்கும்.' 
+                      : 'Tap "Add" in the top-right corner. Deenly will now launch like a native iOS application.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selectedDeviceTab === 'desktop' && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-outline-variant/20">
+                <Monitor className="w-4 h-4 text-purple-400" />
+                <h3 className="text-sm font-bold text-on-surface">
+                  {appLanguage === 'ta' ? 'விண்டோஸ் & மேக் கணினிகள் (Chrome / Edge)' : 'Windows & macOS Desktop Guide (Chrome / Edge)'}
+                </h3>
+              </div>
+
+              <div className="space-y-2.5">
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? 'Chrome, Edge அல்லது Brave உலாவியில் Deenly-ஐத் திறக்கவும்.' 
+                      : 'Open Deenly in Google Chrome, Microsoft Edge, or Brave on your PC or Mac.'}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? 'முகவரிப் பட்டியின் வலது ஓரத்தில் உள்ள நிறுவல் ஐகானைக் (⊕ அல்லது 💻) கிளிக் செய்யவும்.' 
+                      : 'Look at the URL address bar and click the "Install Deenly" icon (⊕ or 💻).'}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-surface-container/60 border border-outline-variant/25 flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                  <p className="text-xs text-on-surface leading-relaxed">
+                    {appLanguage === 'ta' 
+                      ? '"Install" என்பதைக் கிளிக் செய்யவும். டெஸ்க்டாப் சாளரத்தில் தனியாக இயங்கும்.' 
+                      : 'Click "Install" in the confirmation prompt to run Deenly in a dedicated desktop window.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 🌟 PWA Capabilities Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-4 rounded-2xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1">
+            <WifiOff className="w-5 h-5 text-primary mx-auto" />
+            <h4 className="text-xs font-bold text-on-surface">
+              {appLanguage === 'ta' ? 'முழு ஆஃப்லைன் ஆதரவு' : '100% Offline Ready'}
+            </h4>
+            <p className="text-[11px] text-on-surface-variant">
+              {appLanguage === 'ta' ? 'இணையம் இல்லாமல் குர்ஆன் மற்றும் திக்ர் ஓதலாம்' : 'Read Quran and count Dhikr without internet connection'}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1">
+            <Bell className="w-5 h-5 text-secondary mx-auto" />
+            <h4 className="text-xs font-bold text-on-surface">
+              {appLanguage === 'ta' ? 'நிகழ்நேர நினைவூட்டல்' : 'Instant Reminders'}
+            </h4>
+            <p className="text-[11px] text-on-surface-variant">
+              {appLanguage === 'ta' ? 'தினசரி காலை வசனம் & நபிமொழி அறிவிப்புகள்' : 'Receive scheduled Verse and Hadith push notifications'}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-surface-container/50 border border-outline-variant/20 text-center space-y-1">
+            <Zap className="w-5 h-5 text-amber-400 mx-auto" />
+            <h4 className="text-xs font-bold text-on-surface">
+              {appLanguage === 'ta' ? 'மின்னல் வேகம் & பூஜ்ஜிய சேமிப்பு' : 'Ultra Fast & Lightweight'}
+            </h4>
+            <p className="text-[11px] text-on-surface-variant">
+              {appLanguage === 'ta' ? '5MB-க்கும் குறைவான அளவில் உடனடி திறப்பு' : 'Launches in under 1 second with less than 5MB storage'}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -2140,6 +2745,8 @@ export const SettingsScreen: React.FC = () => {
         return renderTargetSection()
       case 'notifications':
         return renderNotificationsSection()
+      case 'install':
+        return renderInstallSection()
       case 'sync':
         return renderSyncSection()
       case 'about':
@@ -2206,9 +2813,17 @@ export const SettingsScreen: React.FC = () => {
     },
     { 
       id: 'notifications', 
-      label: appLanguage === 'ta' ? 'அறிவிப்புகள்' : 'Notifications & Adhan', 
+      label: appLanguage === 'ta' ? 'அறிவிப்புகள்' : 'Notifications & Reminders', 
       icon: Bell, 
-      desc: readingAlerts ? (appLanguage === 'ta' ? 'இயக்கப்பட்டுள்ளது' : 'Enabled') : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Off') 
+      desc: notifConfig.enabled ? (appLanguage === 'ta' ? 'செயலில் உள்ளது' : 'Active') : (appLanguage === 'ta' ? 'முடக்கப்பட்டுள்ளது' : 'Off') 
+    },
+    { 
+      id: 'install', 
+      label: appLanguage === 'ta' ? 'செயலியை நிறுவுக' : 'Install App (PWA)', 
+      icon: Download, 
+      desc: isStandalone 
+        ? (appLanguage === 'ta' ? 'நிறுவப்பட்டுள்ளது' : 'Installed PWA') 
+        : (appLanguage === 'ta' ? 'அனைத்து சாதன வழிகாட்டி' : 'All Devices Guide') 
     },
     { 
       id: 'sync', 
