@@ -144,6 +144,7 @@ export const SettingsScreen: React.FC = () => {
   const [settingsQariFilter, setSettingsQariFilter] = useState<'all' | QariStyle>('all')
   const [settingsPreviewQariId, setSettingsPreviewQariId] = useState<string | null>(null)
   const settingsPreviewAudioRef = React.useRef<HTMLAudioElement | null>(null)
+  const [tajweedRuleLang, setTajweedRuleLang] = useState<'en' | 'ta'>(appLanguage === 'ta' ? 'ta' : 'en')
 
   const handleAppLanguageChange = (lang: AppLanguage) => {
     setAppLanguage(lang)
@@ -1421,9 +1422,21 @@ export const SettingsScreen: React.FC = () => {
 
         {/* Tajweed Rules Comprehensive Legend Cards */}
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps">
-            {appLanguage === 'ta' ? 'தஜ்வீத் விதிகள் வழிகாட்டி & வண்ணங்கள்' : 'Color Rules & Phonetic Guide'}
-          </h3>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <h3 className="text-sm font-bold text-on-surface uppercase tracking-wider font-label-caps">
+              {appLanguage === 'ta' ? 'தஜ்வீத் விதிகள் வழிகாட்டி & வண்ணங்கள்' : 'Color Rules & Phonetic Guide'}
+            </h3>
+
+            {/* Language toggle button specifically for Tajweed Rules */}
+            <button
+              type="button"
+              onClick={() => setTajweedRuleLang((prev) => (prev === 'en' ? 'ta' : 'en'))}
+              className="px-3 py-1 rounded-xl glass-card border border-primary/40 text-xs font-bold text-primary hover:bg-primary hover:text-white transition-all cursor-pointer shadow-2xs flex items-center gap-1 active:scale-95"
+              title="Switch Tajweed rules language between English and தமிழ்"
+            >
+              <span>{tajweedRuleLang === 'ta' ? 'தமிழ்' : 'English'}</span>
+            </button>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {distinctRules.map((rule, idx) => (
@@ -1439,12 +1452,12 @@ export const SettingsScreen: React.FC = () => {
                         style={{ backgroundColor: rule.hexColor }}
                       />
                       <h4 className="text-xs sm:text-sm font-bold text-on-surface">
-                        {appLanguage === 'ta' ? rule.nameTa : rule.nameEn}
+                        {tajweedRuleLang === 'ta' ? rule.nameTa : rule.nameEn}
                       </h4>
                     </div>
                   </div>
                   <p className="text-xs text-on-surface-variant leading-relaxed">
-                    {appLanguage === 'ta' ? rule.descriptionTa : rule.descriptionEn}
+                    {tajweedRuleLang === 'ta' ? rule.descriptionTa : rule.descriptionEn}
                   </p>
                 </div>
 

@@ -208,6 +208,18 @@ export const HadithScreen: React.FC = () => {
       {/* ========================================================================= */}
       {viewMode === 'books' && (
         <div className="space-y-6 animate-fade-in">
+          {/* Header Title & Single Line Summary */}
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-bold font-h1 text-on-surface">
+              {appLanguage === 'ta' ? 'ஹதீஸ்' : 'Hadith'}
+            </h1>
+            <p className="text-xs sm:text-sm text-on-surface-variant font-medium">
+              {appLanguage === 'ta'
+                ? 'நபி (ஸல்) அவர்களின் சொல், செயல் மற்றும் அங்கீகாரங்கள் அடங்கிய ஆறு முக்கிய ஆதாரப்பூர்வ நபிமொழி நூல்கள்.'
+                : 'Authentic traditions and Sunnah of Prophet Muhammad (ﷺ) across the 6 major canonical books.'}
+            </p>
+          </div>
+
           {/* Search & Filter Bar */}
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-outline" />
