@@ -20,6 +20,7 @@ import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useAuthStore } from '../store/useAuthStore'
 import { useI18nStore } from '../lib/i18n'
 import { useTasbihStore } from '../store/useTasbihStore'
+import { triggerHapticMedium, triggerHapticSuccess } from '../lib/haptics'
 
 // Synthesized gentle Web Audio chime for count and completion
 function playChime(isCompletion = false) {
@@ -143,15 +144,11 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
     }
 
     // Haptics
-    if (hapticsEnabled && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        if (isTargetCompleted) {
-          navigator.vibrate([40, 80, 40])
-        } else {
-          navigator.vibrate(25)
-        }
-      } catch {
-        // ignore
+    if (hapticsEnabled) {
+      if (isTargetCompleted) {
+        triggerHapticSuccess()
+      } else {
+        triggerHapticMedium()
       }
     }
 

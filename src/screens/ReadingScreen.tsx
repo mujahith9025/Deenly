@@ -10,7 +10,9 @@ import {
   Heart,
   ZoomIn,
   Target,
-  Palette
+  Palette,
+  Maximize2,
+  Minimize2
 } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useReadingStore } from '../store/useReadingStore'
@@ -23,6 +25,7 @@ import {
   calculateJuzProgress,
   getLocalDateString
 } from '../lib/hasanatEngine'
+import { triggerHapticLight, triggerHapticMedium, triggerHapticSuccess } from '../lib/haptics'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { 
   getTranslationMeta, 
@@ -55,6 +58,8 @@ export const ReadingScreen: React.FC = () => {
   const [zoomFeedback, setZoomFeedback] = useState<number | null>(null)
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(false)
   const [isThemeModalOpen, setIsThemeModalOpen] = useState<boolean>(false)
+  const [isZenMode, setIsZenMode] = useState<boolean>(false)
+  const [isControlsVisible, setIsControlsVisible] = useState<boolean>(true)
 
   const mainCanvasRef = useRef<HTMLElement | null>(null)
   const zoomFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -63,6 +68,7 @@ export const ReadingScreen: React.FC = () => {
   const isPinchingRef = useRef(false)
   const touchStartYRef = useRef<number | null>(null)
   const isDraggingRef = useRef(false)
+  const lastScrollYRef = useRef<number>(0)
 
   const user = useAuthStore((state) => state.user)
   const updateUserSettings = useAuthStore((state) => state.updateUserSettings)
@@ -200,6 +206,22 @@ export const ReadingScreen: React.FC = () => {
     }
   }, [applyFontSizeChange])
 
+  // 🧘 Adaptive Scroll Listener for Zen Focus Mode
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop
+      if (currentScrollY > lastScrollYRef.current + 25 && currentScrollY > 70) {
+        setIsControlsVisible(false)
+      } else if (currentScrollY < lastScrollYRef.current - 15 || currentScrollY <= 30) {
+        setIsControlsVisible(true)
+      }
+      lastScrollYRef.current = currentScrollY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   // Sync user's preferred translation on initial load
   useEffect(() => {
     if (user?.preferredTranslation) {
@@ -235,11 +257,10 @@ export const ReadingScreen: React.FC = () => {
   useEffect(() => {
     return () => {
       const state = useReadingStore.getState()
-      if (state.activeSession.sessionVersesRead > 0 || state.activeSession.elapsedSeconds >= 3) {
-        state.finishSession()
-      } else if (state.currentSurahNumber && state.currentAyahNumber) {
+      if (state.currentSurahNumber && state.currentAyahNumber) {
         useAuthStore.getState().updateLastReadPosition(state.currentSurahNumber, state.currentAyahNumber)
       }
+      state.finishSession()
     }
   }, [])
 
@@ -281,6 +302,8 @@ export const ReadingScreen: React.FC = () => {
     if (isPinchingRef.current) return
     if (!currentAyah || !currentSurah) return
 
+    triggerHapticMedium()
+
     // 1. Record Hasanat and Verses in reading store
     const earned = markAyahRead(currentAyah)
 
@@ -296,6 +319,7 @@ export const ReadingScreen: React.FC = () => {
       useAuthStore.getState().updateLastReadPosition(currentSurahNumber, nextAyahNum)
     } else {
       // 🎉 Completed current Surah! Open Celebratory Chapter Completion Modal with Golden Confetti
+      triggerHapticSuccess()
       setIsCompletionModalOpen(true)
     }
   }, [
@@ -311,6 +335,7 @@ export const ReadingScreen: React.FC = () => {
   // Advance to Next Chapter from Milestone Modal
   const handleContinueNextChapter = () => {
     setIsCompletionModalOpen(false)
+    triggerHapticLight()
     if (currentSurahNumber < 114) {
       const nextSurahNum = currentSurahNumber + 1
       setCurrentPosition(nextSurahNum, 1)
@@ -324,6 +349,7 @@ export const ReadingScreen: React.FC = () => {
   // Go to Previous Ayah
   const handlePrevAyah = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
+    triggerHapticMedium()
     if (currentAyahNumber > 1) {
       const prevAyahNum = currentAyahNumber - 1
       setCurrentPosition(currentSurahNumber, prevAyahNum)
@@ -342,6 +368,7 @@ export const ReadingScreen: React.FC = () => {
   // Finish Reading Session -> Go to Dashboard
   const handleFinishSession = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
+    triggerHapticSuccess()
     if (currentSurahNumber && currentAyahNumber) {
       useAuthStore.getState().updateLastReadPosition(currentSurahNumber, currentAyahNumber)
     }
@@ -372,6 +399,7 @@ export const ReadingScreen: React.FC = () => {
 
   const handleToggleFavorite = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
+    triggerHapticLight()
     if (!currentAyah || !currentSurah) return
     toggleQuranFavorite({
       surahNumber: currentSurahNumber,
@@ -389,6 +417,7 @@ export const ReadingScreen: React.FC = () => {
 
   const handleToggleBookmark = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
+    triggerHapticLight()
     if (!currentAyah || !currentSurah) return
     toggleQuranBookmark({
       surahNumber: currentSurahNumber,
@@ -424,8 +453,25 @@ export const ReadingScreen: React.FC = () => {
     handleMarkAndNext()
   }
 
+  const showControls = !isZenMode || isControlsVisible
+
   return (
     <div className={`h-[100dvh] max-h-[100dvh] w-full max-w-5xl mx-auto flex flex-col justify-between select-none relative overflow-hidden px-2 sm:px-6 py-2.5 sm:py-4 gap-2 sm:gap-3 transition-colors duration-300 ${themeMeta.classes.container}`}>
+      {/* Floating Zen Mode Restore Pill */}
+      {!showControls && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            triggerHapticLight()
+            setIsControlsVisible(true)
+          }}
+          className="fixed top-3 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 rounded-full bg-surface-container/95 border border-primary/40 text-primary text-xs font-bold shadow-2xl backdrop-blur-md flex items-center gap-1.5 animate-fade-in active:scale-95 cursor-pointer"
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+          <span>{appLanguage === 'ta' ? 'ஜென் பயன்முறை • தொடுக' : 'Zen Focus • Tap to show controls'}</span>
+        </button>
+      )}
+
       {/* Floating Zoom Size Indicator Pill */}
       {zoomFeedback && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full glass-card border border-primary/50 text-primary font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-fade-in backdrop-blur-md">
@@ -438,7 +484,7 @@ export const ReadingScreen: React.FC = () => {
       {/* 1. ENLARGED FIXED TOP BAR: PINNED TO TOP AS PER SCREEN RATIO              */}
       {/*    Includes Surah Name, Prominent Big Timer & Hasanat, Action Buttons     */}
       {/* ========================================================================= */}
-      <header className={`w-full flex items-center justify-between gap-2 sm:gap-4 px-3.5 sm:px-6 py-3 sm:py-4.5 shrink-0 rounded-2xl sm:rounded-3xl border shadow-xl z-30 transition-colors duration-300 ${themeMeta.classes.header}`}>
+      <header className={`w-full flex items-center justify-between gap-2 sm:gap-4 px-3.5 sm:px-6 py-3 sm:py-4.5 shrink-0 rounded-2xl sm:rounded-3xl border shadow-xl z-30 transition-all duration-300 ${themeMeta.classes.header} ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
         {/* Left: Return Back & Surah Name & Ayah Counter */}
         <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
           <button
@@ -484,12 +530,39 @@ export const ReadingScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Theme Switcher, Tajweed Toggle, Language Switcher, Favorite & Bookmark */}
+        {/* Right: Theme Switcher, Tajweed Toggle, Zen Mode, Language Switcher, Favorite & Bookmark */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {/* 🧘 Zen Focus Mode Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              triggerHapticLight()
+              setIsZenMode((prev) => !prev)
+              setIsControlsVisible(true)
+            }}
+            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95 ${
+              isZenMode
+                ? 'bg-primary border-primary text-white shadow-[0_0_15px_rgba(124,58,237,0.45)]'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-primary'
+            }`}
+            title={
+              isZenMode
+                ? (appLanguage === 'ta' ? 'ஜென் பயன்முறையை முடக்கு' : 'Exit Zen Focus')
+                : (appLanguage === 'ta' ? 'ஜென் முழுத்திரை பயன்முறை' : 'Zen Focus Mode')
+            }
+          >
+            {isZenMode ? (
+              <Minimize2 className="w-4 h-4 sm:w-5 sm:h-5" />
+            ) : (
+              <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5" />
+            )}
+          </button>
+
           {/* Mushaf Theme Switcher */}
           <button
             onClick={(e) => {
               e.stopPropagation()
+              triggerHapticLight()
               setIsThemeModalOpen(true)
             }}
             className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border border-outline-variant/40 bg-surface-container hover:bg-surface-container-high transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95"
@@ -503,6 +576,7 @@ export const ReadingScreen: React.FC = () => {
           <button
             onClick={(e) => {
               e.stopPropagation()
+              triggerHapticLight()
               setIsTajweedEnabled(!isTajweedEnabled)
             }}
             className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95 ${
@@ -524,6 +598,7 @@ export const ReadingScreen: React.FC = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation()
+                triggerHapticLight()
                 setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')
               }}
               className="h-9 px-2.5 sm:h-11 sm:px-4 md:h-12 md:px-4.5 rounded-xl sm:rounded-2xl bg-surface-container border border-outline-variant/30 text-xs sm:text-sm font-black text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center justify-center shrink-0 active:scale-95"
@@ -541,6 +616,7 @@ export const ReadingScreen: React.FC = () => {
           <button
             onClick={(e) => {
               e.stopPropagation()
+              triggerHapticLight()
               if (isAudioPlayingCurrentAyah) {
                 audioStore.pause()
               } else {
@@ -596,7 +672,7 @@ export const ReadingScreen: React.FC = () => {
       {/* ========================================================================= */}
       {/* 2. DAILY GOAL PROGRESS TRACKER                                            */}
       {/* ========================================================================= */}
-      <div className="w-full px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-2xl sm:rounded-3xl glass-card border border-outline-variant/30 shadow-sm shrink-0 space-y-1 bg-surface-container-low/75">
+      <div className={`w-full px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-2xl sm:rounded-3xl glass-card border border-outline-variant/30 shadow-sm shrink-0 space-y-1 bg-surface-container-low/75 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5 font-bold text-on-surface min-w-0">
             <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
@@ -729,7 +805,7 @@ export const ReadingScreen: React.FC = () => {
       {/* 4. ENLARGED FIXED BOTTOM BAR: LARGER HIT TARGETS & PROMINENT SIZING       */}
       {/*    ( ← ) Previous Ayah, "I'm Done" Center Pill, ( → ) Next Ayah           */}
       {/* ========================================================================= */}
-      <footer className={`w-full px-3.5 sm:px-6 py-3.5 sm:py-5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-2xl transition-colors duration-300 ${themeMeta.classes.footer}`}>
+      <footer className={`w-full px-3.5 sm:px-6 py-3.5 sm:py-5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-2xl transition-all duration-300 ${themeMeta.classes.footer} ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'}`}>
         <div className="flex items-center justify-between gap-3 sm:gap-6 relative">
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (

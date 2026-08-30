@@ -14,6 +14,7 @@ import { DHIKR_PRESETS } from '../lib/dhikrData'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useAuthStore } from '../store/useAuthStore'
 import { useI18nStore } from '../lib/i18n'
+import { triggerHapticMedium, triggerHapticSuccess } from '../lib/haptics'
 
 // Synthesized gentle Web Audio chime for count and completion
 function playChime(isCompletion = false) {
@@ -109,15 +110,11 @@ export const DashboardTasbihWidget: React.FC = () => {
     }
 
     // Haptics
-    if (hapticsEnabled && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        if (isTargetCompleted) {
-          navigator.vibrate([40, 80, 40])
-        } else {
-          navigator.vibrate(25)
-        }
-      } catch {
-        // ignore
+    if (hapticsEnabled) {
+      if (isTargetCompleted) {
+        triggerHapticSuccess()
+      } else {
+        triggerHapticMedium()
       }
     }
 
@@ -137,7 +134,7 @@ export const DashboardTasbihWidget: React.FC = () => {
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference
 
   return (
-    <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md relative overflow-hidden">
+    <div id="dashboard-tasbih" className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-5 shadow-md relative overflow-hidden">
       
       {/* 🌟 1. COMPACT HEADER WITH DAILY GOAL SUMMARY & CONTROLS */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-outline-variant/20">

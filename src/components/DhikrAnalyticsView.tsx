@@ -185,10 +185,10 @@ export const DhikrAnalyticsView: React.FC = () => {
           <div>
             <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-primary" />
-              <span>{isTamil ? 'தினசரி திக்ர் வரைபடம் & வரலாறு' : 'Daily Dhikr Activity & Progression Chart'}</span>
+              <span>{isTamil ? 'தினசரி திக்ர் அளவு' : 'Daily Dhikr Volume'}</span>
             </h3>
             <p className="text-xs text-on-surface-variant">
-              {isTamil ? 'நாட்கள்தோறும் உங்கள் திக்ர் பழக்கத்தை கண்காணித்து சீராக ஓதி வாருங்கள்' : 'Track consistency over time and verify when daily targets are achieved'}
+              {isTamil ? 'நாட்கள்தோறும் உங்கள் திக்ர் பழக்கத்தை கண்காணித்து சீராக ஓதி வாருங்கள்' : 'Track your daily Dhikr consistency and streak goals'}
             </p>
           </div>
 
@@ -394,7 +394,7 @@ export const DhikrAnalyticsView: React.FC = () => {
       <div className="p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-4 shadow-md">
         <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-primary" />
-          <span>{isTamil ? 'திக்ர் பகிர்வு & விருப்பங்கள்' : 'Remembrance Share Distribution'}</span>
+          <span>{isTamil ? 'அதிகம் ஓதிய திக்ருகள்' : 'Your Most Recited Dhikrs'}</span>
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
