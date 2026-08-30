@@ -147,7 +147,30 @@
 - **Quran Reading Screen (`/reading`)**: Enlarged fixed header & footer with monospace timer, letter rewards, dynamic font-size scrolling down to 54px, clean bilingual translation badges (`English • Sahih` / `தமிழ் • பாகவி`), **5 Mushaf Eye-Comfort Themes** with punchy single-line descriptions, **Adaptive Reading Mode (Immersive Zen Focus Mode)** with auto-collapsing bars on scroll, tap-to-restore, and **Tactile Haptic Feedback** on Ayah navigation, bookmarking, and goal completions.
 - **Hadith Collections (`/hadith`)**: Extended full-width layout with crisp "Hadith" header and single-line summary, clean search-first interface, compact scholarly book cards without side gutters, smart interval search, and concise Hadith reader stream with segmented translation switchers (`English`, `தமிழ்`, `Dual`).
 - **Profile & Spiritual Hub (`/profile`)**: High-contrast KPI widgets, 2-column spiritual repository, and 5 dedicated sub-pages (`Bookmarks`, `Favorites`, `Milestones`, `Analytics`, `Account`).
-- **Settings Screen (`/settings`)**: Modular 11-category master-detail control center with concise descriptions, live visual previews, **Cross-Device PWA Installation Guide (Android Chrome, iOS Safari, Windows/macOS Desktop)**, **Scheduled Push & In-App Notifications** (Morning Verse of the Day, Staggered Morning Hadith of the Day, Morning Quran Recitation, Evening Quran Reflection with interactive test triggers), **dedicated Tajweed rule language toggle** (`English` ↔ `தமிழ்`) for Color Rules & Phonetic Guide, **top-positioned Playback Speed & Hifz Repeat Controls**, 13 Qari reciters with short single-line bios, and a comprehensive **About Deenly & Sources Showcase** detailing all 10 core built-in engines, 13 Qaris, 6 Hadith books, 8 scholarly source attribution cards, live Vercel link, and GitHub repository.
+### 🧭 Multi-Level Screen Hierarchy & Seamless Front/Back Navigation Flow
+Deenly utilizes a clear multi-tiered hierarchical navigation architecture where each section allows intuitive drilldown and clean recursive back-navigation:
+- **Root Level 0 (Main Hub)**:
+  - **Dashboard (`/dashboard`)**: The primary root screen. Pressing Back at this root level exits/minimizes the app cleanly.
+- **Quran Catalog (`/quran`)**:
+  - **Level 1 (Directory)**: All 114 Surahs & Juz grid $\rightarrow$ Back button returns to **Dashboard (`/dashboard`)**.
+  - **Level 2 (Whole Chapter Stream)**: Selected Surah (`/quran?surah=X`) with full audio playback & verse jump $\rightarrow$ Back button returns to **Level 1 (Quran Directory)**.
+  - **Level 3 (Focused 1-Verse Recitation Engine)**: Reading View (`/reading?surah=X&ayah=Y`) $\rightarrow$ Back button returns to **Dashboard (`/dashboard`)** or calling chapter.
+- **Hadith Collections (`/hadith`)**:
+  - **Level 1 (Books Directory)**: 6 Canonical Hadith Books $\rightarrow$ Back button returns to **Dashboard (`/dashboard`)**.
+  - **Level 2 (Book Chapters Index)**: Chapters list with Hadith number intervals $\rightarrow$ Back button returns to **Level 1 (All Books)**.
+  - **Level 3 (Chapter Hadiths Stream)**: Hadith traditions with Arabic, English & Tamil $\rightarrow$ Back button returns to **Level 2 (Chapters Index)**.
+- **Spiritual Explorer (`/explore`)**:
+  - **Level 1 (Explore Directory)**: 3 Core Islamic Treasures $\rightarrow$ Back button returns to **Dashboard (`/dashboard`)**.
+  - **Level 2 (Category Detail Views)**:
+    - *2A. Tasbih & Dhikr Studio (`/explore?cat=dhikr`)*: Touch counter & 30-day analytics $\rightarrow$ Back button returns to **Level 1 (Explore Directory)**.
+    - *2B. Hisnul Muslim (`/explore?cat=hisnul_muslim`)*: 132 Authentic Duas $\rightarrow$ Back button returns to **Level 1 (Explore Directory)**.
+    - *2C. 99 Names of Allah (`/explore?cat=asmaul_husna`)*: 99 Divine Names & citations $\rightarrow$ Back button returns to **Level 1 (Explore Directory)**.
+- **Profile & Spiritual Hub (`/profile`)**:
+  - **Level 1 (Profile Overview)**: KPIs, streak, and 5 sub-page shortcuts $\rightarrow$ Back button returns to **Dashboard (`/dashboard`)**.
+  - **Level 2 (Sub-Pages)**: Bookmarks, Favorites, Milestones, Recitation Stats, Account $\rightarrow$ Back button returns to **Level 1 (Profile Overview)**.
+- **Settings Screen (`/settings`)**:
+  - **Level 1 (Settings Directory)**: 11 master configuration categories $\rightarrow$ Back button returns to **Dashboard (`/dashboard`)**.
+  - **Level 2 (Mobile Focused Subpage)**: Detailed setting controls $\rightarrow$ Back button returns to **Level 1 (Settings Directory)**.
 
 ---
 

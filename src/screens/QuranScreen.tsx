@@ -235,11 +235,19 @@ export const QuranScreen: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            {selectedSurahNumber && (
+            {selectedSurahNumber ? (
               <button
                 onClick={handleBackToChapters}
                 className="p-2 rounded-full glass-card hover:bg-surface-container-high border border-outline-variant/40 text-on-surface transition cursor-pointer"
                 title={t('returnToChapters')}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="p-2 rounded-full glass-card hover:bg-surface-container-high border border-outline-variant/40 text-on-surface transition cursor-pointer"
+                title={appLanguage === 'ta' ? 'முகப்புக்குத் திரும்பு' : 'Back to Dashboard'}
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>

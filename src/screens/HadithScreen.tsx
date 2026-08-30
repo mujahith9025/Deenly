@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { 
   BookOpen, 
   Search, 
@@ -23,6 +23,7 @@ type LanguageMode = 'english' | 'tamil' | 'dual'
 
 export const HadithScreen: React.FC = () => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const appLanguage = useI18nStore((state) => state.appLanguage)
   const user = useAuthStore((state) => state.user)
   const storeFontStyle = useReadingStore((state) => state.fontStyle)
@@ -209,11 +210,20 @@ export const HadithScreen: React.FC = () => {
       {viewMode === 'books' && (
         <div className="space-y-6 animate-fade-in">
           {/* Header Title & Single Line Summary */}
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold font-h1 text-on-surface">
-              {appLanguage === 'ta' ? 'ஹதீஸ்' : 'Hadith'}
-            </h1>
-            <p className="text-xs sm:text-sm text-on-surface-variant font-medium">
+          <div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="p-2 rounded-full glass-card hover:bg-surface-container-high border border-outline-variant/40 text-on-surface transition cursor-pointer"
+                title={appLanguage === 'ta' ? 'முகப்புக்குத் திரும்பு' : 'Back to Dashboard'}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <h1 className="text-2xl sm:text-3xl font-bold font-h1 text-on-surface">
+                {appLanguage === 'ta' ? 'ஹதீஸ்' : 'Hadith'}
+              </h1>
+            </div>
+            <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5 font-medium">
               {appLanguage === 'ta'
                 ? 'நபி (ஸல்) அவர்களின் சொல், செயல் மற்றும் அங்கீகாரங்கள் அடங்கிய ஆறு முக்கிய ஆதாரப்பூர்வ நபிமொழி நூல்கள்.'
                 : 'Authentic traditions and Sunnah of Prophet Muhammad (ﷺ) across the 6 major canonical books.'}

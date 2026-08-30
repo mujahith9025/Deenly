@@ -819,9 +819,18 @@ export const ProfileScreen: React.FC = () => {
     <div className="space-y-6 max-w-5xl w-full mx-auto pb-24 animate-fade-in">
       {/* Top Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">
-          {isTamil ? 'ஆன்மீக சுயவிவரம்' : 'My Spiritual Profile'}
-        </h1>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="p-2 rounded-full glass-card hover:bg-surface-container-high border border-outline-variant/40 text-on-surface transition cursor-pointer"
+            title={isTamil ? 'முகப்புக்குத் திரும்பு' : 'Back to Dashboard'}
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">
+            {isTamil ? 'ஆன்மீக சுயவிவரம்' : 'My Spiritual Profile'}
+          </h1>
+        </div>
         <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
           {isTamil ? 'உங்கள் குர்ஆன் ஓதுதல் பயணம், புக்மார்க்குகள் மற்றும் சாதனைகள்.' : 'Your personal Quran reading journey, saved bookmarks, and spiritual progress.'}
         </p>

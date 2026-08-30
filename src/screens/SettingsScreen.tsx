@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   Bell, 
   Type, 
@@ -99,6 +99,7 @@ function formatLastSynced(timestamp: string | null, isTamil?: boolean): string {
 }
 
 export const SettingsScreen: React.FC = () => {
+  const navigate = useNavigate()
   const t = useI18nStore((state) => state.t)
   const appLanguage = useI18nStore((state) => state.appLanguage)
   const setAppLanguage = useI18nStore((state) => state.setAppLanguage)
@@ -2843,7 +2844,16 @@ export const SettingsScreen: React.FC = () => {
     <div className="w-full pb-24 animate-fade-in">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">{t('settingsTitle')}</h1>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="p-2 rounded-full glass-card hover:bg-surface-container-high border border-outline-variant/40 text-on-surface transition cursor-pointer"
+            title={appLanguage === 'ta' ? 'முகப்புக்குத் திரும்பு' : 'Back to Dashboard'}
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <h1 className="text-2xl md:text-3xl font-bold font-h1 text-on-surface">{t('settingsTitle')}</h1>
+        </div>
         <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
           {t('settingsSub')}
         </p>

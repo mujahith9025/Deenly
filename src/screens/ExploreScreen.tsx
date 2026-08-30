@@ -1,5 +1,5 @@
 import React, { useState, useMemo, Suspense, lazy } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { 
   Sparkles, 
   Check, 
@@ -8,7 +8,8 @@ import {
   Search, 
   Shield, 
   BarChart3,
-  ChevronRight
+  ChevronRight,
+  ArrowLeft
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { useTasbihStore } from '../store/useTasbihStore'
@@ -30,6 +31,7 @@ export type ExploreCategoryKey = 'dhikr' | 'hisnul_muslim' | 'asmaul_husna'
 
 export const ExploreScreen: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
   const currentCategory = (searchParams.get('cat') as ExploreCategoryKey) || null
   const [tasbihTab, setTasbihTab] = useState<'counter' | 'analytics'>('counter')
 
@@ -176,6 +178,54 @@ export const ExploreScreen: React.FC = () => {
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in pb-16">
+      {/* ========================================================================= */}
+      {/* 🌟 UNIFIED TOP HEADER WITH MULTI-LEVEL BACK NAVIGATION                   */}
+      {/* ========================================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            {currentCategory ? (
+              <button
+                onClick={() => {
+                  setSearchParams({})
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+                className="p-2 rounded-full glass-card hover:bg-surface-container-high border border-outline-variant/40 text-on-surface transition cursor-pointer"
+                title={isTamil ? 'அரங்கத்தின் முகப்பிற்குத் திரும்பு' : 'Back to Explore Categories'}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="p-2 rounded-full glass-card hover:bg-surface-container-high border border-outline-variant/40 text-on-surface transition cursor-pointer"
+                title={isTamil ? 'முகப்புக்குத் திரும்பு' : 'Back to Dashboard'}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            )}
+            <h1 className="text-2xl sm:text-3xl font-bold font-h1 text-on-surface">
+              {currentCategory === 'dhikr'
+                ? (isTamil ? 'தஸ்பீஹ் & திக்ர் அரங்கம்' : 'Tasbih & Dhikr Studio')
+                : currentCategory === 'hisnul_muslim'
+                ? (isTamil ? 'ஹிஸ்னுல் முஸ்லிம் (கவச துஆக்கள்)' : 'Hisnul Muslim (Daily Duas)')
+                : currentCategory === 'asmaul_husna'
+                ? (isTamil ? 'அல்லாஹ்வின் 99 அழகிய திருநாமங்கள்' : '99 Names of Allah')
+                : (isTamil ? 'இஸ்லாமிய அரங்கம்' : 'Spiritual Explorer')}
+            </h1>
+          </div>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5 font-medium">
+            {currentCategory === 'dhikr'
+              ? (isTamil ? 'தொடு உணர்வு தஸ்பீஹ், சுன்னத் திக்ருகள் & தொடர் வரைபடங்கள்.' : 'Digital touch counter, Sunnah presets & habit charts.')
+              : currentCategory === 'hisnul_muslim'
+              ? (isTamil ? 'குர்ஆன் மற்றும் சுன்னாவிலிருந்து பெறப்பட்ட 132 ஆதாரப்பூர்வ துஆக்கள்.' : '132 authentic supplications from the Quran & Sunnah.')
+              : currentCategory === 'asmaul_husna'
+              ? (isTamil ? 'அல்லாஹ்வின் 99 திருநாமங்கள், பொருள்கள் மற்றும் ஆதாரங்கள்.' : '99 Divine Names, meanings & Quranic citations.')
+              : (isTamil ? 'தினசரி திக்ருகள், ஆதாரப்பூர்வ துஆக்கள் மற்றும் 99 திருநாமங்கள்.' : 'Daily Dhikr, Authentic Duas & 99 Divine Names of Allah.')}
+          </p>
+        </div>
+      </div>
+
       {/* ========================================================================= */}
       {/* 🌟 MAIN EXPLORE CATEGORY DIRECTORY                                       */}
       {/* ========================================================================= */}
