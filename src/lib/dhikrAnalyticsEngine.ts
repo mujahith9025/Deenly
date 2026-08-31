@@ -122,7 +122,8 @@ export function getDhikrHistoryRange(
 }
 
 export function getDhikrDistribution(
-  lifetimeCounts: Record<string, number>
+  lifetimeCounts: Record<string, number>,
+  allDhikrs: DhikrItem[] = DHIKR_PRESETS
 ): Array<{
   dhikr: DhikrItem
   count: number
@@ -130,7 +131,7 @@ export function getDhikrDistribution(
 }> {
   const total = Object.values(lifetimeCounts).reduce((acc, c) => acc + c, 0)
   
-  return DHIKR_PRESETS.map((d) => {
+  return allDhikrs.map((d) => {
     const count = lifetimeCounts[d.id] || 0
     const percentage = total > 0 ? Math.round((count / total) * 100) : 0
     return {

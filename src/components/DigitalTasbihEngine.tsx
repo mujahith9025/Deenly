@@ -14,7 +14,9 @@ import {
   Sliders,
   BarChart3,
   CheckCircle2,
-  Maximize2
+  Maximize2,
+  Plus,
+  Pencil
 } from 'lucide-react'
 import { DHIKR_PRESETS, type DhikrItem } from '../lib/dhikrData'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
@@ -23,6 +25,7 @@ import { useI18nStore } from '../lib/i18n'
 import { useTasbihStore } from '../store/useTasbihStore'
 import { triggerHapticMedium, triggerHapticSuccess, triggerHapticLight } from '../lib/haptics'
 import { TasbihFocusModal } from './TasbihFocusModal'
+import { CustomDhikrModal } from './CustomDhikrModal'
 
 // Synthesized gentle Web Audio chime for count and completion
 function playChime(isCompletion = false) {
@@ -115,6 +118,7 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
     getAllDhikrsCompleted,
     getOverallDailyProgress,
     getActiveDhikr,
+    getAllDhikrs,
   } = useTasbihStore()
 
   const [showVirtue, setShowVirtue] = useState<boolean>(true)
@@ -123,12 +127,15 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
   const [showGoalEditor, setShowGoalEditor] = useState<boolean>(false)
   const [customGoalInput, setCustomGoalInput] = useState<string>(dailyGoal.toString())
   const [isFocusModalOpen, setIsFocusModalOpen] = useState<boolean>(false)
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState<boolean>(false)
+  const [editingDhikr, setEditingDhikr] = useState<DhikrItem | null>(null)
 
   const activeDhikr = getActiveDhikr()
+  const allDhikrs = getAllDhikrs()
   const { totalTargetSum, totalActualCount, percentage: dailyProgressPercent } = getOverallDailyProgress()
   
   const completedCount = getCompletedDhikrsCount()
-  const totalPresets = DHIKR_PRESETS.length
+  const totalPresets = allDhikrs.length
   const allDhikrsDone = getAllDhikrsCompleted()
 
   // Switch Dhikr
@@ -647,19 +654,34 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
         )}
       </div>
 
-      {/* 🌟 4. ALL DHIKRS LIBRARY (SHOWING ALL 8 PRESETS - NO CATEGORY TABS) */}
+      {/* 🌟 4. ALL DHIKRS LIBRARY (SHOWING ALL PRESETS & USER CUSTOM DHIKRS) */}
       <div className="p-5 sm:p-6 rounded-3xl glass-card border border-outline-variant/30 space-y-3.5 shadow-md">
-        <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-outline font-label-caps">
-            {isTamil ? 'அனைத்து திக்ர் பட்டியல் & இலக்குகள்' : 'All Dhikr Library & Targets'}
-          </h4>
-          <span className="text-xs text-primary font-semibold">
-            {completedCount} / {totalPresets} {isTamil ? 'நிறைவு' : 'completed'}
-          </span>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-outline font-label-caps">
+              {isTamil ? 'அனைத்து திக்ர் பட்டியல் & இலக்குகள்' : 'All Dhikrs & Personal Duas'}
+            </h4>
+            <span className="text-xs text-primary font-semibold">
+              ({completedCount} / {totalPresets} {isTamil ? 'நிறைவு' : 'done'})
+            </span>
+          </div>
+
+          {/* + Add Custom Dhikr Button */}
+          <button
+            onClick={() => {
+              triggerHapticLight()
+              setEditingDhikr(null)
+              setIsCustomModalOpen(true)
+            }}
+            className="px-3 py-1.5 rounded-xl bg-primary/15 hover:bg-primary/25 border border-primary/40 text-primary text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-2xs active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>{isTamil ? 'புதிய திக்ர் சேர்க்க' : '+ Add Custom Dhikr'}</span>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {DHIKR_PRESETS.map((dhikr) => {
+          {allDhikrs.map((dhikr) => {
             const currentToday = todayDhikrCounts[dhikr.id] || 0
             const currentTarget = dhikrTargets[dhikr.id] || dhikr.defaultTarget || 33
             const isDone = currentToday >= currentTarget && currentTarget > 0
@@ -668,7 +690,7 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
               <div
                 key={dhikr.id}
                 onClick={() => handleSelectDhikr(dhikr)}
-                className={`p-3.5 rounded-2xl flex items-center justify-between border cursor-pointer transition duration-200 ${
+                className={`p-3.5 rounded-2xl flex items-center justify-between border cursor-pointer transition duration-200 group relative ${
                   activeDhikrId === dhikr.id
                     ? 'bg-secondary/15 border-secondary/40 text-on-surface shadow-xs ring-1 ring-secondary/30'
                     : isDone
@@ -677,24 +699,47 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
                 }`}
               >
                 <div className="truncate min-w-0 pr-2">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <p className="text-xs sm:text-sm font-bold truncate text-on-surface">
                       {dhikr.transliteration}
                     </p>
                     {isDone && <Check className="w-3.5 h-3.5 text-primary stroke-[3]" />}
+                    {dhikr.isCustom && (
+                      <span className="px-1.5 py-0.2 rounded-md bg-primary/20 text-primary text-[9px] font-extrabold uppercase">
+                        {isTamil ? 'சுயமானது' : 'Custom'}
+                      </span>
+                    )}
                   </div>
                   <p className="text-[11px] text-outline truncate mt-0.5">
                     {virtueLanguage === 'ta' ? dhikr.translationTa : dhikr.translationEn}
                   </p>
                 </div>
 
-                <div className="text-right shrink-0">
-                  <span className={`text-xs font-extrabold block ${isDone ? 'text-emerald-500' : 'text-primary'}`}>
-                    {currentToday} / {currentTarget}
-                  </span>
-                  <span className="text-[10px] text-outline">
-                    {isDone ? (isTamil ? 'நிறைவு' : 'Target Done') : `${currentTarget - currentToday} left`}
-                  </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <span className={`text-xs font-extrabold block ${isDone ? 'text-emerald-500' : 'text-primary'}`}>
+                      {currentToday} / {currentTarget}
+                    </span>
+                    <span className="text-[10px] text-outline">
+                      {isDone ? (isTamil ? 'நிறைவு' : 'Target Done') : `${currentTarget - currentToday} left`}
+                    </span>
+                  </div>
+
+                  {/* Edit Button for Custom Dhikrs */}
+                  {dhikr.isCustom && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        triggerHapticLight()
+                        setEditingDhikr(dhikr)
+                        setIsCustomModalOpen(true)
+                      }}
+                      className="p-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-outline hover:text-primary transition cursor-pointer"
+                      title={isTamil ? 'திருத்துக' : 'Edit Custom Dhikr'}
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             )
@@ -706,6 +751,16 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
       <TasbihFocusModal
         isOpen={isFocusModalOpen}
         onClose={() => setIsFocusModalOpen(false)}
+      />
+
+      {/* 🌟 6. CUSTOM DHIKR & DUA CREATOR MODAL */}
+      <CustomDhikrModal
+        isOpen={isCustomModalOpen}
+        onClose={() => {
+          setIsCustomModalOpen(false)
+          setEditingDhikr(null)
+        }}
+        editingDhikr={editingDhikr}
       />
 
     </div>

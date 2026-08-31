@@ -12,7 +12,6 @@ import {
   Check
 } from 'lucide-react'
 import { useTasbihStore } from '../store/useTasbihStore'
-import { DHIKR_PRESETS } from '../lib/dhikrData'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useAuthStore } from '../store/useAuthStore'
 import { useI18nStore } from '../lib/i18n'
@@ -101,6 +100,7 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
     decrementCount,
     resetSessionCount,
     getActiveDhikr,
+    getAllDhikrs,
   } = useTasbihStore()
 
   const [isCompletedAnim, setIsCompletedAnim] = useState<boolean>(false)
@@ -108,6 +108,7 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
   const activeDhikr = getActiveDhikr()
+  const allDhikrs = getAllDhikrs()
   const targetOptions = [33, 100, 300, 0] // 0 means Free/Unlimited
 
   // Screen Wake Lock API to prevent display from sleeping during Dhikr session
@@ -202,20 +203,20 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference
 
-  // Switch to Prev / Next Dhikr
-  const currentIndex = DHIKR_PRESETS.findIndex((d) => d.id === activeDhikrId)
+  // Switch to Prev / Next Dhikr across all Dhikrs (presets + custom)
+  const currentIndex = allDhikrs.findIndex((d) => d.id === activeDhikrId)
   const handlePrevDhikr = (e: React.MouseEvent) => {
     e.stopPropagation()
     triggerHapticLight()
-    const nextIdx = (currentIndex - 1 + DHIKR_PRESETS.length) % DHIKR_PRESETS.length
-    setActiveDhikrId(DHIKR_PRESETS[nextIdx].id)
+    const nextIdx = (currentIndex - 1 + allDhikrs.length) % allDhikrs.length
+    setActiveDhikrId(allDhikrs[nextIdx].id)
   }
 
   const handleNextDhikr = (e: React.MouseEvent) => {
     e.stopPropagation()
     triggerHapticLight()
-    const nextIdx = (currentIndex + 1) % DHIKR_PRESETS.length
-    setActiveDhikrId(DHIKR_PRESETS[nextIdx].id)
+    const nextIdx = (currentIndex + 1) % allDhikrs.length
+    setActiveDhikrId(allDhikrs[nextIdx].id)
   }
 
   return (

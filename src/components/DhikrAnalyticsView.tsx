@@ -17,7 +17,6 @@ import {
   getDhikrHistoryRange, 
   getDhikrDistribution 
 } from '../lib/dhikrAnalyticsEngine'
-import { DHIKR_PRESETS } from '../lib/dhikrData'
 
 export const DhikrAnalyticsView: React.FC = () => {
   const user = useAuthStore((state) => state.user)
@@ -40,6 +39,7 @@ export const DhikrAnalyticsView: React.FC = () => {
     setAllDhikrTargets,
     getAllDhikrProgress,
     getCompletedDhikrsCount,
+    getAllDhikrs,
   } = useTasbihStore()
 
   const [timeRange, setTimeRange] = useState<7 | 14 | 30>(7)
@@ -47,6 +47,7 @@ export const DhikrAnalyticsView: React.FC = () => {
   const [selectedDhikrForTarget, setSelectedDhikrForTarget] = useState<string | null>(null)
   const [tempTargetVal, setTempTargetVal] = useState<string>('100')
 
+  const allDhikrs = getAllDhikrs()
   const todayTotal = useMemo(() => {
     return Object.values(todayDhikrCounts).reduce((acc, v) => acc + v, 0)
   }, [todayDhikrCounts])
@@ -56,7 +57,7 @@ export const DhikrAnalyticsView: React.FC = () => {
   }, [lifetimeDhikrCounts])
 
   const completedDhikrsCount = getCompletedDhikrsCount()
-  const totalPresetsCount = DHIKR_PRESETS.length
+  const totalPresetsCount = allDhikrs.length
   const allCompleted = completedDhikrsCount >= totalPresetsCount && totalPresetsCount > 0
   const allDhikrProgress = getAllDhikrProgress()
 
@@ -65,8 +66,8 @@ export const DhikrAnalyticsView: React.FC = () => {
   }, [dailyHistory, timeRange, dailyGoal])
 
   const distribution = useMemo(() => {
-    return getDhikrDistribution(lifetimeDhikrCounts)
-  }, [lifetimeDhikrCounts])
+    return getDhikrDistribution(lifetimeDhikrCounts, allDhikrs)
+  }, [lifetimeDhikrCounts, allDhikrs])
 
   // Max value in history for chart scaling
   const maxHistoryVal = Math.max(dailyGoal, ...historyRange.map((d) => d.totalCount), 50)

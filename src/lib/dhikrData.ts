@@ -9,7 +9,8 @@ export interface DhikrItem {
   reference: string
   referenceTa: string
   defaultTarget: number
-  category: 'after_prayer' | 'daily' | 'forgiveness' | 'salawat'
+  category: 'after_prayer' | 'daily' | 'forgiveness' | 'salawat' | 'custom'
+  isCustom?: boolean
 }
 
 export const DHIKR_PRESETS: DhikrItem[] = [

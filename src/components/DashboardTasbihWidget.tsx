@@ -11,7 +11,6 @@ import {
   Maximize2
 } from 'lucide-react'
 import { useTasbihStore } from '../store/useTasbihStore'
-import { DHIKR_PRESETS } from '../lib/dhikrData'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useAuthStore } from '../store/useAuthStore'
 import { useI18nStore } from '../lib/i18n'
@@ -95,11 +94,13 @@ export const DashboardTasbihWidget: React.FC = () => {
     toggleSound,
     getTodayTotalCount,
     getActiveDhikr,
+    getAllDhikrs,
   } = useTasbihStore()
 
   const [isCompletedAnim, setIsCompletedAnim] = useState(false)
   const [isFocusModalOpen, setIsFocusModalOpen] = useState(false)
   const activeDhikr = getActiveDhikr()
+  const allDhikrs = getAllDhikrs()
   const todayTotal = getTodayTotalCount()
   const dailyGoalPercent = Math.min(100, Math.round((todayTotal / Math.max(1, dailyGoal)) * 100))
 
@@ -294,7 +295,7 @@ export const DashboardTasbihWidget: React.FC = () => {
 
           {/* Quick Dhikr Switcher Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {DHIKR_PRESETS.slice(0, 5).map((dhikr) => (
+            {allDhikrs.map((dhikr) => (
               <button
                 key={dhikr.id}
                 onClick={() => setActiveDhikrId(dhikr.id)}
