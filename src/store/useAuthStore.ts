@@ -733,7 +733,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
 
     if (newLastReadSurah && newLastReadAyah) {
-      useReadingStore.getState().setCurrentPosition(newLastReadSurah, newLastReadAyah)
+      const activeSession = useReadingStore.getState().activeSession
+      if (!activeSession?.isActive) {
+        useReadingStore.getState().setCurrentPosition(newLastReadSurah, newLastReadAyah)
+      }
     }
 
     set({

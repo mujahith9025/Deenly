@@ -292,9 +292,16 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
     const state = get()
     const session = state.activeSession
 
+    // If session is not active or empty (0 hasanat, 0 verses, and <1s), do not record duplicate delta
+    if (!session.isActive) return null
+    if (session.sessionHasanat === 0 && session.sessionVersesRead === 0 && session.elapsedSeconds <= 1) {
+      set({ activeSession: initialActiveSession })
+      return null
+    }
+
     const pagesRead = Math.max(
       session.sessionVersesRead > 0 ? 1 : 0,
-      Math.ceil(session.sessionVersesRead / 15) // Rough heuristic or based on distinct pages
+      Math.ceil(session.sessionVersesRead / 15)
     )
 
     const metrics: SessionMetrics = {
@@ -308,16 +315,16 @@ export const useReadingStore = create<ReadingStore>((set, get) => ({
       lastJuz: state.currentJuzNumber,
     }
 
+    // Reset active session state before async calls to prevent duplicate triggers
+    set({
+      activeSession: initialActiveSession,
+    })
+
     // Persist to user profile, daily history, and Supabase cloud
     useAuthStore.getState().recordSessionCompletion(metrics)
 
     // Explicitly guarantee position is saved
     useAuthStore.getState().updateLastReadPosition(state.currentSurahNumber, state.currentAyahNumber)
-
-    // Reset session
-    set({
-      activeSession: initialActiveSession,
-    })
 
     return metrics
   },

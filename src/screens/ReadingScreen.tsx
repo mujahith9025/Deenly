@@ -217,20 +217,22 @@ export const ReadingScreen: React.FC = () => {
       const sNum = parseInt(surahParam, 10)
       const aNum = ayahParam ? parseInt(ayahParam, 10) : 1
       if (sNum >= 1 && sNum <= 114) {
-        if (currentSurahNumber !== sNum || currentAyahNumber !== aNum) {
+        const storeState = useReadingStore.getState()
+        if (storeState.currentSurahNumber !== sNum || storeState.currentAyahNumber !== aNum) {
           setCurrentPosition(sNum, aNum)
         }
       }
     } else {
       // If user directly opened /reading without query params, resume from exact last saved position!
-      const resumeSurah = user?.lastReadSurah || currentSurahNumber || 1
-      const resumeAyah = user?.lastReadAyah || currentAyahNumber || 1
-      if (currentSurahNumber !== resumeSurah || currentAyahNumber !== resumeAyah) {
+      const storeState = useReadingStore.getState()
+      const resumeSurah = user?.lastReadSurah || storeState.currentSurahNumber || 1
+      const resumeAyah = user?.lastReadAyah || storeState.currentAyahNumber || 1
+      if (storeState.currentSurahNumber !== resumeSurah || storeState.currentAyahNumber !== resumeAyah) {
         setCurrentPosition(resumeSurah, resumeAyah)
       }
       setSearchParams({ surah: resumeSurah.toString(), ayah: resumeAyah.toString() }, { replace: true })
     }
-  }, [searchParams, setCurrentPosition])
+  }, [searchParams, setCurrentPosition, user?.lastReadSurah, user?.lastReadAyah, setSearchParams])
 
   // Save current position and finalize reading session metrics when unmounting or navigating away
   useEffect(() => {
@@ -344,13 +346,23 @@ export const ReadingScreen: React.FC = () => {
     }
   }
 
-  // Finish Reading Session -> Go to Dashboard
+  // Finish Reading Session -> Go to Dashboard (Guaranteed Instant Reflection of Hasanat, Time, and Verses)
   const handleFinishSession = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     triggerHapticSuccess()
+
+    // If current Ayah has not yet been marked in this session, mark it now before finalizing
+    if (currentAyah) {
+      const readAyahs = useReadingStore.getState().activeSession.readAyahsInSession || []
+      if (!readAyahs.includes(currentAyah.number)) {
+        markAyahRead(currentAyah)
+      }
+    }
+
     if (currentSurahNumber && currentAyahNumber) {
       useAuthStore.getState().updateLastReadPosition(currentSurahNumber, currentAyahNumber)
     }
+
     finishSession()
     navigate('/dashboard')
   }
@@ -443,110 +455,82 @@ export const ReadingScreen: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 1. ENLARGED FIXED TOP BAR: PINNED TO TOP AS PER SCREEN RATIO              */}
+      {/* 1. BALANCED FIXED TOP BAR: PROMINENT BOOKMARK & CRISP ACTION CONTROLS     */}
       {/*    Includes Surah Name, Prominent Big Timer & Hasanat, Action Buttons     */}
       {/* ========================================================================= */}
-      <header className={`w-full flex items-center justify-between gap-2 sm:gap-4 px-3.5 sm:px-6 py-3 sm:py-4.5 shrink-0 rounded-2xl sm:rounded-3xl border shadow-xl z-30 transition-colors duration-300 ${themeMeta.classes.header}`}>
+      <header className={`w-full flex items-center justify-between gap-1.5 sm:gap-4 px-2.5 sm:px-5 py-2 sm:py-3.5 shrink-0 rounded-2xl sm:rounded-3xl border shadow-lg z-30 transition-colors duration-300 ${themeMeta.classes.header}`}>
         {/* Left: Return Back & Surah Name & Ayah Counter */}
-        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
           <button
             onClick={(e) => handleFinishSession(e)}
-            className="w-10 h-10 sm:w-12 sm:h-12 md:w-13 md:h-13 rounded-2xl hover:bg-surface-container-high border border-outline-variant/30 text-outline hover:text-on-surface transition shrink-0 flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
+            className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-xl sm:rounded-2xl hover:bg-surface-container-high border border-outline-variant/30 text-outline hover:text-on-surface transition shrink-0 flex items-center justify-center cursor-pointer shadow-xs active:scale-95"
             title="Return to Dashboard"
           >
-            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
           </button>
 
           <div className="truncate">
-            <div className="flex items-center gap-1.5 sm:gap-2.5">
-              <span className="font-black text-xs sm:text-lg md:text-xl truncate max-w-[85px] sm:max-w-[170px] md:max-w-none text-on-surface">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="font-extrabold text-xs sm:text-base md:text-lg truncate max-w-[85px] sm:max-w-[160px] md:max-w-none text-on-surface">
                 {appLanguage === 'ta' ? (currentSurah?.nameTa || currentSurah?.name || 'அத்தியாயம்') : (currentSurah?.name || 'Surah')}
               </span>
-              <span className="font-noto-serif text-sm sm:text-xl md:text-2xl text-primary font-bold shrink-0 hidden xs:inline">
+              <span className="font-noto-serif text-xs sm:text-base md:text-lg text-primary font-bold shrink-0 hidden xs:inline">
                 {currentSurah?.arabicName}
               </span>
             </div>
-            <p className="text-[10px] sm:text-xs opacity-80 truncate font-semibold">
+            <p className="text-[9px] sm:text-xs opacity-80 truncate font-semibold text-outline">
               {appLanguage === 'ta' 
                 ? `வசனம் ${currentAyahNumber || 1} / ${totalAyahs} • ஜுஸ் ${juzProgress.juzNumber}` 
-                : `Ayah ${currentAyahNumber || 1} of ${totalAyahs} • Juz ${juzProgress.juzNumber}`}
+                : `Ayah ${currentAyahNumber || 1} / ${totalAyahs} • Juz ${juzProgress.juzNumber}`}
             </p>
           </div>
         </div>
 
-        {/* Center: ENLARGED PROMINENT TIME & HASANAT EARNED (PROMINENT BIG DISPLAY) */}
-        <div className="flex items-center gap-2.5 sm:gap-5 px-3.5 sm:px-6 py-2 sm:py-2.5 rounded-2xl sm:rounded-full bg-surface-container-high/95 border-2 border-primary/35 shrink-0 shadow-lg">
+        {/* Center: ENLARGED PROMINENT TIME & HASANAT EARNED */}
+        <div className="flex items-center gap-1.5 sm:gap-3 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-surface-container-high/90 border border-primary/30 shrink-0 shadow-md">
           {/* Timer */}
-          <div className="flex items-center gap-1.5 sm:gap-2 font-mono text-sm sm:text-xl md:text-2xl font-black text-on-surface tracking-wider">
-            <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-primary shrink-0" />
+          <div className="flex items-center gap-1 sm:gap-1.5 font-mono text-xs sm:text-base md:text-lg font-black text-on-surface tracking-wide">
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
             <span>{formatTimer(activeSession.elapsedSeconds)}</span>
           </div>
 
-          <span className="w-1.5 h-1.5 rounded-full bg-outline/40 shrink-0" />
+          <span className="w-1 h-1 rounded-full bg-outline/40 shrink-0" />
 
           {/* Hasanat Badge */}
-          <div className="flex items-center gap-1.5 sm:gap-2 text-amber-400 font-black text-sm sm:text-xl md:text-2xl font-mono">
-            <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-amber-400 fill-amber-400/20 shrink-0 animate-pulse" />
+          <div className="flex items-center gap-1 sm:gap-1.5 text-amber-400 font-black text-xs sm:text-base md:text-lg font-mono">
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 fill-amber-400/20 shrink-0 animate-pulse" />
             <span>+{activeSession.sessionHasanat}</span>
-            <span className="hidden sm:inline text-xs sm:text-sm font-bold text-amber-300/80 uppercase font-sans">{t('pts')}</span>
+            <span className="hidden sm:inline text-[10px] sm:text-xs font-bold text-amber-300/80 uppercase font-sans">{t('pts')}</span>
           </div>
         </div>
 
-        {/* Right: Theme Switcher, Tajweed Toggle, Language Switcher, Favorite & Bookmark */}
+        {/* Right: Bookmark (Prominent First), Favorite, Audio, Language, Theme & Tajweed */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-          {/* Mushaf Theme Switcher */}
+          {/* 🔖 Bookmark Button (Prominent First Placement - Always Visible) */}
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              triggerHapticLight()
-              setIsThemeModalOpen(true)
-            }}
-            className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border border-outline-variant/40 bg-surface-container hover:bg-surface-container-high transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95"
-            title={appLanguage === 'ta' ? `முஸ்ஹஃப் தீம்: ${themeMeta.nameTa}` : `Mushaf Theme: ${themeMeta.nameEn}`}
-          >
-            <Palette className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-            <span className="hidden lg:inline text-xs">{themeMeta.icon}</span>
-          </button>
-
-          {/* Tajweed Toggle Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              triggerHapticLight()
-              setIsTajweedEnabled(!isTajweedEnabled)
-            }}
-            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer shadow-sm flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95 ${
-              isTajweedEnabled
-                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 ring-1 ring-emerald-500/30'
-                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline'
+            onClick={(e) => handleToggleBookmark(e)}
+            className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-xs shrink-0 active:scale-95 ${
+              isCurrentAyahBookmarked
+                ? 'bg-amber-500/25 border-amber-500/60 text-amber-400 ring-1 ring-amber-500/40 shadow-xs'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-amber-400'
             }`}
-            title={
-              isTajweedEnabled
-                ? (appLanguage === 'ta' ? 'தஜ்வீத் வண்ணங்கள் இயக்கப்பட்டுள்ளது' : 'Tajweed Colors Active')
-                : (appLanguage === 'ta' ? 'தஜ்வீத் வண்ணங்களை இயக்கு' : 'Enable Tajweed Colors')
-            }
+            title={isCurrentAyahBookmarked ? 'Remove Bookmark' : 'Bookmark Ayah'}
           >
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Bookmark className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${isCurrentAyahBookmarked ? 'fill-amber-400 text-amber-400' : ''}`} />
           </button>
 
-          {/* Language Toggle Button */}
-          {appLanguage === 'en' ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                triggerHapticLight()
-                setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')
-              }}
-              className="h-9 px-2.5 sm:h-11 sm:px-4 md:h-12 md:px-4.5 rounded-xl sm:rounded-2xl bg-surface-container border border-outline-variant/30 text-xs sm:text-sm font-black text-primary hover:border-primary transition cursor-pointer shadow-sm flex items-center justify-center shrink-0 active:scale-95"
-              title="Toggle translation language"
-            >
-              {translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}
-            </button>
-          ) : (
-            <div className="h-9 px-2.5 sm:h-11 sm:px-4 md:h-12 md:px-4.5 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/30 text-xs sm:text-sm font-black text-primary shadow-sm flex items-center justify-center shrink-0">
-              தமிழ்
-            </div>
-          )}
+          {/* ❤️ Favorite Button (Heart) */}
+          <button
+            onClick={(e) => handleToggleFavorite(e)}
+            className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-xs shrink-0 active:scale-95 ${
+              isCurrentAyahFavorite
+                ? 'bg-rose-500/20 border-rose-500/50 text-rose-500'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-rose-400'
+            }`}
+            title={isCurrentAyahFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+          >
+            <Heart className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${isCurrentAyahFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
+          </button>
 
           {/* 🎙️ Quick Listen to Current Ayah by Active Qari */}
           <button
@@ -559,9 +543,9 @@ export const ReadingScreen: React.FC = () => {
                 audioStore.playSingleAyah(currentSurahNumber, currentAyahNumber)
               }
             }}
-            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-sm shrink-0 active:scale-95 ${
+            className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-xs shrink-0 active:scale-95 ${
               isAudioPlayingCurrentAyah
-                ? 'bg-primary border-primary text-white shadow-[0_0_15px_rgba(124,58,237,0.5)] animate-pulse'
+                ? 'bg-primary border-primary text-white shadow-[0_0_12px_rgba(124,58,237,0.5)] animate-pulse'
                 : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-primary'
             }`}
             title={
@@ -571,36 +555,63 @@ export const ReadingScreen: React.FC = () => {
             }
           >
             {isAudioPlayingCurrentAyah ? (
-              <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+              <Pause className="w-4 h-4 sm:w-4.5 sm:h-4.5 fill-current" />
             ) : (
-              <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current ml-0.5" />
+              <Play className="w-4 h-4 sm:w-4.5 sm:h-4.5 fill-current ml-0.5" />
             )}
           </button>
 
-          {/* Favorite Button (Heart) */}
+          {/* Language Toggle Button */}
+          {appLanguage === 'en' ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                triggerHapticLight()
+                setTranslationLanguage(translationLanguage === 'en' ? 'ta' : 'en')
+              }}
+              className="h-8 px-2 sm:h-9 sm:px-3 md:h-10 md:px-3.5 rounded-xl sm:rounded-2xl bg-surface-container border border-outline-variant/30 text-xs sm:text-sm font-black text-primary hover:border-primary transition cursor-pointer shadow-xs flex items-center justify-center shrink-0 active:scale-95"
+              title="Toggle translation language"
+            >
+              {translationLanguage === 'ta' ? 'தமிழ்' : 'EN'}
+            </button>
+          ) : (
+            <div className="h-8 px-2 sm:h-9 sm:px-3 md:h-10 md:px-3.5 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/30 text-xs sm:text-sm font-black text-primary shadow-xs flex items-center justify-center shrink-0">
+              தமிழ்
+            </div>
+          )}
+
+          {/* Mushaf Theme Switcher */}
           <button
-            onClick={(e) => handleToggleFavorite(e)}
-            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-sm shrink-0 active:scale-95 ${
-              isCurrentAyahFavorite
-                ? 'bg-rose-500/20 border-rose-500/50 text-rose-500'
-                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-rose-400'
-            }`}
-            title={isCurrentAyahFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+            onClick={(e) => {
+              e.stopPropagation()
+              triggerHapticLight()
+              setIsThemeModalOpen(true)
+            }}
+            className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl sm:rounded-2xl border border-outline-variant/40 bg-surface-container hover:bg-surface-container-high transition cursor-pointer shadow-xs flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95"
+            title={appLanguage === 'ta' ? `முஸ்ஹஃப் தீம்: ${themeMeta.nameTa}` : `Mushaf Theme: ${themeMeta.nameEn}`}
           >
-            <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isCurrentAyahFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
+            <Palette className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-primary" />
           </button>
 
-          {/* Bookmark Button (Ribbon) */}
+          {/* Tajweed Toggle Button */}
           <button
-            onClick={(e) => handleToggleBookmark(e)}
-            className={`w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-xl sm:rounded-2xl border transition cursor-pointer flex items-center justify-center shadow-sm shrink-0 active:scale-95 ${
-              isCurrentAyahBookmarked
-                ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
-                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline hover:text-amber-400'
+            onClick={(e) => {
+              e.stopPropagation()
+              triggerHapticLight()
+              setIsTajweedEnabled(!isTajweedEnabled)
+            }}
+            className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-xl sm:rounded-2xl border transition cursor-pointer shadow-xs flex items-center justify-center gap-1 text-xs font-bold shrink-0 active:scale-95 ${
+              isTajweedEnabled
+                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 ring-1 ring-emerald-500/30'
+                : 'bg-surface-container hover:bg-surface-container-high border-outline-variant/30 text-outline'
             }`}
-            title={isCurrentAyahBookmarked ? 'Remove Bookmark' : 'Bookmark Ayah'}
+            title={
+              isTajweedEnabled
+                ? (appLanguage === 'ta' ? 'தஜ்வீத் வண்ணங்கள் இயக்கப்பட்டுள்ளது' : 'Tajweed Colors Active')
+                : (appLanguage === 'ta' ? 'தஜ்வீத் வண்ணங்களை இயக்கு' : 'Enable Tajweed Colors')
+            }
           >
-            <Bookmark className={`w-4 h-4 sm:w-5 sm:h-5 ${isCurrentAyahBookmarked ? 'fill-amber-400 text-amber-400' : ''}`} />
+            <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
           </button>
         </div>
       </header>
@@ -738,15 +749,15 @@ export const ReadingScreen: React.FC = () => {
       </main>
 
       {/* ========================================================================= */}
-      {/* 4. ENLARGED FIXED BOTTOM BAR: LARGER HIT TARGETS & PROMINENT SIZING       */}
+      {/* 4. BALANCED FIXED BOTTOM BAR: PROPORTIONATE HIT TARGETS & CLEAN PADDING    */}
       {/*    ( ← ) Previous Ayah, "I'm Done" Center Pill, ( → ) Next Ayah           */}
       {/* ========================================================================= */}
-      <footer className={`w-full px-3.5 sm:px-6 py-3.5 sm:py-5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-2xl transition-colors duration-300 ${themeMeta.classes.footer}`}>
-        <div className="flex items-center justify-between gap-3 sm:gap-6 relative">
+      <footer className={`w-full px-2.5 sm:px-5 py-2 sm:py-3.5 shrink-0 z-30 rounded-2xl sm:rounded-3xl border shadow-xl transition-colors duration-300 ${themeMeta.classes.footer}`}>
+        <div className="flex items-center justify-between gap-2 sm:gap-4 relative">
           {/* Floating Hasanat Badge on Top of Right Next Arrow */}
           {currentAyah && (
-            <div className={`absolute -top-10 sm:-top-13 right-5 sm:right-10 pointer-events-none transition-transform duration-300 ${floatingHasanat ? 'scale-125 animate-bounce' : ''}`}>
-              <span className="text-xs sm:text-base md:text-lg font-black text-amber-300 bg-black/95 px-3.5 sm:px-5 py-1 sm:py-1.5 rounded-full border-2 border-amber-500/60 shadow-2xl">
+            <div className={`absolute -top-9 sm:-top-11 right-3 sm:right-8 pointer-events-none transition-transform duration-300 ${floatingHasanat ? 'scale-125 animate-bounce' : ''}`}>
+              <span className="text-[11px] sm:text-sm md:text-base font-black text-amber-300 bg-black/95 px-3 sm:px-4 py-1 rounded-full border border-amber-500/60 shadow-xl">
                 +{floatingHasanat ? floatingHasanat.amount : currentAyah.hasanatValue}
               </span>
             </div>
@@ -757,20 +768,20 @@ export const ReadingScreen: React.FC = () => {
             type="button"
             onClick={(e) => handlePrevAyah(e)}
             disabled={currentSurahNumber === 1 && currentAyahNumber === 1}
-            className={`w-20 sm:w-36 md:w-48 h-14 sm:h-18 md:h-20 rounded-2xl sm:rounded-3xl border-2 flex items-center justify-center transition cursor-pointer shadow-lg disabled:opacity-30 active:scale-95 shrink-0 ${themeMeta.classes.buttonSecondary}`}
+            className={`w-14 sm:w-24 md:w-32 h-11 sm:h-13 md:h-15 rounded-2xl border-2 flex items-center justify-center transition cursor-pointer shadow-md disabled:opacity-30 active:scale-95 shrink-0 ${themeMeta.classes.buttonSecondary}`}
             title="Previous Ayah"
           >
-            <ArrowLeft className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 stroke-[2.5]" />
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 stroke-[2.5]" />
           </button>
 
           {/* Center Button: "I'm Done" */}
           <button
             type="button"
             onClick={(e) => handleFinishSession(e)}
-            className={`flex-1 h-14 sm:h-18 md:h-20 rounded-2xl sm:rounded-3xl border-2 text-sm sm:text-xl md:text-2xl font-black tracking-wider flex items-center justify-center gap-2 sm:gap-3 transition cursor-pointer shadow-lg active:scale-98 min-w-0 px-4 truncate ${themeMeta.classes.buttonSecondary}`}
+            className={`flex-1 h-11 sm:h-13 md:h-15 rounded-2xl border-2 text-xs sm:text-base md:text-lg font-black tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 transition cursor-pointer shadow-md active:scale-98 min-w-0 px-3 truncate ${themeMeta.classes.buttonSecondary}`}
           >
-            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0 hidden sm:inline" />
-            <span>{t('imDone')}</span>
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 hidden sm:inline" />
+            <span className="truncate">{t('imDone')}</span>
           </button>
 
           {/* Right Button: Next Arrow */}
@@ -780,10 +791,10 @@ export const ReadingScreen: React.FC = () => {
               e.stopPropagation()
               handleMarkAndNext()
             }}
-            className={`w-20 sm:w-36 md:w-48 h-14 sm:h-18 md:h-20 rounded-2xl sm:rounded-3xl font-black flex items-center justify-center transition cursor-pointer shadow-2xl active:scale-95 shrink-0 ${themeMeta.classes.buttonPrimary}`}
+            className={`w-14 sm:w-24 md:w-32 h-11 sm:h-13 md:h-15 rounded-2xl font-black flex items-center justify-center transition cursor-pointer shadow-xl active:scale-95 shrink-0 ${themeMeta.classes.buttonPrimary}`}
             title={currentAyah && currentAyah.verseNumberInSurah === totalAyahs ? 'Complete Chapter & Next Surah' : 'Mark Read & Next Ayah'}
           >
-            <ArrowRight className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 stroke-[3]" />
+            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 stroke-[3]" />
           </button>
         </div>
       </footer>
