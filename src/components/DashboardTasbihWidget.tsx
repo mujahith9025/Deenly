@@ -7,14 +7,16 @@ import {
   VolumeX, 
   Check, 
   Target,
-  ArrowUpRight
+  ArrowUpRight,
+  Maximize2
 } from 'lucide-react'
 import { useTasbihStore } from '../store/useTasbihStore'
 import { DHIKR_PRESETS } from '../lib/dhikrData'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useAuthStore } from '../store/useAuthStore'
 import { useI18nStore } from '../lib/i18n'
-import { triggerHapticMedium, triggerHapticSuccess } from '../lib/haptics'
+import { triggerHapticMedium, triggerHapticSuccess, triggerHapticLight } from '../lib/haptics'
+import { TasbihFocusModal } from './TasbihFocusModal'
 
 // Synthesized gentle Web Audio chime for count and completion
 function playChime(isCompletion = false) {
@@ -96,6 +98,7 @@ export const DashboardTasbihWidget: React.FC = () => {
   } = useTasbihStore()
 
   const [isCompletedAnim, setIsCompletedAnim] = useState(false)
+  const [isFocusModalOpen, setIsFocusModalOpen] = useState(false)
   const activeDhikr = getActiveDhikr()
   const todayTotal = getTodayTotalCount()
   const dailyGoalPercent = Math.min(100, Math.round((todayTotal / Math.max(1, dailyGoal)) * 100))
@@ -152,7 +155,7 @@ export const DashboardTasbihWidget: React.FC = () => {
           </div>
         </div>
 
-        {/* Daily Goal Badge & Explore Link */}
+        {/* Daily Goal Badge & Controls */}
         <div className="flex items-center gap-2">
           {/* Daily Goal Badge */}
           <div className="px-3 py-1 rounded-xl bg-surface-container-high border border-outline-variant/30 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
@@ -161,6 +164,18 @@ export const DashboardTasbihWidget: React.FC = () => {
             <span className="text-on-surface font-extrabold">{todayTotal}/{dailyGoal}</span>
             <span className="text-[10px] text-primary font-bold">({dailyGoalPercent}%)</span>
           </div>
+
+          {/* 📱 Full-Screen Blind Tap Focus Mode Button */}
+          <button
+            onClick={() => {
+              triggerHapticLight()
+              setIsFocusModalOpen(true)
+            }}
+            className="p-1.5 rounded-xl bg-surface-container-high hover:bg-primary/20 text-primary border border-primary/30 transition cursor-pointer shadow-2xs active:scale-95"
+            title={isTamil ? 'முழுத்திரை திக்ர் (Blind Tap Mode)' : 'Full-Screen Blind Tap Focus Mode'}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+          </button>
 
           {/* Sound Toggle */}
           <button
@@ -314,6 +329,12 @@ export const DashboardTasbihWidget: React.FC = () => {
         </div>
 
       </div>
+
+      {/* 📱 Full-Screen Blind-Tap Focus Modal */}
+      <TasbihFocusModal
+        isOpen={isFocusModalOpen}
+        onClose={() => setIsFocusModalOpen(false)}
+      />
 
     </div>
   )

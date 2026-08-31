@@ -13,14 +13,16 @@ import {
   Minus,
   Sliders,
   BarChart3,
-  CheckCircle2
+  CheckCircle2,
+  Maximize2
 } from 'lucide-react'
 import { DHIKR_PRESETS, type DhikrItem } from '../lib/dhikrData'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
 import { useAuthStore } from '../store/useAuthStore'
 import { useI18nStore } from '../lib/i18n'
 import { useTasbihStore } from '../store/useTasbihStore'
-import { triggerHapticMedium, triggerHapticSuccess } from '../lib/haptics'
+import { triggerHapticMedium, triggerHapticSuccess, triggerHapticLight } from '../lib/haptics'
+import { TasbihFocusModal } from './TasbihFocusModal'
 
 // Synthesized gentle Web Audio chime for count and completion
 function playChime(isCompletion = false) {
@@ -120,6 +122,7 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
   const [isCompletedAnim, setIsCompletedAnim] = useState<boolean>(false)
   const [showGoalEditor, setShowGoalEditor] = useState<boolean>(false)
   const [customGoalInput, setCustomGoalInput] = useState<string>(dailyGoal.toString())
+  const [isFocusModalOpen, setIsFocusModalOpen] = useState<boolean>(false)
 
   const activeDhikr = getActiveDhikr()
   const { totalTargetSum, totalActualCount, percentage: dailyProgressPercent } = getOverallDailyProgress()
@@ -219,8 +222,21 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
           </div>
         </div>
 
-        {/* Audio, Haptic, Goal & Analytics Controls */}
+        {/* Audio, Haptic, Goal, Focus & Analytics Controls */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* 📱 Full-Screen Blind Tap Focus Mode */}
+          <button
+            onClick={() => {
+              triggerHapticLight()
+              setIsFocusModalOpen(true)
+            }}
+            className="px-3 py-1.5 rounded-xl bg-primary/15 hover:bg-primary/25 border border-primary/40 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer text-primary shadow-xs active:scale-95"
+            title={isTamil ? 'முழுத்திரை திக்ர் பயன்முறை (Blind Tap Mode)' : 'Full-Screen Blind Tap Focus Mode'}
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>{isTamil ? 'முழுத்திரை' : 'Focus Mode'}</span>
+          </button>
+
           {onOpenAnalytics && (
             <button
               onClick={onOpenAnalytics}
@@ -469,10 +485,22 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
             </div>
           </div>
 
-          {/* Tap Prompt Hint */}
-          <p className="text-xs text-outline text-center">
-            {isTamil ? 'எண்ணிக்கையை அதிகரிக்க வட்டத்தைத் தொடவும்' : 'Tap the circular dial or press spacebar to count'}
-          </p>
+          {/* Tap Prompt Hint & Focus Mode Launcher */}
+          <div className="w-full space-y-2">
+            <p className="text-xs text-outline text-center">
+              {isTamil ? 'எண்ணிக்கையை அதிகரிக்க வட்டத்தைத் தொடவும்' : 'Tap the circular dial or press spacebar to count'}
+            </p>
+            <button
+              onClick={() => {
+                triggerHapticLight()
+                setIsFocusModalOpen(true)
+              }}
+              className="w-full py-2 px-3 rounded-2xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/30 text-xs font-bold text-primary flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs active:scale-98"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>{isTamil ? 'முழுத்திரை திக்ர் (Blind Tap Mode)' : 'Full-Screen Focus Mode (Blind Tap)'}</span>
+            </button>
+          </div>
 
           {/* Today & Lifetime Stats for Active Dhikr */}
           <div className="w-full pt-4 border-t border-outline-variant/20 grid grid-cols-2 gap-3 text-center">
@@ -673,6 +701,12 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
           })}
         </div>
       </div>
+
+      {/* 🌟 5. FULL-SCREEN BLIND-TAP FOCUS MODAL */}
+      <TasbihFocusModal
+        isOpen={isFocusModalOpen}
+        onClose={() => setIsFocusModalOpen(false)}
+      />
 
     </div>
   )
