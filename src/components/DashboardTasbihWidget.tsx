@@ -93,16 +93,20 @@ export const DashboardTasbihWidget: React.FC = () => {
     resetSessionCount,
     toggleSound,
     getTodayTotalCount,
+    getOverallDailyProgress,
     getActiveDhikr,
     getAllDhikrs,
+    advanceToNextDhikr,
   } = useTasbihStore()
 
   const [isCompletedAnim, setIsCompletedAnim] = useState(false)
   const [isFocusModalOpen, setIsFocusModalOpen] = useState(false)
   const activeDhikr = getActiveDhikr()
   const allDhikrs = getAllDhikrs()
+  const { totalTargetSum } = getOverallDailyProgress()
   const todayTotal = getTodayTotalCount()
-  const dailyGoalPercent = Math.min(100, Math.round((todayTotal / Math.max(1, dailyGoal)) * 100))
+  const displayGoalTarget = totalTargetSum > 0 ? totalTargetSum : dailyGoal
+  const displayGoalPercent = Math.min(100, Math.round((todayTotal / Math.max(1, displayGoalTarget)) * 100))
 
   // Handle Incremental Tap
   const handleTap = useCallback(() => {
@@ -126,10 +130,10 @@ export const DashboardTasbihWidget: React.FC = () => {
       setIsCompletedAnim(true)
       setTimeout(() => {
         setIsCompletedAnim(false)
-        resetSessionCount()
-      }, 1000)
+        advanceToNextDhikr()
+      }, 900)
     }
-  }, [incrementCount, soundEnabled, hapticsEnabled, resetSessionCount])
+  }, [incrementCount, soundEnabled, hapticsEnabled, advanceToNextDhikr])
 
   // Radial Progress
   const progressPercent = target > 0 ? Math.min(100, (sessionCount / target) * 100) : 100
@@ -151,7 +155,7 @@ export const DashboardTasbihWidget: React.FC = () => {
               {isTamil ? 'டிஜிட்டல் தஸ்பீஹ்' : 'Digital Tasbih'}
             </h3>
             <p className="text-[11px] text-on-surface-variant truncate max-w-[200px] sm:max-w-none">
-              {activeDhikr.transliteration} • {isTamilTranslation ? activeDhikr.translationTa : activeDhikr.translationEn}
+              {isTamilTranslation ? (activeDhikr.transliterationTa || activeDhikr.transliteration) : activeDhikr.transliteration} • {isTamilTranslation ? activeDhikr.translationTa : activeDhikr.translationEn}
             </p>
           </div>
         </div>
@@ -162,8 +166,8 @@ export const DashboardTasbihWidget: React.FC = () => {
           <div className="px-3 py-1 rounded-xl bg-surface-container-high border border-outline-variant/30 text-xs font-semibold flex items-center gap-1.5 shadow-xs">
             <Target className="w-3.5 h-3.5 text-primary" />
             <span className="text-outline text-[11px]">{isTamil ? 'தினசரி இலக்கு' : 'Goal'}:</span>
-            <span className="text-on-surface font-extrabold">{todayTotal}/{dailyGoal}</span>
-            <span className="text-[10px] text-primary font-bold">({dailyGoalPercent}%)</span>
+            <span className="text-on-surface font-extrabold">{todayTotal}/{displayGoalTarget}</span>
+            <span className="text-[10px] text-primary font-bold">({displayGoalPercent}%)</span>
           </div>
 
           {/* 📱 Full-Screen Blind Tap Focus Mode Button with Text */}
@@ -314,7 +318,7 @@ export const DashboardTasbihWidget: React.FC = () => {
                     : 'bg-surface-container/50 text-on-surface-variant border-outline-variant/20 hover:bg-surface-container-high'
                 }`}
               >
-                {dhikr.transliteration}
+                {isTamilTranslation ? (dhikr.transliterationTa || dhikr.transliteration) : dhikr.transliteration}
               </button>
             ))}
           </div>

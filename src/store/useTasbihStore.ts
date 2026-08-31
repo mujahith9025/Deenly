@@ -66,6 +66,7 @@ interface TasbihState {
   resetDhikrForToday: (dhikrId: string) => void
   resetAllForToday: () => void
   resetAllTasbihStatsToZero: () => void
+  advanceToNextDhikr: () => DhikrItem
   
   applyRemoteDhikrDelta: (data: { dhikrId: string; deltaCount: number; dateStr: string }) => void
   
@@ -208,8 +209,8 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
   soundEnabled: initial.soundEnabled,
   hapticsEnabled: initial.hapticsEnabled,
   
-  sessionCount: 0,
-  sessionLaps: 0,
+  sessionCount: initial.todayDhikrCounts['subhanallah'] || 0,
+  sessionLaps: (initial.dhikrTargets['subhanallah'] || 33) > 0 ? Math.floor((initial.todayDhikrCounts['subhanallah'] || 0) / (initial.dhikrTargets['subhanallah'] || 33)) : 0,
   
   customDhikrs: initial.customDhikrs,
   todayDhikrCounts: initial.todayDhikrCounts,
@@ -223,11 +224,12 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
     const allDhikrs = [...DHIKR_PRESETS, ...(state.customDhikrs || [])]
     const item = allDhikrs.find((d) => d.id === id) || DHIKR_PRESETS[0]
     const customTarget = state.dhikrTargets[id] || item.defaultTarget || 33
+    const countToday = state.todayDhikrCounts[id] || 0
     set({
       activeDhikrId: id,
       target: customTarget,
-      sessionCount: 0,
-      sessionLaps: 0,
+      sessionCount: countToday,
+      sessionLaps: customTarget > 0 ? Math.floor(countToday / customTarget) : 0,
     })
   },
 
@@ -255,7 +257,7 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
     const newStreaks = calculateDhikrStreak(state.dailyHistory, totalGoal)
     const nextState = {
       ...state,
-      dailyGoal: goal,
+      dailyGoal: totalGoal,
       dhikrTargets: updatedTargets,
       target: goal,
       currentStreak: newStreaks.currentStreak,
@@ -292,7 +294,7 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
     const newStreaks = calculateDhikrStreak(state.dailyHistory, totalGoal)
     const nextState = {
       ...state,
-      dailyGoal: target,
+      dailyGoal: totalGoal,
       dhikrTargets: updatedTargets,
       target: target,
       currentStreak: newStreaks.currentStreak,
@@ -300,6 +302,26 @@ export const useTasbihStore = create<TasbihState>((set, get) => ({
     }
     set(nextState)
     persistData(nextState)
+  },
+
+  advanceToNextDhikr: () => {
+    const state = get()
+    const allDhikrs = state.getAllDhikrs()
+    const currentIndex = allDhikrs.findIndex((d) => d.id === state.activeDhikrId)
+    const nextIdx = (currentIndex + 1) % allDhikrs.length
+    const nextDhikr = allDhikrs[nextIdx]
+    const nextTarget = state.dhikrTargets[nextDhikr.id] || nextDhikr.defaultTarget || 33
+    const nextCount = state.todayDhikrCounts[nextDhikr.id] || 0
+    const nextState = {
+      ...state,
+      activeDhikrId: nextDhikr.id,
+      target: nextTarget,
+      sessionCount: nextCount,
+      sessionLaps: nextTarget > 0 ? Math.floor(nextCount / nextTarget) : 0,
+    }
+    set(nextState)
+    persistData(nextState)
+    return nextDhikr
   },
 
   addCustomDhikr: (item: Omit<DhikrItem, 'id' | 'isCustom'> & { id?: string }) => {

@@ -102,6 +102,7 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
     resetSessionCount,
     getActiveDhikr,
     getAllDhikrs,
+    advanceToNextDhikr,
   } = useTasbihStore()
 
   const [isCompletedAnim, setIsCompletedAnim] = useState<boolean>(false)
@@ -112,6 +113,15 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
   const activeDhikr = getActiveDhikr()
   const allDhikrs = getAllDhikrs()
   const targetOptions = [33, 100, 300, 0] // 0 means Free/Unlimited
+
+  const isTa = translationMode === 'ta'
+  const displayTitle = isTa
+    ? (activeDhikr.transliterationTa || activeDhikr.transliteration)
+    : activeDhikr.transliteration
+
+  const displayTranslation = isTa
+    ? (activeDhikr.translationTa || activeDhikr.translationEn)
+    : activeDhikr.translationEn
 
   // Screen Wake Lock API to prevent display from sleeping during Dhikr session
   useEffect(() => {
@@ -188,10 +198,10 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
       setIsCompletedAnim(true)
       setTimeout(() => {
         setIsCompletedAnim(false)
-        resetSessionCount()
-      }, 1000)
+        advanceToNextDhikr()
+      }, 900)
     }
-  }, [incrementCount, soundEnabled, hapticsEnabled, resetSessionCount])
+  }, [incrementCount, soundEnabled, hapticsEnabled, advanceToNextDhikr])
 
   // Keyboard Navigation: Spacebar / ArrowUp to count, Escape to close, ArrowDown to decrement
   useEffect(() => {
@@ -274,7 +284,7 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
           </button>
 
           <span className="text-xs sm:text-sm font-bold px-2 truncate max-w-[110px] sm:max-w-[190px]">
-            {activeDhikr.transliteration}
+            {displayTitle}
           </span>
 
           <button
@@ -289,7 +299,7 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
         {/* Right: Translation Toggle, Target Presets, Sound, Haptics, and Close */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           
-          {/* 🌐 Translation Toggle Button */}
+          {/* 🌐 Translation & Phonetics Toggle Button */}
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -305,11 +315,11 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
                 ? 'bg-white/15 text-primary border-primary/40 shadow-xs'
                 : 'bg-white/5 text-white/40 border-white/10'
             }`}
-            title={isTamil ? 'மொழிபெயர்ப்பு (தமிழ் / English / மறைக்க)' : 'Toggle Translation (English / தமிழ் / Hide)'}
+            title={isTamil ? 'தமிழ் ஒலிப்பு & பொருள் / English / மறைக்க' : 'Toggle English / Tamil Phonetics & Translation / Hide'}
           >
             <Globe className="w-3.5 h-3.5 text-primary" />
             <span className="hidden xs:inline">
-              {translationMode === 'ta' ? 'தமிழ்' : translationMode === 'en' ? 'English' : (isTamil ? 'மறை' : 'Hide')}
+              {translationMode === 'ta' ? 'தமிழ் ஒலி & பொருள்' : translationMode === 'en' ? 'English Phonetics' : (isTamil ? 'மறை' : 'Hide')}
             </span>
           </button>
 
@@ -398,17 +408,15 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
             {activeDhikr.arabic}
           </p>
 
-          <p className="text-sm sm:text-lg text-primary font-bold tracking-wide">
-            {activeDhikr.transliteration}
+          {/* Phonetics / Transliteration (English / Tamil) */}
+          <p className="text-base sm:text-xl text-primary font-bold tracking-wide">
+            {displayTitle}
           </p>
 
-          {/* Dynamic Translation Display according to translationMode */}
+          {/* Dynamic Translation Display */}
           {translationMode !== 'hide' && (
-            <p className="text-xs sm:text-sm text-white/70 italic line-clamp-2 max-w-md mx-auto transition-opacity">
-              "{translationMode === 'ta' 
-                ? (activeDhikr.translationTa || activeDhikr.translationEn) 
-                : activeDhikr.translationEn
-              }"
+            <p className="text-xs sm:text-sm text-white/80 italic line-clamp-2 max-w-md mx-auto transition-opacity">
+              "{displayTranslation}"
             </p>
           )}
         </div>

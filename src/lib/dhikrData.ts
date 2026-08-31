@@ -2,6 +2,7 @@ export interface DhikrItem {
   id: string
   arabic: string
   transliteration: string
+  transliterationTa?: string
   translationEn: string
   translationTa: string
   virtueEn: string
@@ -18,6 +19,7 @@ export const DHIKR_PRESETS: DhikrItem[] = [
     id: 'subhanallah',
     arabic: 'سُبْحَانَ ٱللَّهِ',
     transliteration: 'Subḥān Allāh',
+    transliterationTa: 'ஸுப்ஹானல்லாஹ்',
     translationEn: 'Glory be to Allah',
     translationTa: 'அல்லாஹ் மிகத் தூய்மையானவன்',
     virtueEn: 'Plants a date-palm tree for the reciter in Paradise and wipes away sins.',
@@ -31,6 +33,7 @@ export const DHIKR_PRESETS: DhikrItem[] = [
     id: 'alhamdulillah',
     arabic: 'ٱلْحَمْدُ لِلَّهِ',
     transliteration: 'Al-ḥamdu lillāh',
+    transliterationTa: 'அல்ஹம்துலில்லாஹ்',
     translationEn: 'All Praise is due to Allah',
     translationTa: 'எல்லாப் புகழும் அல்லாஹ்வுக்கே',
     virtueEn: 'Fills the divine scales of good deeds to the brim on the Day of Resurrection.',
@@ -44,6 +47,7 @@ export const DHIKR_PRESETS: DhikrItem[] = [
     id: 'allahu_akbar',
     arabic: 'ٱللَّهُ أَكْبَرُ',
     transliteration: 'Allāhu Akbar',
+    transliterationTa: 'அல்லாஹு அக்பர்',
     translationEn: 'Allah is the Greatest',
     translationTa: 'அல்லாஹ் மிகப் பெரியவன்',
     virtueEn: 'Reciting it with SubhanAllah & Alhamdulillah completes the Sunnah post-prayer remembrance.',
@@ -57,6 +61,7 @@ export const DHIKR_PRESETS: DhikrItem[] = [
     id: 'astaghfirullah',
     arabic: 'أَسْتَغْفِرُ ٱللَّهَ',
     transliteration: 'Astaghfirullāh',
+    transliterationTa: 'அஸ்தஃபிருல்லாஹ்',
     translationEn: 'I seek forgiveness from Allah',
     translationTa: 'அல்லாஹ்விடம் பாவமன்னிப்புக் கோருகிறேன்',
     virtueEn: 'The Prophet ﷺ sought forgiveness more than 70 to 100 times daily; it relieves anxiety and expands provision.',
@@ -70,6 +75,7 @@ export const DHIKR_PRESETS: DhikrItem[] = [
     id: 'la_ilaha_illallah',
     arabic: 'لَا إِلَٰهَ إِلَّا ٱللَّهُ',
     transliteration: 'Lā ilāha illallāh',
+    transliterationTa: 'லா இலாஹ இல்லல்லாஹ்',
     translationEn: 'There is no deity worthy of worship except Allah',
     translationTa: 'வணக்கத்திற்குரியவன் அல்லாஹ்வைத் தவிர வேறு யாருமில்லை',
     virtueEn: 'The best form of remembrance and the highest branch of faith.',
@@ -83,6 +89,7 @@ export const DHIKR_PRESETS: DhikrItem[] = [
     id: 'subhanallahi_wa_bihamdihi',
     arabic: 'سُبْحَانَ ٱللَّهِ وَبِحَمْدِهِ ، سُبْحَانَ ٱللَّهِ ٱلْعَظِيمِ',
     transliteration: 'Subḥānallāhi wa bi-ḥamdih, Subḥānallāhil-‘Aẓīm',
+    transliterationTa: 'ஸுப்ஹானல்லாஹி வபிஹம்திஹி, ஸுப்ஹானல்லாஹில் அழீம்',
     translationEn: 'Glory be to Allah and His is the praise; Glory be to Allah the Almighty',
     translationTa: 'அல்லாஹ்வின் புகழைக் கூறி அவனைத் துதிக்கிறேன்; மகத்தான அல்லாஹ் மிகத் தூயவன்',
     virtueEn: 'Two phrases beloved to the Most Merciful, light upon the tongue, heavy on the scales.',
@@ -96,6 +103,7 @@ export const DHIKR_PRESETS: DhikrItem[] = [
     id: 'la_hawla',
     arabic: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِٱللَّهِ',
     transliteration: 'Lā ḥawla wa lā quwwata illā billāh',
+    transliterationTa: 'லா ஹவ்ல வலா குவ்வத்த இல்லா பில்லாஹ்',
     translationEn: 'There is no power nor strength except through Allah',
     translationTa: 'அல்லாஹ்வின் உதவியின்றி எவ்வித ஆற்றலும் சக்தியும் இல்லை',
     virtueEn: 'One of the precious treasures from beneath the Throne of the Most Merciful in Jannah.',
@@ -109,6 +117,7 @@ export const DHIKR_PRESETS: DhikrItem[] = [
     id: 'salawat',
     arabic: 'ٱللَّٰهُمَّ صَلِّ عَلَىٰ مُحَمَّدٍ وَعَلَىٰ آلِ مُحَمَّدٍ',
     transliteration: 'Allāhumma ṣalli ‘alā Muḥammad wa ‘alā āli Muḥammad',
+    transliterationTa: 'அல்லாஹும்ம ஸல்லி அலா முஹம்மதின் வஅலா ஆலி முஹம்மத்',
     translationEn: 'O Allah, send blessings upon Muhammad and upon the family of Muhammad',
     translationTa: 'யா அல்லாஹ்! முஹம்மத் (ஸல்) அவர்களின் மீதும் அவர்களின் குடும்பத்தார் மீதும் அருள்புரிவாயாக',
     virtueEn: 'Whoever sends one blessing upon the Prophet ﷺ, Allah will send ten blessings upon him.',

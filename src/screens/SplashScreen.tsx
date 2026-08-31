@@ -56,9 +56,12 @@ export const SplashScreen: React.FC = () => {
       {/* Bottom Area: Action buttons for visitors or transition for returning reciters */}
       <div className="w-full max-w-sm mx-auto space-y-3 z-10 pb-6 min-h-[110px] flex flex-col justify-end">
         {isAuthenticated ? (
-          <div className="text-center py-4 space-y-2 animate-fade-in">
-            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
-            <p className="text-xs text-primary font-medium">Opening your sanctuary...</p>
+          <div className="flex flex-col items-center justify-center py-4 space-y-2.5 animate-fade-in text-center">
+            <div className="relative flex items-center justify-center w-8 h-8">
+              <div className="absolute inset-0 rounded-full bg-primary/30 blur-md animate-pulse" />
+              <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin relative z-10" />
+            </div>
+            <p className="text-xs text-primary font-medium text-center">Opening your sanctuary...</p>
           </div>
         ) : (
           <div className="space-y-3 animate-fade-in">

@@ -119,13 +119,14 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
     getOverallDailyProgress,
     getActiveDhikr,
     getAllDhikrs,
+    advanceToNextDhikr,
   } = useTasbihStore()
 
   const [showVirtue, setShowVirtue] = useState<boolean>(true)
   const [virtueLanguage, setVirtueLanguage] = useState<'en' | 'ta'>(isTamilTranslation ? 'ta' : 'en')
   const [isCompletedAnim, setIsCompletedAnim] = useState<boolean>(false)
   const [showGoalEditor, setShowGoalEditor] = useState<boolean>(false)
-  const [customGoalInput, setCustomGoalInput] = useState<string>(dailyGoal.toString())
+  const [customGoalInput, setCustomGoalInput] = useState<string>('100')
   const [isFocusModalOpen, setIsFocusModalOpen] = useState<boolean>(false)
   const [isCustomModalOpen, setIsCustomModalOpen] = useState<boolean>(false)
   const [editingDhikr, setEditingDhikr] = useState<DhikrItem | null>(null)
@@ -166,10 +167,10 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
       setIsCompletedAnim(true)
       setTimeout(() => {
         setIsCompletedAnim(false)
-        resetSessionCount()
-      }, 1000)
+        advanceToNextDhikr()
+      }, 900)
     }
-  }, [incrementCount, soundEnabled, hapticsEnabled, resetSessionCount])
+  }, [incrementCount, soundEnabled, hapticsEnabled, advanceToNextDhikr])
 
   // Save Goal for All Dhikrs
   const handleSaveGoal = (val: number) => {
@@ -299,7 +300,7 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
             
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-primary font-label-caps">
-                {activeDhikr.transliteration}
+                {virtueLanguage === 'ta' ? (activeDhikr.transliterationTa || activeDhikr.transliteration) : activeDhikr.transliteration}
               </span>
               
               <div className="flex items-center gap-2">
@@ -701,7 +702,7 @@ export const DigitalTasbihEngine: React.FC<DigitalTasbihEngineProps> = ({ onOpen
                 <div className="truncate min-w-0 pr-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <p className="text-xs sm:text-sm font-bold truncate text-on-surface">
-                      {dhikr.transliteration}
+                      {virtueLanguage === 'ta' ? (dhikr.transliterationTa || dhikr.transliteration) : dhikr.transliteration}
                     </p>
                     {isDone && <Check className="w-3.5 h-3.5 text-primary stroke-[3]" />}
                     {dhikr.isCustom && (
