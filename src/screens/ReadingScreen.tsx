@@ -305,6 +305,7 @@ export const ReadingScreen: React.FC = () => {
     }
   }, [
     currentAyah,
+    currentSurah,
     currentAyahNumber,
     totalAyahs,
     currentSurahNumber,
@@ -328,7 +329,7 @@ export const ReadingScreen: React.FC = () => {
   }
 
   // Go to Previous Ayah
-  const handlePrevAyah = (e?: React.MouseEvent) => {
+  const handlePrevAyah = useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     triggerHapticMedium()
     if (currentAyahNumber > 1) {
@@ -344,10 +345,10 @@ export const ReadingScreen: React.FC = () => {
       setSearchParams({ surah: prevSurahNum.toString(), ayah: prevTotalAyahs.toString() })
       useAuthStore.getState().updateLastReadPosition(prevSurahNum, prevTotalAyahs)
     }
-  }
+  }, [currentAyahNumber, currentSurahNumber, setCurrentPosition, setSearchParams])
 
   // Finish Reading Session -> Go to Dashboard (Guaranteed Instant Reflection of Hasanat, Time, and Verses)
-  const handleFinishSession = (e?: React.MouseEvent) => {
+  const handleFinishSession = useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     triggerHapticSuccess()
 
@@ -365,7 +366,7 @@ export const ReadingScreen: React.FC = () => {
 
     finishSession()
     navigate('/dashboard')
-  }
+  }, [currentAyah, currentAyahNumber, currentSurahNumber, markAyahRead, finishSession, navigate])
 
   // Keyboard navigation shortcuts
   useEffect(() => {
