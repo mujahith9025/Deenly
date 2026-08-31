@@ -9,7 +9,8 @@ import {
   ChevronRight, 
   Minus, 
   Sparkles,
-  Check
+  Check,
+  Globe
 } from 'lucide-react'
 import { useTasbihStore } from '../store/useTasbihStore'
 import { getArabicFontFamily, type ArabicFontStyle } from '../lib/quranFonts'
@@ -104,7 +105,8 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
   } = useTasbihStore()
 
   const [isCompletedAnim, setIsCompletedAnim] = useState<boolean>(false)
-  const [tapEffect, setTapEffect] = useState<{ x: number; y: number; id: number } | null>(null)
+  const [translationMode, setTranslationMode] = useState<'ta' | 'en' | 'hide'>(isTamilTranslation ? 'ta' : 'en')
+  const [ripples, setRipples] = useState<Array<{ x: number; y: number; id: number }>>([])
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
   const activeDhikr = getActiveDhikr()
@@ -144,8 +146,26 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
 
   // Handle Incremental Tap anywhere on the screen
   const handleScreenTap = useCallback((e?: React.MouseEvent | React.TouchEvent) => {
-    if (e && 'clientX' in e && e.clientX && e.clientY) {
-      setTapEffect({ x: e.clientX, y: e.clientY, id: Date.now() })
+    // Only spawn ripple on active physical tap event with coordinates
+    if (e) {
+      let clientX = 0
+      let clientY = 0
+      if ('clientX' in e && e.clientX && e.clientY) {
+        clientX = e.clientX
+        clientY = e.clientY
+      } else if ('touches' in e && (e as unknown as React.TouchEvent).touches?.[0]) {
+        const touch = (e as unknown as React.TouchEvent).touches[0]
+        clientX = touch.clientX
+        clientY = touch.clientY
+      }
+
+      if (clientX > 0 && clientY > 0) {
+        const rippleId = Date.now() + Math.random()
+        setRipples((prev) => [...prev.slice(-3), { x: clientX, y: clientY, id: rippleId }])
+        setTimeout(() => {
+          setRipples((prev) => prev.filter((r) => r.id !== rippleId))
+        }, 450)
+      }
     }
 
     const { isTargetCompleted } = incrementCount()
@@ -227,21 +247,21 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
       {/* Background Subtle Breathing Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Ripple Animation on Tap */}
-      {tapEffect && (
-        <div 
-          key={tapEffect.id}
-          className="absolute w-20 h-20 rounded-full bg-primary/20 pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ping"
-          style={{ left: tapEffect.x, top: tapEffect.y }}
+      {/* Ripple Animation on Tap - One-shot expanding ring only on active tap */}
+      {ripples.map((r) => (
+        <span 
+          key={r.id}
+          className="absolute w-16 h-16 rounded-full border border-white/70 bg-white/20 pointer-events-none animate-tap-ripple"
+          style={{ left: r.x, top: r.y }}
         />
-      )}
+      ))}
 
       {/* ========================================================================= */}
       {/* 1. TOP BAR: DHIKR SWITCHER & SETTING TOGGLES                              */}
       {/* ========================================================================= */}
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="w-full flex items-center justify-between gap-3 relative z-10 shrink-0"
+        className="w-full flex items-center justify-between gap-2.5 relative z-10 shrink-0 flex-wrap"
       >
         {/* Left: Prev / Next Dhikr Switcher */}
         <div className="flex items-center gap-1 sm:gap-2 bg-white/10 p-1 rounded-2xl border border-white/15 backdrop-blur-md">
@@ -253,7 +273,7 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          <span className="text-xs sm:text-sm font-bold px-2 truncate max-w-[120px] sm:max-w-[200px]">
+          <span className="text-xs sm:text-sm font-bold px-2 truncate max-w-[110px] sm:max-w-[190px]">
             {activeDhikr.transliteration}
           </span>
 
@@ -266,10 +286,35 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
           </button>
         </div>
 
-        {/* Right: Sound, Haptics, Target Presets, and Close */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+        {/* Right: Translation Toggle, Target Presets, Sound, Haptics, and Close */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          
+          {/* 🌐 Translation Toggle Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              triggerHapticLight()
+              setTranslationMode((prev) => {
+                if (prev === 'en') return 'ta'
+                if (prev === 'ta') return 'hide'
+                return 'en'
+              })
+            }}
+            className={`px-2.5 py-1.5 rounded-2xl border transition cursor-pointer flex items-center gap-1.5 text-xs font-bold ${
+              translationMode !== 'hide'
+                ? 'bg-white/15 text-primary border-primary/40 shadow-xs'
+                : 'bg-white/5 text-white/40 border-white/10'
+            }`}
+            title={isTamil ? 'மொழிபெயர்ப்பு (தமிழ் / English / மறைக்க)' : 'Toggle Translation (English / தமிழ் / Hide)'}
+          >
+            <Globe className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden xs:inline">
+              {translationMode === 'ta' ? 'தமிழ்' : translationMode === 'en' ? 'English' : (isTamil ? 'மறை' : 'Hide')}
+            </span>
+          </button>
+
           {/* Target Selectors */}
-          <div className="hidden xs:flex items-center gap-1 bg-white/10 p-1 rounded-2xl border border-white/15">
+          <div className="hidden sm:flex items-center gap-1 bg-white/10 p-1 rounded-2xl border border-white/15">
             {targetOptions.map((t) => (
               <button
                 key={t}
@@ -357,9 +402,15 @@ export const TasbihFocusModal: React.FC<TasbihFocusModalProps> = ({ isOpen, onCl
             {activeDhikr.transliteration}
           </p>
 
-          <p className="text-xs sm:text-sm text-white/70 italic line-clamp-2">
-            "{isTamilTranslation ? activeDhikr.translationTa : activeDhikr.translationEn}"
-          </p>
+          {/* Dynamic Translation Display according to translationMode */}
+          {translationMode !== 'hide' && (
+            <p className="text-xs sm:text-sm text-white/70 italic line-clamp-2 max-w-md mx-auto transition-opacity">
+              "{translationMode === 'ta' 
+                ? (activeDhikr.translationTa || activeDhikr.translationEn) 
+                : activeDhikr.translationEn
+              }"
+            </p>
+          )}
         </div>
 
         {/* Massive Circular Pulse Counter */}

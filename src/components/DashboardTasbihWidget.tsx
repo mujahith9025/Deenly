@@ -166,16 +166,17 @@ export const DashboardTasbihWidget: React.FC = () => {
             <span className="text-[10px] text-primary font-bold">({dailyGoalPercent}%)</span>
           </div>
 
-          {/* 📱 Full-Screen Blind Tap Focus Mode Button */}
+          {/* 📱 Full-Screen Blind Tap Focus Mode Button with Text */}
           <button
             onClick={() => {
               triggerHapticLight()
               setIsFocusModalOpen(true)
             }}
-            className="p-1.5 rounded-xl bg-surface-container-high hover:bg-primary/20 text-primary border border-primary/30 transition cursor-pointer shadow-2xs active:scale-95"
+            className="px-2.5 py-1.5 rounded-xl bg-primary/15 hover:bg-primary/25 text-primary border border-primary/35 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-2xs active:scale-95"
             title={isTamil ? 'முழுத்திரை திக்ர் (Blind Tap Mode)' : 'Full-Screen Blind Tap Focus Mode'}
           >
             <Maximize2 className="w-3.5 h-3.5" />
+            <span className="font-bold">{isTamil ? 'முழுத்திரை' : 'Focus Mode'}</span>
           </button>
 
           {/* Sound Toggle */}
@@ -262,7 +263,7 @@ export const DashboardTasbihWidget: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-3 mt-3">
+          <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
             <button
               onClick={resetSessionCount}
               className="px-2.5 py-1 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/20 text-outline hover:text-on-surface text-[11px] font-semibold flex items-center gap-1 transition cursor-pointer"
@@ -270,9 +271,17 @@ export const DashboardTasbihWidget: React.FC = () => {
               <RotateCcw className="w-3 h-3" />
               <span>{isTamil ? 'மீட்டமை' : 'Reset'}</span>
             </button>
-            <span className="text-[11px] text-outline">
-              {isTamil ? 'வட்டத்தைத் தொட்டு எண்ணுக' : 'Tap dial to count'}
-            </span>
+
+            <button
+              onClick={() => {
+                triggerHapticLight()
+                setIsFocusModalOpen(true)
+              }}
+              className="px-2.5 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary text-[11px] font-bold flex items-center gap-1.5 transition cursor-pointer active:scale-95"
+            >
+              <Maximize2 className="w-3 h-3" />
+              <span>{isTamil ? 'முழுத்திரை திக்ர்' : 'Focus Mode'}</span>
+            </button>
           </div>
         </div>
 
